@@ -73,21 +73,33 @@ footer a{color:#ffd27f; text-decoration:none;}
   transform: scale(1.2) rotate(-10deg);
 }
 
-/* Bulle au survol */
+/* Bulle au survol avec flèche */
 .chat-bubble {
   position: absolute;
   bottom: 110%;
-  right: 50%;
+  right: 70%; /* décale vers la gauche */
   transform: translateX(50%);
   background: rgba(0,0,0,0.8);
   color: #fff;
   padding: 5px 10px;
   border-radius: 10px;
   font-size: 0.8em;
-  white-space: nowrap;
+  white-space: pre-line; /* permet les retours à la ligne */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s;
+}
+
+/* Petite flèche de la bulle */
+.chat-bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(0,0,0,0.8) transparent transparent transparent;
 }
 
 .chat-container:hover .chat-bubble {
@@ -148,11 +160,11 @@ footer a{color:#ffd27f; text-decoration:none;}
   <p>&copy; 2025 NoTif Head - Tous droits réservés</p>
 </footer>
 
-<!-- Chat avec bulle -->
+<!-- Chat avec bulle et flèche -->
 <div class="chat-container">
   <img src="https://static.vecteezy.com/system/resources/thumbnails/041/642/908/small_2x/ai-generated-cute-cat-reaching-up-with-paw-on-transparent-background-png.png" 
        alt="Chat mignon" class="cute-cat">
-  <div class="chat-bubble">Site produit et créé par Xyla</div>
+  <div class="chat-bubble">Site produit et créé<br>par Xyla</div>
 </div>
 
 </body>
