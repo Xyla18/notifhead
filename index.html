@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nom du Groupe</title>
+  <title>NoTif Head</title>
   <style>
     body {
       font-family: 'Georgia', serif;
@@ -15,9 +15,35 @@
     }
 
     header {
-      background: #6b4226;
+      background: linear-gradient(135deg, #6a0dad, #ff69b4); /* Dégradé violet -> rose */
       color: white;
       padding: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Effet étoiles animées */
+    header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
+      opacity: 0.5;
+      animation: starsMove 20s linear infinite;
+      z-index: 0;
+    }
+
+    header h1, header p, nav {
+      position: relative;
+      z-index: 1; /* pour rester au-dessus des étoiles */
+    }
+
+    @keyframes starsMove {
+      from { background-position: 0 0; }
+      to { background-position: 1000px 1000px; }
     }
 
     header h1 {
@@ -81,9 +107,9 @@
 
   <section id="photos" class="section photos">
     <h2>C'est nous!</h2>
-    <img src=https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw="Concert 1">
-    <img src=https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw="Concert 2">
-    <img src=https://github.com/Xyla18/notifhead/blob/main/555727631_4162497657355718_2703381832388341131_n.jpg?raw=true="Concert 3">
+    <img src="https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true" alt="Concert 1">
+    <img src="https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true" alt="Concert 2">
+    <img src="https://github.com/Xyla18/notifhead/blob/main/555727631_4162497657355718_2703381832388341131_n.jpg?raw=true" alt="Concert 3">
   </section>
 
   <section id="contact" class="section">
@@ -95,12 +121,8 @@
   </section>
 
   <footer>
-    <p>&copy; 2025 Nom du Groupe - Tous droits réservés</p>
+    <p>&copy; 2025 NoTif Head - Tous droits réservés</p>
   </footer>
 
 </body>
 </html>
-
-
-
-
