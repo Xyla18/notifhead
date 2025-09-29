@@ -1,137 +1,195 @@
-<?php
-session_start();
-$host='localhost'; $dbname='notifhead'; $user='root'; $pass=''; 
-try{$db=new PDO("mysql:host=$host;dbname=$dbname;charset=utf8",$user,$pass);$db->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);}catch(Exception$e){die('Erreur: '.$e->getMessage());}
-
-// Login admin
-if(isset($_POST['user'])&&isset($_POST['pass'])){
-    if($_POST['user']==='admin'&&$_POST['pass']==='password123'){$_SESSION['admin']=true;}
-    else{$login_error="Identifiants incorrects.";}
-}
-
-// Ajout concert
-if(isset($_SESSION['admin']) && $_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['date'])){
-    $stmt=$db->prepare("INSERT INTO concerts(date,time,place) VALUES(?,?,?)");
-    $stmt->execute([$_POST['date'],$_POST['time'],$_POST['place']]);
-    $message="Concert ajouté !";
-}
-?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NoTif Head</title>
-<style>
-body{font-family:'Georgia',serif;margin:0;padding:0;text-align:center;background:#f4f0e6;color:#2e2e2e;}
-header{background:linear-gradient(135deg,#6a0dad,#ff69b4);color:white;padding:30px;position:relative;overflow:hidden;}
-header::before{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background:transparent url("https://www.transparenttextures.com/patterns/stardust.png") repeat;opacity:0.5;animation:starsMove 20s linear infinite;z-index:0;}
-@keyframes starsMove{from{background-position:0 0;}to{background-position:1000px 1000px;}}
-header h1,header p,nav{position:relative;z-index:2;}
-header h1{font-size:3em;margin:0;}
-nav a{margin:0 15px;color:white;text-decoration:none;font-weight:bold;}
-nav a:hover{text-decoration:underline;}
-.guitar{position:absolute;bottom:10px;left:25%;width:180px;z-index:1;}
-.trumpet{position:absolute;bottom:40px;right:25%;width:180px;z-index:1;}
-.petals{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:1;}
-.petals span{position:absolute;display:block;width:15px;height:15px;background:url("https://i.ibb.co/K5v5t9X/petal.png") no-repeat center/contain;opacity:0.8;animation:fall 6s linear infinite;}
-.petals span:nth-child(1){left:5%;animation-delay:0s;animation-duration:5s;}
-.petals span:nth-child(2){left:15%;animation-delay:1s;animation-duration:6s;}
-.petals span:nth-child(3){left:25%;animation-delay:2s;animation-duration:7s;}
-.petals span:nth-child(4){left:35%;animation-delay:3s;animation-duration:5.5s;}
-.petals span:nth-child(5){left:45%;animation-delay:1.5s;animation-duration:6.5s;}
-.petals span:nth-child(6){left:55%;animation-delay:0.5s;animation-duration:6.2s;}
-.petals span:nth-child(7){left:65%;animation-delay:2.2s;animation-duration:5.8s;}
-.petals span:nth-child(8){left:75%;animation-delay:1.8s;animation-duration:6.8s;}
-.petals span:nth-child(9){left:85%;animation-delay:3.5s;animation-duration:6.1s;}
-.petals span:nth-child(10){left:95%;animation-delay:2.8s;animation-duration:5.9s;}
-@keyframes fall{0%{transform:translateY(-50px) rotate(0deg);opacity:1;}100%{transform:translateY(400px) rotate(360deg);opacity:0;}}
-.dropdown{position:absolute;top:20px;right:20px;z-index:3;}
-.dropbtn{background:#6a0dad;color:white;padding:10px 15px;border:none;cursor:pointer;font-weight:bold;border-radius:5px;}
-.dropdown-content{display:none;position:absolute;right:0;background:#fff;min-width:180px;box-shadow:0px 8px 16px rgba(0,0,0,0.3);border-radius:5px;overflow:hidden;}
-.dropdown-content a{color:#2e2e2e;padding:10px 15px;text-decoration:none;display:block;}
-.dropdown-content a:hover{background:#f4f0e6;}
-.dropdown:hover .dropdown-content{display:block;}
-.section{padding:50px 20px;}
-.photos img{width:250px;margin:10px;border:5px solid #6b4226;border-radius:10px;}
-footer{background:#6b4226;color:white;padding:20px;margin-top:40px;}
-footer a{color:#ffd27f;margin:0 10px;text-decoration:none;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NoTif Head</title>
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #f4f0e6;
+      color: #2e2e2e;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      background: linear-gradient(135deg, #6a0dad, #ff69b4);
+      color: white;
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Étoiles animées */
+    header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
+      opacity: 0.5;
+      animation: starsMove 20s linear infinite;
+      z-index: 0;
+    }
+
+    header h1, header p, nav {
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes starsMove {
+      from { background-position: 0 0; }
+      to { background-position: 1000px 1000px; }
+    }
+
+    header h1 {
+      font-size: 3em;
+      margin: 0;
+    }
+
+    nav a {
+      margin: 0 15px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Instruments */
+    .guitar {
+      position: absolute;
+      bottom: 10px;
+      left: 25%;
+      width: 180px;
+      z-index: 1;
+    }
+
+    .trumpet {
+      position: absolute;
+      bottom: 40px;
+      right: 25%;
+      width: 180px;
+      z-index: 1;
+    }
+
+    /* Pétales Sakura */
+    .petals {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .petals span {
+      position: absolute;
+      display: block;
+      width: 20px;
+      height: 20px;
+      background: url("https://static.vecteezy.com/system/resources/previews/027/395/708/non_2x/sakura-cherry-blossom-flower-petals-png.png") no-repeat center/contain;
+      opacity: 0.8;
+      animation: fall 6s linear infinite;
+    }
+
+    .petals span:nth-child(1) { left: 5%; animation-delay: 0s; animation-duration: 5s; }
+    .petals span:nth-child(2) { left: 15%; animation-delay: 1s; animation-duration: 6s; }
+    .petals span:nth-child(3) { left: 25%; animation-delay: 2s; animation-duration: 7s; }
+    .petals span:nth-child(4) { left: 35%; animation-delay: 3s; animation-duration: 5.5s; }
+    .petals span:nth-child(5) { left: 45%; animation-delay: 1.5s; animation-duration: 6.5s; }
+    .petals span:nth-child(6) { left: 55%; animation-delay: 0.5s; animation-duration: 6.2s; }
+    .petals span:nth-child(7) { left: 65%; animation-delay: 2.2s; animation-duration: 5.8s; }
+    .petals span:nth-child(8) { left: 75%; animation-delay: 1.8s; animation-duration: 6.8s; }
+    .petals span:nth-child(9) { left: 85%; animation-delay: 3.5s; animation-duration: 6.1s; }
+    .petals span:nth-child(10){ left: 95%; animation-delay: 2.8s; animation-duration: 5.9s; }
+
+    @keyframes fall {
+      0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(400px) rotate(360deg); opacity: 0; }
+    }
+
+    .section {
+      padding: 50px 20px;
+    }
+
+    .photos img {
+      width: 250px;
+      margin: 10px;
+      border: 5px solid #6b4226;
+      border-radius: 10px;
+    }
+
+    footer {
+      background: #6b4226;
+      color: white;
+      padding: 20px;
+      margin-top: 40px;
+    }
+
+    footer a {
+      color: #ffd27f;
+      margin: 0 10px;
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
 
-<header>
-<img src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUydGI3eW84bWNwY3J4bXdsM3NmN2Jnaml2b2p2MDNhOHVid285aWV0YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/ibKkvdABSS9sQkD0Ny/giphy.gif" class="guitar" alt="Guitare animée">
-<img src="https://media.baamboozle.com/uploads/images/202323/1622532851_477603_gif-url.gif" class="trumpet" alt="Trompette animée">
-<div class="petals"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-<h1>NoTif Head</h1>
-<p>Un son authentique, une vibe vintage 🎷🎸</p>
-<div class="dropdown">
-  <button class="dropbtn">Menu</button>
-  <div class="dropdown-content">
-    <a href="#about">À propos</a>
-    <a href="#photos">Photos</a>
-    <a href="#contact">Contact</a>
-    <a href="#concerts">Concerts</a>
-    <a href="https://www.facebook.com/didier.charbeaux.5" target="_blank">Facebook</a>
-  </div>
-</div>
-</header>
+  <header>
+    <!-- Instruments -->
+    <img src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUydGI3eW84bWNwY3J4bXdsM3NmN2Jnaml2b2p2MDNhOHVid285aWV0YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/ibKkvdABSS9sQkD0Ny/giphy.gif" 
+         alt="Guitare animée" class="guitar">
+    <img src="https://media.baamboozle.com/uploads/images/202323/1622532851_477603_gif-url.gif" 
+         alt="Trompette animée" class="trumpet">
 
-<section id="about" class="section">
-<h2>À propos</h2>
-<p>Bienvenue sur le site officiel de <strong>NoTif Head</strong>. Nous mélangeons les sons rétro avec une énergie moderne.</p>
-</section>
+    <!-- Pétales Sakura -->
+    <div class="petals">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
 
-<section id="photos" class="section photos">
-<h2>Photos</h2>
-<img src="https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true" alt="Concert 1">
-<img src="https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true" alt="Concert 2">
-<img src="https://github.com/Xyla18/notifhead/blob/main/555727631_4162497657355718_2703381832388341131_n.jpg?raw=true" alt="Concert 3">
-</section>
+    <h1>NoTif Head</h1>
+    <p>Un son authentique, une vibe vintage 🎷🎸</p>
+    <nav>
+      <a href="#about">À propos</a>
+      <a href="#photos">Photos</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
 
-<section id="contact" class="section">
-<h2>Contact</h2>
-<p>Retrouvez-nous sur nos réseaux :</p>
-<a href="https://www.facebook.com/didier.charbeaux.5" target="_blank">Facebook</a>
-</section>
+  <section id="about" class="section">
+    <h2>À propos</h2>
+    <p>Bienvenue sur le site officiel de <strong>NoTif Head</strong>.  
+    Nous mélangeons les sons rétro avec une énergie moderne.</p>
+  </section>
 
-<section id="concerts" class="section">
-<h2>Concerts à venir</h2>
-<?php
-$concerts=$db->query("SELECT * FROM concerts ORDER BY date ASC");
-while($c=$concerts->fetch()){echo "<p>{$c['date']} à {$c['time']} - {$c['place']}</p>";}
-?>
-<?php if(isset($_SESSION['admin'])): ?>
-<h3>Ajouter un concert</h3>
-<form method="post">
-Date: <input type="date" name="date" required>
-Heure: <input type="time" name="time" required>
-Lieu: <input type="text" name="place" required>
-<button type="submit">Ajouter</button>
-</form>
-<?php if(isset($message)) echo "<p>$message</p>"; ?>
-<a href="?logout">Se déconnecter</a>
-<?php endif; ?>
-</section>
+  <section id="photos" class="section photos">
+    <h2>C'est nous!</h2>
+    <img src="https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true" alt="Concert 1">
+    <img src="https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true" alt="Concert 2">
+    <img src="https://github.com/Xyla18/notifhead/blob/main/555727631_4162497657355718_2703381832388341131_n.jpg?raw=true" alt="Concert 3">
+  </section>
 
-<?php
-if(isset($_GET['logout'])){session_destroy();header("Location:index.php");exit;}
-if(!isset($_SESSION['admin']) && isset($login_error)){
-    echo "<p style='color:red;'>$login_error</p>";
-}
-if(!isset($_SESSION['admin'])){
-    echo '<form method="post" style="margin:20px;">
-    <input type="text" name="user" placeholder="Nom d\'utilisateur" required>
-    <input type="password" name="pass" placeholder="Mot de passe" required>
-    <button type="submit">Se connecter admin</button>
-    </form>';
-}
-?>
+  <section id="contact" class="section">
+    <h2>Nous suivre</h2>
+    <p>Retrouvez-nous sur nos réseaux :</p>
+    <p>
+      <a href="https://www.facebook.com/didier.charbeaux.5" target="_blank">Facebook</a>
+    </p>
+  </section>
 
-<footer>
-<p>&copy; 2025 NoTif Head - Tous droits réservés</p>
-</footer>
+  <footer>
+    <p>&copy; 2025 NoTif Head - Tous droits réservés</p>
+  </footer>
 
 </body>
 </html>
