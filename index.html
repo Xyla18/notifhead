@@ -62,30 +62,40 @@
       text-decoration: underline;
     }
 
-    /* 🎸 Guitare */
+    /* 🎸 Guitare - plus grosse, rapprochée du titre */
     .guitar {
       position: absolute;
-      bottom: 0;
-      left: 10px;
-      width: 120px;
+      bottom: 20px;
+      left: 25%;
+      width: 180px;
       z-index: 1;
     }
 
-    /* 🌸 Sakura */
-    .sakura {
+    /* 🎺 Trompette - plus grosse, rapprochée du titre */
+    .trumpet {
+      position: absolute;
+      bottom: 20px;
+      right: 25%;
+      width: 180px;
+      z-index: 1;
+    }
+
+    /* 🌸 Sakura gauche */
+    .sakura-left {
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      width: 140px;
+      z-index: 1;
+    }
+
+    /* 🌸 Sakura droite (symétrie avec flip horizontal) */
+    .sakura-right {
       position: absolute;
       top: 10px;
       right: 20px;
-      width: 120px;
-      z-index: 1;
-    }
-
-    /* 🎺 Trompette */
-    .trumpet {
-      position: absolute;
-      bottom: 0;
-      right: 10px;
-      width: 120px;
+      width: 140px;
+      transform: scaleX(-1); /* effet miroir */
       z-index: 1;
     }
 
@@ -121,11 +131,14 @@
     <img src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUydGI3eW84bWNwY3J4bXdsM3NmN2Jnaml2b2p2MDNhOHVid285aWV0YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/ibKkvdABSS9sQkD0Ny/giphy.gif" 
          alt="Guitare animée" class="guitar">
          
-    <img src="https://static.vecteezy.com/system/resources/thumbnails/022/952/603/small/sakura-on-transparent-background-watercolor-cherry-bud-cherry-blossom-flower-blooming-pink-sakura-flower-background-cherry-blossom-branch-with-sakura-flower-watercolor-cherry-blossom-free-png.png" 
-         alt="Sakura" class="sakura">
-         
     <img src="https://media.baamboozle.com/uploads/images/202323/1622532851_477603_gif-url.gif" 
          alt="Trompette animée" class="trumpet">
+
+    <img src="https://static.vecteezy.com/system/resources/thumbnails/022/952/603/small/sakura-on-transparent-background-watercolor-cherry-bud-cherry-blossom-flower-blooming-pink-sakura-flower-background-cherry-blossom-branch-with-sakura-flower-watercolor-cherry-blossom-free-png.png" 
+         alt="Sakura gauche" class="sakura-left">
+
+    <img src="https://static.vecteezy.com/system/resources/thumbnails/022/952/603/small/sakura-on-transparent-background-watercolor-cherry-bud-cherry-blossom-flower-blooming-pink-sakura-flower-background-cherry-blossom-branch-with-sakura-flower-watercolor-cherry-blossom-free-png.png" 
+         alt="Sakura droite" class="sakura-right">
 
     <h1>NoTif Head</h1>
     <p>Un son authentique, une vibe vintage 🎷🎸</p>
