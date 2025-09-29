@@ -7,61 +7,34 @@
 <style>
 body {
   font-family: 'Georgia', serif;
-  background-color: #f4f0e6;
-  color: #2e2e2e;
-  margin: 0;
-  padding: 0;
-  text-align: center;
+  margin:0;
+  padding:0;
+  background:#f4f0e6;
+  text-align:center;
 }
 
 /* HEADER */
 header {
+  position:relative;
   background: linear-gradient(135deg, #6a0dad, #ff69b4);
-  color: white;
-  padding: 40px 20px 80px;
-  position: relative;
-  overflow: hidden;
+  color:white;
+  padding:50px 20px 100px;
+  overflow:hidden;
 }
-
-/* étoiles animées */
-header::before {
-  content:"";
-  position:absolute;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:transparent url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
-  opacity:0.5;
-  animation: starsMove 20s linear infinite;
-  z-index:0;
-}
-@keyframes starsMove {from{background-position:0 0}to{background-position:1000px 1000px}}
-
-header h1, header p, nav {position:relative; z-index:2;}
-header h1 {font-size:3.2em; margin:0; text-shadow:0 0 10px rgba(0,0,0,0.5);}
-nav a {
-  margin: 0 15px;
-  color: white;
-  text-decoration: none;
-  font-weight: bold;
-}
-nav a:hover {text-decoration: underline;}
 
 /* Instruments animés */
 .guitar {
-  position: absolute;
-  bottom: 10px;
-  left: 8%;
-  width: 180px;
-  z-index: 1;
-  filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+  position:absolute;
+  bottom:10px;
+  left:10%;
+  width:180px;
   animation: floatGuitar 3s ease-in-out infinite alternate;
 }
 .drums {
-  position: absolute;
-  bottom: 30px;
-  right: 15%;
-  width: 140px;
-  z-index: 1;
+  position:absolute;
+  bottom:30px;
+  right:15%;
+  width:140px;
   animation: floatDrums 3s ease-in-out infinite alternate;
 }
 @keyframes floatGuitar {0%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}100%{transform:translateY(0) rotate(-2deg)}}
@@ -70,59 +43,49 @@ nav a:hover {text-decoration: underline;}
 /* Pétales Sakura */
 .petals {
   position:absolute;
-  top:0; left:0;
-  width:100%; height:100%;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
   pointer-events:none;
   overflow:hidden;
-  z-index:1;
+  perspective: 800px; /* effet 3D */
 }
 .petals span {
   position:absolute;
   display:block;
   background:url("https://static.vecteezy.com/system/resources/previews/027/395/708/non_2x/sakura-cherry-blossom-flower-petals-png.png") no-repeat center/contain;
-  opacity:0.8;
-  animation-name:fall,sway,rotate3d;
-  animation-timing-function:linear, ease-in-out, ease-in-out;
-  animation-iteration-count:infinite, infinite, infinite;
+  opacity:0.9;
+  animation: fall linear infinite, rotate3d linear infinite;
 }
-/* Animations pétales */
-@keyframes fall {0%{transform:translateY(-50px) rotate(0deg);opacity:1}100%{transform:translateY(600px) rotate(360deg);opacity:0}}
-@keyframes sway {0%{transform:translateX(0)}50%{transform:translateX(15px)}100%{transform:translateX(0)}}
-@keyframes rotate3d {0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}
+@keyframes fall {0%{transform:translateY(-50px)}100%{transform:translateY(600px)}}
+@keyframes rotate3d {0%{transform:rotateX(0deg) rotateY(0deg)}100%{transform:rotateX(360deg) rotateY(360deg)}}
 
-/* Génération 60 pétales */
-${Array.from({length:60}, (_,i)=>`
+/* Génération 50 pétales */
+${Array.from({length:50}, (_,i)=>`
 .petals span:nth-child(${i+1}) {
-  left: ${Math.floor(Math.random()*100)}%;
-  width: ${10+Math.random()*20}px;
-  height: ${10+Math.random()*20}px;
-  animation-duration: ${3+Math.random()*5}s, ${2+Math.random()*4}s, ${3+Math.random()*5}s;
-  animation-delay: ${Math.random()*5}s, ${Math.random()*5}s, ${Math.random()*5}s;
+  left: ${Math.random()*100}%;
+  width: ${10+Math.random()*25}px;
+  height: ${10+Math.random()*25}px;
+  animation-duration: ${4+Math.random()*6}s, ${3+Math.random()*5}s;
+  animation-delay: ${Math.random()*5}s, ${Math.random()*5}s;
 }
 `).join('')}
 
-/* SECTIONS */
-.section {padding:50px 20px;}
-.photos img {
-  width: 250px;
-  margin:10px;
-  border:5px solid #6b4226;
-  border-radius:10px;
-  transition: transform 0.3s;
-}
-.photos img:hover {transform: scale(1.05);}
+header h1{font-size:3em; margin:0; z-index:2; position:relative;}
+header p{z-index:2; position:relative;}
+nav a{margin:0 15px; color:white; text-decoration:none; font-weight:bold;}
+nav a:hover{text-decoration:underline; z-index:2; position:relative;}
 
-/* FOOTER */
-footer {
-  background:#6b4226;
-  color:white;
-  padding:20px;
-  margin-top:40px;
-}
-footer a {color:#ffd27f; margin:0 10px; text-decoration:none;}
+/* SECTIONS */
+.section{padding:50px 20px;}
+.photos img{width:250px; margin:10px; border:5px solid #6b4226; border-radius:10px; transition:transform 0.3s;}
+.photos img:hover{transform:scale(1.05);}
+footer{background:#6b4226; color:white; padding:20px; margin-top:40px;}
+footer a{color:#ffd27f; text-decoration:none;}
 
 @media(max-width:768px){
-  header h1{font-size:2.2em;}
+  header h1{font-size:2em;}
   .guitar,.drums{width:120px;}
   .photos img{width:180px;}
 }
@@ -131,11 +94,11 @@ footer a {color:#ffd27f; margin:0 10px; text-decoration:none;}
 <body>
 
 <header>
-  <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" alt="Guitare électrique" class="guitar">
-  <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" alt="Batterie animée" class="drums">
+  <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare électrique">
+  <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
 
   <div class="petals">
-    ${Array.from({length:60},()=>'<span></span>').join('')}
+    ${Array.from({length:50},()=>'<span></span>').join('')}
   </div>
 
   <h1>NoTif Head</h1>
@@ -149,8 +112,7 @@ footer a {color:#ffd27f; margin:0 10px; text-decoration:none;}
 
 <section id="about" class="section">
   <h2>À propos</h2>
-  <p>Bienvenue sur le site officiel de <strong>NoTif Head</strong>.  
-  Nous mélangeons les sons rétro avec une énergie moderne.</p>
+  <p>Bienvenue sur le site officiel de <strong>NoTif Head</strong>. Nous mélangeons les sons rétro avec une énergie moderne.</p>
 </section>
 
 <section id="photos" class="section photos">
@@ -162,7 +124,6 @@ footer a {color:#ffd27f; margin:0 10px; text-decoration:none;}
 
 <section id="contact" class="section">
   <h2>Nous suivre</h2>
-  <p>Retrouvez-nous sur nos réseaux :</p>
   <p><a href="https://www.facebook.com/didier.charbeaux.5" target="_blank">Facebook</a></p>
 </section>
 
