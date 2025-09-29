@@ -37,41 +37,21 @@ header {
   100% {transform:translateY(0) rotate(-5deg);}
 }
 
-/* Pétales Sakura magiques */
-.petals {
+/* Banderole de pétales */
+.petals-banner {
   position:absolute;
   top:0; left:0;
   width:100%; height:100%;
+  background: url("https://static.vecteezy.com/system/resources/previews/027/395/708/non_2x/sakura-cherry-blossom-flower-petals-png.png") repeat-y center;
+  background-size: contain;
   pointer-events:none;
-  overflow:hidden;
-  perspective:800px;
-}
-.petals span {
-  position:absolute;
-  display:block;
-  background:url("https://static.vecteezy.com/system/resources/previews/027/395/708/non_2x/sakura-cherry-blossom-flower-petals-png.png") no-repeat center/contain;
-  opacity:0.9;
-  animation: fall linear infinite, rotate3d linear infinite;
+  animation: fallBanner 8s linear infinite;
+  z-index:1;
 }
 
-/* 50 pétales aléatoires */
-${Array.from({length:50}, (_,i)=>`
-.petals span:nth-child(${i+1}) {
-  left: ${Math.random()*100}%;
-  width: ${10+Math.random()*25}px;
-  height: ${10+Math.random()*25}px;
-  animation-duration: ${4+Math.random()*6}s, ${3+Math.random()*5}s;
-  animation-delay: ${Math.random()*5}s, ${Math.random()*5}s;
-}
-`).join('')}
-
-@keyframes fall {
-  0% {transform:translateY(-50px) rotate(0deg);}
-  100% {transform:translateY(700px) rotate(360deg);}
-}
-@keyframes rotate3d {
-  0% {transform:rotateX(0deg) rotateY(0deg);}
-  100% {transform:rotateX(360deg) rotateY(360deg);}
+@keyframes fallBanner {
+  0% {background-position: 0 -100%;}
+  100% {background-position: 0 100%;}
 }
 
 /* Texte et nav */
@@ -109,9 +89,7 @@ footer a{color:#ffd27f; text-decoration:none;}
   <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare électrique">
   <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
 
-  <div class="petals">
-    ${Array.from({length:50}, ()=>'<span></span>').join('')}
-  </div>
+  <div class="petals-banner"></div>
 
   <h1>NoTif Head</h1>
   <p>Un son authentique, une vibe vintage 🎷🎸</p>
