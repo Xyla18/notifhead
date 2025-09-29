@@ -15,7 +15,7 @@
     }
 
     header {
-      background: linear-gradient(135deg, #6a0dad, #ff69b4); /* Dégradé violet -> rose */
+      background: linear-gradient(135deg, #6a0dad, #ff69b4);
       color: white;
       padding: 30px;
       position: relative;
@@ -38,7 +38,7 @@
 
     header h1, header p, nav {
       position: relative;
-      z-index: 1; /* pour rester au-dessus des étoiles */
+      z-index: 2; /* toujours au-dessus des images décoratives */
     }
 
     @keyframes starsMove {
@@ -60,6 +60,33 @@
 
     nav a:hover {
       text-decoration: underline;
+    }
+
+    /* 🌸 Sakura en haut à droite */
+    .sakura {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      width: 80px;
+      z-index: 1;
+    }
+
+    /* 🎸 Guitare à gauche */
+    .guitar {
+      position: absolute;
+      bottom: 0;
+      left: 10px;
+      width: 120px;
+      z-index: 1;
+    }
+
+    /* 🥁 Batterie à droite */
+    .drums {
+      position: absolute;
+      bottom: 0;
+      right: 10px;
+      width: 140px;
+      z-index: 1;
     }
 
     .section {
@@ -90,6 +117,11 @@
 <body>
 
   <header>
+    <!-- Décorations -->
+    <img src="https://pngimg.com/uploads/cherry_blossom/cherry_blossom_PNG12540.png" alt="Sakura" class="sakura">
+    <img src="https://pngimg.com/uploads/guitar/guitar_PNG3374.png" alt="Guitare" class="guitar">
+    <img src="https://pngimg.com/uploads/drum/drum_PNG16760.png" alt="Batterie" class="drums">
+
     <h1>NoTif Head</h1>
     <p>Un son authentique, une vibe vintage 🎷🎸</p>
     <nav>
