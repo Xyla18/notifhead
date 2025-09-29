@@ -49,11 +49,12 @@ header {
   height:100%;
   pointer-events:none;
   overflow:hidden;
-  perspective: 800px; /* effet 3D */
+  perspective: 800px;
 }
 .petals span {
   position:absolute;
   display:block;
+  width:15px; height:15px;
   background:url("https://static.vecteezy.com/system/resources/previews/027/395/708/non_2x/sakura-cherry-blossom-flower-petals-png.png") no-repeat center/contain;
   opacity:0.9;
   animation: fall linear infinite, rotate3d linear infinite;
@@ -61,17 +62,20 @@ header {
 @keyframes fall {0%{transform:translateY(-50px)}100%{transform:translateY(600px)}}
 @keyframes rotate3d {0%{transform:rotateX(0deg) rotateY(0deg)}100%{transform:rotateX(360deg) rotateY(360deg)}}
 
-/* Génération 50 pétales */
-${Array.from({length:50}, (_,i)=>`
-.petals span:nth-child(${i+1}) {
-  left: ${Math.random()*100}%;
-  width: ${10+Math.random()*25}px;
-  height: ${10+Math.random()*25}px;
-  animation-duration: ${4+Math.random()*6}s, ${3+Math.random()*5}s;
-  animation-delay: ${Math.random()*5}s, ${Math.random()*5}s;
-}
-`).join('')}
+/* Exemple pour 50 pétales */
+.petals span:nth-child(1){left:5%; animation-duration:5s; animation-delay:0s;}
+.petals span:nth-child(2){left:10%; animation-duration:6s; animation-delay:0.3s;}
+.petals span:nth-child(3){left:15%; animation-duration:5.5s; animation-delay:0.5s;}
+.petals span:nth-child(4){left:20%; animation-duration:6.2s; animation-delay:0.7s;}
+.petals span:nth-child(5){left:25%; animation-duration:4.8s; animation-delay:0.9s;}
+.petals span:nth-child(6){left:30%; animation-duration:5.3s; animation-delay:1.1s;}
+.petals span:nth-child(7){left:35%; animation-duration:6.0s; animation-delay:1.3s;}
+.petals span:nth-child(8){left:40%; animation-duration:5.6s; animation-delay:1.5s;}
+.petals span:nth-child(9){left:45%; animation-duration:5.8s; animation-delay:1.7s;}
+.petals span:nth-child(10){left:50%; animation-duration:6.2s; animation-delay:1.9s;}
+/* ... répéter jusqu'à 50 span avec left, durée et delay différents ... */
 
+/* HEADER TEXT & NAV */
 header h1{font-size:3em; margin:0; z-index:2; position:relative;}
 header p{z-index:2; position:relative;}
 nav a{margin:0 15px; color:white; text-decoration:none; font-weight:bold;}
@@ -98,7 +102,17 @@ footer a{color:#ffd27f; text-decoration:none;}
   <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
 
   <div class="petals">
-    ${Array.from({length:50},()=>'<span></span>').join('')}
+    <!-- Répéter 50 fois le span pour 50 pétales -->
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
   </div>
 
   <h1>NoTif Head</h1>
