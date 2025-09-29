@@ -22,7 +22,7 @@ header {
   overflow:hidden;
 }
 
-/* Instruments animés */
+/* Instruments animés flottants */
 .guitar, .drums {
   position:absolute;
   width:180px;
@@ -37,7 +37,7 @@ header {
   100% {transform:translateY(0) rotate(-5deg);}
 }
 
-/* Pétales sur toute la largeur */
+/* Pétales Sakura magiques */
 .petals {
   position:absolute;
   top:0; left:0;
@@ -49,13 +49,10 @@ header {
 .petals span {
   position:absolute;
   display:block;
-  width:15px; height:15px;
   background:url("https://static.vecteezy.com/system/resources/previews/027/395/708/non_2x/sakura-cherry-blossom-flower-petals-png.png") no-repeat center/contain;
   opacity:0.9;
   animation: fall linear infinite, rotate3d linear infinite;
 }
-@keyframes fall {0%{transform:translateY(-50px)}100%{transform:translateY(700px)}}
-@keyframes rotate3d {0%{transform:rotateX(0deg) rotateY(0deg)}100%{transform:rotateX(360deg) rotateY(360deg)}}
 
 /* 50 pétales aléatoires */
 ${Array.from({length:50}, (_,i)=>`
@@ -67,6 +64,15 @@ ${Array.from({length:50}, (_,i)=>`
   animation-delay: ${Math.random()*5}s, ${Math.random()*5}s;
 }
 `).join('')}
+
+@keyframes fall {
+  0% {transform:translateY(-50px) rotate(0deg);}
+  100% {transform:translateY(700px) rotate(360deg);}
+}
+@keyframes rotate3d {
+  0% {transform:rotateX(0deg) rotateY(0deg);}
+  100% {transform:rotateX(360deg) rotateY(360deg);}
+}
 
 /* Texte et nav */
 header h1{font-size:3em; margin:0; z-index:3; position:relative;}
@@ -100,43 +106,4 @@ footer a{color:#ffd27f; text-decoration:none;}
 <body>
 
 <header>
-  <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare électrique">
-  <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
-
-  <div class="petals">
-    <!-- 50 pétales -->
-    ${Array.from({length:50}, ()=>'<span></span>').join('')}
-  </div>
-
-  <h1>NoTif Head</h1>
-  <p>Un son authentique, une vibe vintage 🎷🎸</p>
-  <nav>
-    <a href="#about">À propos</a>
-    <a href="#photos">Photos</a>
-    <a href="#contact">Contact</a>
-  </nav>
-</header>
-
-<section id="about" class="section">
-  <h2>À propos</h2>
-  <p>Bienvenue sur le site officiel de <strong>NoTif Head</strong>. Nous mélangeons les sons rétro avec une énergie moderne.</p>
-</section>
-
-<section id="photos" class="section photos">
-  <h2>C'est nous!</h2>
-  <img src="https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true" alt="Concert 1">
-  <img src="https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true" alt="Concert 2">
-  <img src="https://github.com/Xyla18/notifhead/blob/main/555727631_4162497657355718_2703381832388341131_n.jpg?raw=true" alt="Concert 3">
-</section>
-
-<section id="contact" class="section">
-  <h2>Nous suivre</h2>
-  <p><a href="https://www.facebook.com/didier.charbeaux.5" target="_blank">Facebook</a></p>
-</section>
-
-<footer>
-  <p>&copy; 2025 NoTif Head - Tous droits réservés</p>
-</footer>
-
-</body>
-</html>
+  <img src="https://github.com/Xyla18/notifhead/blob/main
