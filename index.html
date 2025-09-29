@@ -11,18 +11,37 @@ body {
   padding:0;
   background:#f4f0e6;
   text-align:center;
+  overflow-x: hidden;
 }
 
-/* HEADER */
+/* HEADER avec vidéo en fond */
 header {
-  position:relative;
-  background: linear-gradient(135deg, #6a0dad, #ff69b4);
-  color:white;
-  padding:80px 20px 150px;
-  overflow:hidden;
-  background-image: url('TON_IMAGE_ICI'); /* <-- remplace TON_IMAGE_ICI par ton URL */
-  background-size: cover;
-  background-position: center;
+  position: relative;
+  color: white;
+  padding: 80px 20px 150px;
+  overflow: hidden;
+}
+
+/* Vidéo en arrière-plan */
+header video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0.7; /* légère transparence pour le dégradé */
+}
+
+/* Dégradé superposé */
+header::before {
+  content: "";
+  position: absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: linear-gradient(135deg, rgba(106,0,218,0.5), rgba(255,105,180,0.5), rgba(0,255,128,0.3));
+  z-index: 1;
 }
 
 /* Instruments animés flottants */
@@ -77,20 +96,18 @@ footer a{color:#ffd27f; text-decoration:none;}
 .chat-bubble {
   position: absolute;
   bottom: 110%;
-  right: 70%; /* décale vers la gauche */
+  right: 70%;
   transform: translateX(50%);
   background: rgba(0,0,0,0.8);
   color: #fff;
   padding: 5px 10px;
   border-radius: 10px;
   font-size: 0.8em;
-  white-space: pre-line; /* permet les retours à la ligne */
+  white-space: pre-line;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s;
 }
-
-/* Petite flèche de la bulle */
 .chat-bubble::after {
   content: "";
   position: absolute;
@@ -101,7 +118,6 @@ footer a{color:#ffd27f; text-decoration:none;}
   border-style: solid;
   border-color: rgba(0,0,0,0.8) transparent transparent transparent;
 }
-
 .chat-container:hover .chat-bubble {
   opacity: 1;
 }
@@ -120,13 +136,17 @@ footer a{color:#ffd27f; text-decoration:none;}
   .guitar,.drums{width:100px; margin:5px 0;}
   .photos img{width:150px;}
   nav a{margin:0 10px; font-size:0.9em;}
-  .chat-container{width:60px;}
+  .chat-container{position: relative; bottom:auto; right:auto; display:block; width:60px; margin:20px auto;}
 }
 </style>
 </head>
 <body>
 
 <header>
+  <video autoplay muted loop playsinline>
+    <source src="invideo-ai-1080_Pluie_de_Sakura___effet_magique_sans_fon_2025-09-29_1.mp4_1759159019963.mp4" type="video/mp4">
+  </video>
+
   <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare électrique">
   <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
 
@@ -160,7 +180,7 @@ footer a{color:#ffd27f; text-decoration:none;}
   <p>&copy; 2025 NoTif Head - Tous droits réservés</p>
 </footer>
 
-<!-- Chat avec bulle et flèche -->
+<!-- Chat avec bulle -->
 <div class="chat-container">
   <img src="https://static.vecteezy.com/system/resources/thumbnails/041/642/908/small_2x/ai-generated-cute-cat-reaching-up-with-paw-on-transparent-background-png.png" 
        alt="Chat mignon" class="cute-cat">
