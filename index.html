@@ -1,196 +1,21 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NoTif Head</title>
-  <style>
-    body {
-      font-family: 'Georgia', serif;
-      background-color: #f4f0e6;
-      color: #2e2e2e;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
+<header>
+  <!-- Instruments animés -->
+  <img src="https://i.pinimg.com/originals/2c/b9/d0/2cb9d0fdff29540d2e9e55c9e2659e3e.gif" 
+       alt="Guitare électrique animée" class="guitar">
+  <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" 
+       alt="Batterie animée" class="drums">
 
-    header {
-      background: linear-gradient(135deg, #6a0dad, #ff69b4);
-      color: white;
-      padding: 30px;
-      position: relative;
-      overflow: hidden;
-    }
+  <!-- Pétales Sakura -->
+  <div class="petals">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
 
-    /* Étoiles animées */
-    header::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: transparent url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
-      opacity: 0.5;
-      animation: starsMove 20s linear infinite;
-      z-index: 0;
-    }
-
-    header h1, header p, nav {
-      position: relative;
-      z-index: 2;
-    }
-
-    @keyframes starsMove {
-      from { background-position: 0 0; }
-      to { background-position: 1000px 1000px; }
-    }
-
-    header h1 {
-      font-size: 3em;
-      margin: 0;
-    }
-
-    nav a {
-      margin: 0 15px;
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    nav a:hover {
-      text-decoration: underline;
-    }
-
-    /* Instruments */
-    .guitar {
-      position: absolute;
-      bottom: 10px;
-      left: 25%;
-      width: 180px;
-      z-index: 1;
-    }
-
-    .trumpet {
-      position: absolute;
-      bottom: 40px;
-      right: 25%;
-      width: 180px;
-      z-index: 1;
-    }
-
-    /* Pétales Sakura */
-    .petals {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      overflow: hidden;
-      z-index: 1;
-    }
-
-    .petals span {
-      position: absolute;
-      display: block;
-      width: 20px;
-      height: 20px;
-      background: url("https://static.vecteezy.com/system/resources/previews/027/395/708/non_2x/sakura-cherry-blossom-flower-petals-png.png") no-repeat center/contain;
-      opacity: 0.8;
-      animation: fall 6s linear infinite;
-    }
-
-    .petals span:nth-child(1) { left: 5%; animation-delay: 0s; animation-duration: 5s; }
-    .petals span:nth-child(2) { left: 15%; animation-delay: 1s; animation-duration: 6s; }
-    .petals span:nth-child(3) { left: 25%; animation-delay: 2s; animation-duration: 7s; }
-    .petals span:nth-child(4) { left: 35%; animation-delay: 3s; animation-duration: 5.5s; }
-    .petals span:nth-child(5) { left: 45%; animation-delay: 1.5s; animation-duration: 6.5s; }
-    .petals span:nth-child(6) { left: 55%; animation-delay: 0.5s; animation-duration: 6.2s; }
-    .petals span:nth-child(7) { left: 65%; animation-delay: 2.2s; animation-duration: 5.8s; }
-    .petals span:nth-child(8) { left: 75%; animation-delay: 1.8s; animation-duration: 6.8s; }
-    .petals span:nth-child(9) { left: 85%; animation-delay: 3.5s; animation-duration: 6.1s; }
-    .petals span:nth-child(10){ left: 95%; animation-delay: 2.8s; animation-duration: 5.9s; }
-
-    @keyframes fall {
-      0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(400px) rotate(360deg); opacity: 0; }
-    }
-
-    .section {
-      padding: 50px 20px;
-    }
-
-    .photos img {
-      width: 250px;
-      margin: 10px;
-      border: 5px solid #6b4226;
-      border-radius: 10px;
-    }
-
-    footer {
-      background: #6b4226;
-      color: white;
-      padding: 20px;
-      margin-top: 40px;
-    }
-
-    footer a {
-      color: #ffd27f;
-      margin: 0 10px;
-      text-decoration: none;
-    }
-  </style>
-</head>
-<body>
-
-  <header>
-    <!-- Instruments -->
-    <img src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUydGI3eW84bWNwY3J4bXdsM3NmN2Jnaml2b2p2MDNhOHVid285aWV0YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/ibKkvdABSS9sQkD0Ny/giphy.gif" 
-         alt="Guitare animée" class="guitar">
-    <img src="https://media.baamboozle.com/uploads/images/202323/1622532851_477603_gif-url.gif" 
-         alt="Trompette animée" class="trumpet">
-
-    <!-- Pétales Sakura -->
-    <div class="petals">
-      <span></span><span></span><span></span><span></span><span></span>
-      <span></span><span></span><span></span><span></span><span></span>
-    </div>
-
-    <h1>No'Tif'Head</h1>
-    <p>Un son authentique, une vibe vintage 🎷🎸</p>
-    <nav>
-      <a href="#about">À propos</a>
-      <a href="#photos">Photos</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
-
-  <section id="about" class="section">
-    <h2>Bienvenue sur le site officiel de <strong>NoTif Head</strong>.  
-    Nous mélangeons les sons rétro avec une énergie moderne.</h2>
-  </section>
-
-  <section id="photos" class="section photos">
-    <h2>C'est nous!</h2>
-    <img src="https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true" alt="Concert 1">
-    <img src="https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true" alt="Concert 2">
-    <img src="https://github.com/Xyla18/notifhead/blob/main/555727631_4162497657355718_2703381832388341131_n.jpg?raw=true" alt="Concert 3">
-  </section>
-
-  <section id="contact" class="section">
-    <h2>Nous suivre</h2>
-    <p>Retrouvez-nous sur nos réseaux :</p>
-    <p>
-      <a href="https://www.facebook.com/didier.charbeaux.5" target="_blank">Facebook</a>
-    </p>
-  </section>
-
-  <footer>
-    <p>&copy; 2025 NoTif Head - Tous droits réservés</p>
-  </footer>
-
-</body>
-</html>
-
-
+  <h1>NoTif Head</h1>
+  <p>Un son authentique, une vibe vintage 🎷🎸</p>
+  <nav>
+    <a href="#about">À propos</a>
+    <a href="#photos">Photos</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
