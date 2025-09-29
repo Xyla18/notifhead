@@ -38,7 +38,7 @@
 
     header h1, header p, nav {
       position: relative;
-      z-index: 2; /* au-dessus des images décoratives */
+      z-index: 2;
     }
 
     @keyframes starsMove {
@@ -62,40 +62,21 @@
       text-decoration: underline;
     }
 
-    /* 🎸 Guitare - plus grosse, rapprochée du titre */
+    /* 🎸 Guitare - un peu plus bas */
     .guitar {
       position: absolute;
-      bottom: 20px;
+      bottom: 10px;   /* descendu */
       left: 25%;
       width: 180px;
       z-index: 1;
     }
 
-    /* 🎺 Trompette - plus grosse, rapprochée du titre */
+    /* 🎺 Trompette - un peu plus haut */
     .trumpet {
       position: absolute;
-      bottom: 20px;
+      bottom: 40px;   /* remontée */
       right: 25%;
       width: 180px;
-      z-index: 1;
-    }
-
-    /* 🌸 Sakura gauche */
-    .sakura-left {
-      position: absolute;
-      top: 10px;
-      left: 20px;
-      width: 140px;
-      z-index: 1;
-    }
-
-    /* 🌸 Sakura droite (symétrie avec flip horizontal) */
-    .sakura-right {
-      position: absolute;
-      top: 10px;
-      right: 20px;
-      width: 140px;
-      transform: scaleX(-1); /* effet miroir */
       z-index: 1;
     }
 
@@ -133,12 +114,6 @@
          
     <img src="https://media.baamboozle.com/uploads/images/202323/1622532851_477603_gif-url.gif" 
          alt="Trompette animée" class="trumpet">
-
-    <img src="https://static.vecteezy.com/system/resources/thumbnails/022/952/603/small/sakura-on-transparent-background-watercolor-cherry-bud-cherry-blossom-flower-blooming-pink-sakura-flower-background-cherry-blossom-branch-with-sakura-flower-watercolor-cherry-blossom-free-png.png" 
-         alt="Sakura gauche" class="sakura-left">
-
-    <img src="https://static.vecteezy.com/system/resources/thumbnails/022/952/603/small/sakura-on-transparent-background-watercolor-cherry-bud-cherry-blossom-flower-blooming-pink-sakura-flower-background-cherry-blossom-branch-with-sakura-flower-watercolor-cherry-blossom-free-png.png" 
-         alt="Sakura droite" class="sakura-right">
 
     <h1>NoTif Head</h1>
     <p>Un son authentique, une vibe vintage 🎷🎸</p>
