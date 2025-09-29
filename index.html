@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NoT'if'Head</title>
+  <title>NoTif Head</title>
   <style>
     body {
       font-family: 'Georgia', serif;
@@ -22,60 +22,21 @@
       overflow: hidden;
     }
 
-    header::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: transparent url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
-      opacity: 0.5;
-      animation: starsMove 20s linear infinite;
-      z-index: 0;
-    }
-
-    header h1, header p, nav {
-      position: relative;
-      z-index: 2;
-    }
-
-    @keyframes starsMove {
-      from { background-position: 0 0; }
-      to { background-position: 1000px 1000px; }
-    }
-
-    header h1 {
-      font-size: 3em;
-      margin: 0;
-    }
-
-    nav a {
-      margin: 0 15px;
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    nav a:hover {
-      text-decoration: underline;
-    }
-
     /* Instruments animés */
     .guitar {
       position: absolute;
-      bottom: 50px;  /* plus bas */
-      left: 20%;     /* rapprochée du titre */
-      width: 200px;  /* taille ajustée */
+      bottom: 10px;     /* Positionnée plus bas */
+      left: 10%;        /* Centrée horizontalement */
+      width: 180px;     /* Taille réduite */
       z-index: 1;
-      background: transparent;
+      filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); /* Ajout d'une ombre portée pour un meilleur rendu */
     }
 
     .drums {
       position: absolute;
-      bottom: 40px;  /* légèrement baissée */
-      right: 20%;    /* rapprochée du titre */
-      width: 150px;  /* plus petite */
+      bottom: 40px;     /* Positionnée plus bas */
+      right: 10%;       /* Centrée horizontalement */
+      width: 150px;     /* Taille réduite */
       z-index: 1;
     }
 
@@ -157,7 +118,7 @@
 
   <header>
     <!-- Instruments animés -->
-    <img src="https://i.pinimg.com/originals/2c/b9/d0/2cb9d0fdff29540d2e9e55c9e2659e3e.gif" 
+    <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" 
          alt="Guitare électrique animée" class="guitar">
     <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" 
          alt="Batterie animée" class="drums">
@@ -180,7 +141,7 @@
   </header>
 
   <section id="about" class="section">
-    <h2>Bienvenue sur le site officiel de <strong>NoT'if'Head</strong>.  
+    <h2>Bienvenue sur le site officiel de <strong>NoTif Head</strong>.  
     Nous mélangeons les sons rétro avec une énergie moderne.</h2>
   </section>
 
@@ -205,4 +166,3 @@
 
 </body>
 </html>
-
