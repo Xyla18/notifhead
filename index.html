@@ -38,7 +38,7 @@
 
     header h1, header p, nav {
       position: relative;
-      z-index: 2; /* toujours au-dessus des images décoratives */
+      z-index: 2; /* au-dessus des images décoratives */
     }
 
     @keyframes starsMove {
@@ -62,16 +62,7 @@
       text-decoration: underline;
     }
 
-    /* 🌸 Sakura en haut à droite */
-    .sakura {
-      position: absolute;
-      top: 10px;
-      right: 20px;
-      width: 80px;
-      z-index: 1;
-    }
-
-    /* 🎸 Guitare à gauche */
+    /* 🎸 Guitare */
     .guitar {
       position: absolute;
       bottom: 0;
@@ -80,12 +71,21 @@
       z-index: 1;
     }
 
-    /* 🥁 Batterie à droite */
-    .drums {
+    /* 🌸 Sakura */
+    .sakura {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      width: 120px;
+      z-index: 1;
+    }
+
+    /* 🎺 Trompette */
+    .trumpet {
       position: absolute;
       bottom: 0;
       right: 10px;
-      width: 140px;
+      width: 120px;
       z-index: 1;
     }
 
@@ -118,9 +118,14 @@
 
   <header>
     <!-- Décorations -->
-    <img src="https://pngimg.com/uploads/cherry_blossom/cherry_blossom_PNG12540.png" alt="Sakura" class="sakura">
-    <img src="https://pngimg.com/uploads/guitar/guitar_PNG3374.png" alt="Guitare" class="guitar">
-    <img src="https://pngimg.com/uploads/drum/drum_PNG16760.png" alt="Batterie" class="drums">
+    <img src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUydGI3eW84bWNwY3J4bXdsM3NmN2Jnaml2b2p2MDNhOHVid285aWV0YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/ibKkvdABSS9sQkD0Ny/giphy.gif" 
+         alt="Guitare animée" class="guitar">
+         
+    <img src="https://static.vecteezy.com/system/resources/thumbnails/022/952/603/small/sakura-on-transparent-background-watercolor-cherry-bud-cherry-blossom-flower-blooming-pink-sakura-flower-background-cherry-blossom-branch-with-sakura-flower-watercolor-cherry-blossom-free-png.png" 
+         alt="Sakura" class="sakura">
+         
+    <img src="https://media.baamboozle.com/uploads/images/202323/1622532851_477603_gif-url.gif" 
+         alt="Trompette animée" class="trumpet">
 
     <h1>NoTif Head</h1>
     <p>Un son authentique, une vibe vintage 🎷🎸</p>
