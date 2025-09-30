@@ -75,31 +75,60 @@ nav a:hover {text-decoration: underline;}
   padding: 40px;
   box-sizing: border-box;
 }
-.section {
-  background: rgba(255,255,255,0.9);
-  border-radius: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  padding: 20px;
-  text-align: center;
-}
 
-/* Section Facebook avec design spécial */
-.section.facebook {
-  background: linear-gradient(135deg, #1877f2, #3b5998);
+/* Bulles animées */
+.section {
+  position: relative;
+  border-radius: 20px;
+  padding: 40px 20px;
+  text-align: center;
   color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.section.facebook h2 {
+.section:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+.section h2 {
   margin: 0;
   font-size: 2em;
 }
-.section.facebook p {
-  margin: 5px 0 0;
+.section p {
+  margin-top: 10px;
   font-size: 0.9em;
   opacity: 0.9;
+}
+
+/* Dégradés personnalisés */
+.section.histoire {background: linear-gradient(135deg, #ff9a9e, #fad0c4);}
+.section.concert {background: linear-gradient(135deg, #a18cd1, #fbc2eb);}
+.section.facebook {background: linear-gradient(135deg, #1877f2, #3b5998);}
+.section.musiques {background: linear-gradient(135deg, #43cea2, #185a9d);}
+
+/* Paillettes animées */
+.section::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: radial-gradient(white 1px, transparent 1px);
+  background-size: 30px 30px;
+  animation: sparkle 6s linear infinite;
+  opacity: 0.4;
+  z-index: 0;
+}
+@keyframes sparkle {
+  from {transform: translate(0,0);}
+  to {transform: translate(30px,30px);}
+}
+.section * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Chat mignon avec bulle */
@@ -109,7 +138,6 @@ nav a:hover {text-decoration: underline;}
   right: 10px;
   width: 100px;
   z-index: 10;
-  pointer-events: auto;
 }
 .cute-cat {
   width: 100%;
@@ -183,22 +211,22 @@ nav a:hover {text-decoration: underline;}
 
 <!-- Grille 2x2 -->
 <div class="main">
-  <div class="section" id="histoire">
+  <a href="notrehistoire.html" class="section histoire" id="histoire">
     <h2>Notre histoire</h2>
-    <p>Ici on raconte l’origine et l’évolution du groupe...</p>
-  </div>
-  <div class="section" id="concert">
+    <p>Découvrez nos débuts et notre parcours</p>
+  </a>
+  <a href="concert.html" class="section concert" id="concert">
     <h2>Prochain concert</h2>
-    <p>Infos, dates et lieux du prochain concert...</p>
-  </div>
-  <div class="section facebook" id="facebook">
+    <p>Dates, lieux et ambiance à venir</p>
+  </a>
+  <a href="https://www.facebook.com/didier.charbeaux.5" target="_blank" class="section facebook" id="facebook">
     <h2>Facebook</h2>
-    <p>➡ Suivez-nous sur Facebook</p>
-  </div>
-  <div class="section" id="musiques">
+    <p>➡ Suivez-nous en ligne</p>
+  </a>
+  <a href="musiques.html" class="section musiques" id="musiques">
     <h2>Nos musiques</h2>
-    <p>Playlist, vidéos ou liens vers Spotify, YouTube...</p>
-  </div>
+    <p>Écoutez nos morceaux et playlists</p>
+  </a>
 </div>
 
 <!-- Chat mignon -->
