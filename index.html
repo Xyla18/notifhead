@@ -110,8 +110,8 @@ header p { z-index:3; position:relative; }
   background-size: cover;
   transition: background-image 0.5s ease-in-out, background-position 0.5s ease-in-out;
 }
-.section.histoire:hover {
-  background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807739864384_n.jpg?raw=true');
+.section.histoire.hovered {
+  background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true');
   background-position: center 10%;
 }
 .section.histoire .sparkle {
@@ -126,7 +126,7 @@ header p { z-index:3; position:relative; }
 }
 @keyframes sparkle { from {transform:translate(0,0);} to {transform:translate(30px,30px);} }
 
-/* Facebook avec effet image au hover */
+/* Facebook avec effet image au hover et clic mobile */
 .section.facebook {
   position: relative;
   border-radius: 20px;
@@ -139,7 +139,7 @@ header p { z-index:3; position:relative; }
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   background: linear-gradient(135deg, rgba(24,119,242,0.8), rgba(59,89,152,0.8));
 }
-.section.facebook:hover {
+.section.facebook.hovered {
   background: url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.05.39.png?raw=true') no-repeat center/cover;
   transform: scale(1.05);
 }
@@ -259,7 +259,7 @@ function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
     height: '0',
     width: '0',
-    videoId: 'hWuUN3o34Ss', // ID de ta vidéo
+    videoId: 'hWuUN3o34Ss',
     playerVars: { 
       autoplay: 1, 
       loop: 1, 
@@ -271,7 +271,7 @@ function onYouTubeIframeAPIReady() {
   });
 }
 function onPlayerReady(event) {
-  event.target.setVolume(10); // très faible
+  event.target.setVolume(10);
   event.target.playVideo();
 }
 
@@ -281,8 +281,19 @@ muteBtn.addEventListener('click', () => {
   if(player.isMuted()) { player.unMute(); muteBtn.textContent='🔊'; }
   else { player.mute(); muteBtn.textContent='🔇'; }
 });
+
+// Notre Histoire mobile toggle
+const histoireSection = document.getElementById('histoire');
+histoireSection.addEventListener('click', () => {
+  histoireSection.classList.toggle('hovered');
+});
+
+// Facebook mobile toggle
+const fbSection = document.getElementById('facebook');
+fbSection.addEventListener('click', () => {
+  fbSection.classList.toggle('hovered');
+});
 </script>
 
 </body>
 </html>
-
