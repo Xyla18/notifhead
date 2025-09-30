@@ -1,0 +1,55 @@
+<!-- FILE: login.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion — Mode privilège</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    form { border: 1px solid #ddd; padding: 18px; border-radius: 10px; }
+    label { display: block; margin-top: 10px; }
+    input { width: 100%; padding: 8px; margin-top: 6px; border-radius: 6px; border: 1px solid #ccc; }
+    .actions { margin-top: 12px; display: flex; gap: 8px; }
+    a.return { align-self: center; text-decoration: none; padding: 8px 12px; border: 1px solid #333; border-radius: 8px; background: transparent; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<h1>Connexion administrateur</h1>
+
+<form id="login">
+  <label>Identifiant
+    <input type="text" id="user" autocomplete="username" required>
+  </label>
+  <label>Mot de passe
+    <input type="password" id="pass" autocomplete="current-password" required>
+  </label>
+  <div class="actions">
+    <button type="submit">Se connecter</button>
+    <a class="return" href="index.html">← Retour</a>
+  </div>
+  <p style="color:#555;margin-top:10px;font-size:0.9rem">
+    (Système simple côté client — ne pas utiliser en production publique)
+  </p>
+</form>
+
+<script>
+  const ADMIN_USER = 'NoTifHead';
+  const ADMIN_PASS = '04042014';
+
+  document.getElementById('login').addEventListener('submit', function(e){
+    e.preventDefault();
+    const u = document.getElementById('user').value.trim();
+    const p = document.getElementById('pass').value;
+    if(u === ADMIN_USER && p === ADMIN_PASS){
+      sessionStorage.setItem('isAdmin','1'); // session simple
+      location.href = 'admin.html';
+    } else {
+      alert('Identifiant ou mot de passe incorrect.');
+    }
+  });
+</script>
+
+</body>
+</html>
