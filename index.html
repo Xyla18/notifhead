@@ -109,7 +109,7 @@ header p { z-index:3; position:relative; }
   transition: background 0.5s ease-in-out;
 }
 .section.histoire:hover {
-  background: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true') no-repeat center 10%/cover;
+  background: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239864384_n.jpg?raw=true') no-repeat center 10%/cover;
 }
 .section.histoire .sparkle {
   position: absolute;
@@ -129,8 +129,9 @@ header p { z-index:3; position:relative; }
   transition: background 0.5s ease, transform 0.3s;
 }
 .section.facebook:hover {
-  background: linear-gradient(135deg, rgba(24,119,242,0.4), rgba(59,89,152,0.4)), 
+  background: linear-gradient(135deg, rgba(24,119,242,0.1), rgba(59,89,152,0.1)), 
               url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.05.39.png?raw=true') no-repeat center/cover;
+  transform: scale(1.05);
 }
 
 /* Chat */
@@ -242,9 +243,10 @@ header p { z-index:3; position:relative; }
 <audio id="bg-music" src="https://github.com/Xyla18/notifhead/blob/main/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3?raw=true" loop autoplay></audio>
 
 <script>
-// Volume très bas
+// Volume très faible pour ne pas déranger
 const music = document.getElementById('bg-music');
-music.volume = 0.2;
+music.volume = 0.1;
+music.play();
 
 // Bouton mute/unmute
 const muteBtn = document.getElementById('mute-btn');
