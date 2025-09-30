@@ -51,18 +51,6 @@ header::before {
 }
 header h1 { font-size:3em; margin:0; z-index:3; position:relative; }
 header p { z-index:3; position:relative; }
-nav {
-  margin-top: 20px;
-  z-index:3;
-  position:relative;
-}
-nav a {
-  margin:0 15px;
-  color:white;
-  text-decoration:none;
-  font-weight:bold;
-}
-nav a:hover { text-decoration: underline; }
 
 /* Grille 2×2 pour les sections */
 .main {
@@ -105,13 +93,13 @@ nav a:hover { text-decoration: underline; }
 .section.facebook { background: linear-gradient(135deg, #1877f2, #3b5998); }
 .section.musiques { background: linear-gradient(135deg, #43cea2, #185a9d); }
 
-/* Notre histoire : transition entre deux images */
+/* Notre histoire : transition entre deux images avec décalage */
 .section.histoire {
   background: url('https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true') no-repeat center/cover;
-  transition: background-image 0.5s ease-in-out;
+  transition: background 0.5s ease-in-out;
 }
 .section.histoire:hover {
-  background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true');
+  background: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true') no-repeat center 10%/cover;
 }
 
 /* Paillettes légères */
@@ -181,6 +169,20 @@ nav a:hover { text-decoration: underline; }
   opacity: 1;
 }
 
+/* Banderole en bas */
+.footer-banner {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #1a1a1a;
+  color: #fff;
+  text-align: center;
+  padding: 10px 0;
+  font-weight: bold;
+  font-size: 1em;
+  z-index: 20;
+}
+
 /* Responsive */
 @media(max-width: 768px) {
   .main {
@@ -203,12 +205,6 @@ nav a:hover { text-decoration: underline; }
   <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
   <h1>NoTif Head</h1>
   <p>Un son authentique, une vibe vintage 🎷🎸</p>
-  <nav>
-    <a href="#histoire">Notre histoire</a>
-    <a href="#concert">Prochain concert</a>
-    <a href="#facebook">Facebook</a>
-    <a href="#musiques">Nos musiques</a>
-  </nav>
 </header>
 
 <div class="main">
@@ -217,23 +213,27 @@ nav a:hover { text-decoration: underline; }
     <h2>Notre histoire</h2>
     <p>Découvrez nos débuts et notre parcours</p>
   </div>
-  <a href="concert.html" class="section concert" id="concert">
+  <div class="section concert" id="concert">
     <h2>Prochain concert</h2>
     <p>Dates, lieux et ambiance à venir</p>
-  </a>
-  <a href="https://www.facebook.com/didier.charbeaux.5" target="_blank" class="section facebook" id="facebook">
+  </div>
+  <div class="section facebook" id="facebook">
     <h2>Facebook</h2>
     <p>➡ Suivez-nous en ligne</p>
-  </a>
-  <a href="musiques.html" class="section musiques" id="musiques">
+  </div>
+  <div class="section musiques" id="musiques">
     <h2>Nos musiques</h2>
     <p>Écoutez nos morceaux et playlists</p>
-  </a>
+  </div>
 </div>
 
 <div class="chat-container">
   <img src="https://static.vecteezy.com/system/resources/thumbnails/041/642/908/small_2x/ai-generated-cute-cat-reaching-up-with-paw-on-transparent-background-png.png" alt="Chat mignon" class="cute-cat">
   <div class="chat-bubble">Site produit et créé<br>par Xyla</div>
+</div>
+
+<div class="footer-banner">
+  Accès réservés au groupe de musique NoTif Head
 </div>
 
 </body>
