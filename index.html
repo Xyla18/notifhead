@@ -192,24 +192,23 @@ header p { z-index:3; position:relative; }
 
 <div class="footer-banner">@2025-NoT' if' Head droit d'auteur</div>
 
-<div id="player"></div>
-<script src="https://www.youtube.com/iframe_api"></script>
-<script>
-let player;
-function onYouTubeIframeAPIReady(){
-  player = new YT.Player('player',{
-    height:'0', width:'0', videoId:'hWuUN3o34Ss',
-    playerVars:{autoplay:1, loop:1, playlist:'hWuUN3o34Ss', controls:0, modestbranding:1},
-    events:{'onReady':onPlayerReady}
-  });
-}
-function onPlayerReady(event){ event.target.setVolume(20); event.target.playVideo(); }
-const muteBtn=document.getElementById('mute-btn');
-muteBtn.addEventListener('click',()=>{if(player.isMuted()){player.unMute(); muteBtn.textContent='🔊';}else{player.mute(); muteBtn.textContent='🔇';}});
+<!-- Musique locale -->
+<audio id="bg-music" loop autoplay>
+  <source src="https://github.com/Xyla18/notifhead/blob/main/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3" type="audio/mp3">
+</audio>
 
-// Toggle hover mobile
-document.getElementById('histoire').addEventListener('click',function(){ this.classList.toggle('hovered'); });
-document.getElementById('facebook').addEventListener('click',function(){ this.classList.toggle('hovered'); });
+<script>
+const music = document.getElementById('bg-music');
+music.volume = 0.2; // 20%
+const muteBtn = document.getElementById('mute-btn');
+muteBtn.addEventListener('click', ()=>{
+  if(music.muted){ music.muted=false; muteBtn.textContent='🔊'; }
+  else { music.muted=true; muteBtn.textContent='🔇'; }
+});
+
+// Toggle hover mobile pour "Notre Histoire" et "Facebook"
+document.getElementById('histoire').addEventListener('click', function(){ this.classList.toggle('hovered'); });
+document.getElementById('facebook').addEventListener('click', function(){ this.classList.toggle('hovered'); });
 </script>
 
 </body>
