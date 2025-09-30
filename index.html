@@ -68,11 +68,9 @@ header p { z-index:3; position:relative; }
   font-weight: bold;
   transition: background 0.3s;
 }
-#mute-btn:hover {
-  background: rgba(0,0,0,0.9);
-}
+#mute-btn:hover { background: rgba(0,0,0,0.9); }
 
-/* Grille 2×2 pour les sections */
+/* Grille 2×2 */
 .main {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -82,7 +80,7 @@ header p { z-index:3; position:relative; }
   box-sizing: border-box;
 }
 
-/* Style de base pour les sections */
+/* Sections */
 .section {
   position: relative;
   border-radius: 20px;
@@ -98,26 +96,14 @@ header p { z-index:3; position:relative; }
   transform: scale(1.05);
   box-shadow: 0 6px 20px rgba(0,0,0,0.4);
 }
-.section h2 {
-  margin: 0;
-  font-size: 2em;
-}
-.section p {
-  margin-top: 10px;
-  font-size: 0.9em;
-  opacity: 0.9;
-}
+.section h2 { margin:0; font-size:2em; }
+.section p { margin-top:10px; font-size:0.9em; opacity:0.9; }
 
-/* Dégradés différenciés */
+/* Dégradés et couleurs */
 .section.concert { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
-.section.facebook { 
-  background: linear-gradient(135deg, #1877f2, #3b5998);
-  transition: background 0.5s ease, transform 0.3s;
-  background-size: cover;
-}
 .section.musiques { background: linear-gradient(135deg, #43cea2, #185a9d); }
 
-/* Notre histoire : transition entre deux images avec décalage */
+/* Notre histoire */
 .section.histoire {
   background: url('https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true') no-repeat center/cover;
   transition: background 0.5s ease-in-out;
@@ -125,8 +111,6 @@ header p { z-index:3; position:relative; }
 .section.histoire:hover {
   background: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true') no-repeat center 10%/cover;
 }
-
-/* Paillettes légères */
 .section.histoire .sparkle {
   position: absolute;
   top: -50%; left: -50%;
@@ -137,28 +121,22 @@ header p { z-index:3; position:relative; }
   opacity: 0.3;
   z-index: 0;
 }
-@keyframes sparkle {
-  from { transform: translate(0,0); }
-  to { transform: translate(30px,30px); }
-}
+@keyframes sparkle { from {transform:translate(0,0);} to {transform:translate(30px,30px);} }
 
-/* Contenu au-dessus */
-.section * {
-  position: relative;
-  z-index: 1;
+/* Facebook */
+.section.facebook {
+  background: linear-gradient(135deg, rgba(24,119,242,0.8), rgba(59,89,152,0.8));
+  transition: background 0.5s ease, transform 0.3s;
 }
-
-/* Effet Facebook hover - zoom et image */
 .section.facebook:hover {
-  background: linear-gradient(135deg, rgba(24,119,242,0.6), rgba(59,89,152,0.6)), 
+  background: linear-gradient(135deg, rgba(24,119,242,0.4), rgba(59,89,152,0.4)), 
               url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.05.39.png?raw=true') no-repeat center/cover;
-  transform: scale(1.05);
 }
 
-/* Chat fixe au-dessus de la banderole */
+/* Chat */
 .chat-container {
   position: fixed;
-  bottom: 60px; /* au-dessus de la banderole */
+  bottom: 60px;
   right: 10px;
   width: 100px;
   z-index: 20;
@@ -168,9 +146,7 @@ header p { z-index:3; position:relative; }
   transform-origin: bottom center;
   transition: transform 0.3s;
 }
-.cute-cat:hover {
-  transform: scale(1.2) rotate(-10deg);
-}
+.cute-cat:hover { transform: scale(1.2) rotate(-10deg); }
 .chat-bubble {
   position: absolute;
   bottom: 110%;
@@ -186,21 +162,9 @@ header p { z-index:3; position:relative; }
   pointer-events: none;
   transition: opacity 0.3s;
 }
-.chat-bubble::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 5px;
-  border-style: solid;
-  border-color: rgba(0,0,0,0.8) transparent transparent transparent;
-}
-.chat-container:hover .chat-bubble {
-  opacity: 1;
-}
+.chat-container:hover .chat-bubble { opacity: 1; }
 
-/* Banderole en bas - style chic */
+/* Banderole */
 .footer-banner {
   position: fixed;
   bottom: 0;
@@ -221,15 +185,12 @@ header p { z-index:3; position:relative; }
 }
 
 /* Responsive */
-@media(max-width: 768px) {
-  .main {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-  }
+@media(max-width: 768px){
+  .main { grid-template-columns: 1fr; grid-template-rows: auto; }
   header h1 { font-size: 2em; }
   .guitar, .drums { width:120px; }
-  .chat-container { width: 80px; }
-  #mute-btn { padding: 6px 10px; font-size: 0.9em; }
+  .chat-container { width:80px; }
+  #mute-btn { padding:6px 10px; font-size: 0.9em; }
 }
 </style>
 </head>
@@ -269,7 +230,7 @@ header p { z-index:3; position:relative; }
 </div>
 
 <div class="chat-container">
-  <img src="https://static.vecteezy.com/system/resources/thumbnails/041/642/908/small_2x/ai-generated-cute-cat-reaching-up-with-paw-on-transparent-background-png.png" alt="Chat mignon" class="cute-cat">
+  <img src="https://static.vecteezy.com/system/resources/thumbnails/041/642/908/small_2x/ai-generated-cute-cat-reaching-up-with-paw-on-transparent-background-png.png" class="cute-cat" alt="Chat mignon">
   <div class="chat-bubble">Site produit et créé<br>par Xyla</div>
 </div>
 
@@ -278,10 +239,10 @@ header p { z-index:3; position:relative; }
 </div>
 
 <!-- Musique de fond -->
-<audio id="bg-music" src="https://github.com/Xyla18/notifhead/blob/main/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3" loop autoplay></audio>
+<audio id="bg-music" src="https://github.com/Xyla18/notifhead/blob/main/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3?raw=true" loop autoplay></audio>
 
 <script>
-// Réglage du volume très bas
+// Volume très bas
 const music = document.getElementById('bg-music');
 music.volume = 0.2;
 
