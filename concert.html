@@ -1,81 +1,61 @@
-<!-- FILE: concerts.html -->
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Concerts</title>
-<style>
-body { margin:0; font-family:'Segoe UI',sans-serif; background:#121212; color:#fff; }
-header {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:16px 24px; background:#000; box-shadow:0 4px 10px rgba(0,0,0,0.5); position:sticky; top:0;
-}
-header h1 { margin:0; font-size:1.8rem; }
-header .btn {
-  background:#ff0000; color:#fff; padding:8px 16px; border-radius:8px; font-weight:bold;
-  text-decoration:none; transition:0.2s; cursor:pointer;
-}
-header .btn:hover { transform:scale(1.05); background:#cc0000; }
-#concertList { max-width:900px; margin:24px auto; padding:0 16px; }
-.concert {
-  background:#1e1e1e; border-radius:12px; padding:16px; margin-bottom:20px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.4); transition:transform 0.2s;
-}
-.concert:hover { transform:translateY(-5px); }
-.concert img { max-width:100%; border-radius:8px; margin-top:12px; }
-.meta a { color:#ffcc00; text-decoration:none; }
-.meta a:hover { text-decoration:underline; }
-a.back { display:inline-block; margin:16px; text-decoration:none; color:#fff; border:1px solid #fff; padding:8px 12px; border-radius:6px; transition:0.2s; }
-a.back:hover { background:#ffcc00; color:#000; }
-</style>
-</head>
-<body>
-
-<header>
-  <h1>Concerts</h1>
-  <a href="#" id="adminBtn" class="btn">Mode Admin</a>
-</header>
-
-<div id="concertList"></div>
-
-<a href="index.html" class="back">← Retour</a>
+<label>Date et Heure</label>
+<div style="display:flex; gap:8px; align-items:center;">
+  <input type="date" id="date">
+  <input type="time" id="time">
+  <button type="button" id="addToCalendar" style="padding:6px 12px; border:none; border-radius:6px; background:#00ccff; color:#000; cursor:pointer;">📅 Ajouter au calendrier</button>
+</div>
 
 <script>
-function escapeHtml(str){
-  if(!str) return '';
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-}
+document.getElementById('addToCalendar').addEventListener('click', () => {
+  const title = encodeURIComponent(document.getElementById('title').value || 'Nouvel Événement');
+  const lieu = encodeURIComponent(document.getElementById('lieu').value || '');
+  const date = document.getElementById('date').value;
+  const time = document.getElementById('time').value;
 
-function loadConcerts(){
-  let concerts=[];
-  try{ concerts=JSON.parse(localStorage.getItem('concerts')||'[]'); }catch(e){}
-  const container=document.getElementById('concertList');
-  container.innerHTML='';
-  if(concerts.length===0){ container.innerHTML='<p>Aucun concert disponible.</p>'; return; }
-  concerts.forEach(c=>{
-    const div=document.createElement('div'); div.className='concert';
-    div.innerHTML=`
-      <h2>${escapeHtml(c.title)}</h2>
-      <div class="meta">${escapeHtml(c.date)} ${escapeHtml(c.time||'')} — 
-      ${c.lieu ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.lieu)}" target="_blank">${escapeHtml(c.lieu)}</a>` : ''}</div>
-      ${c.image ? `<img src="${c.image}" alt="${escapeHtml(c.title)}">` : ''}
-      <p>${escapeHtml(c.desc)}</p>`;
-    container.appendChild(div);
-  });
-}
+  if (!date) { alert('Veuillez sélectionner une date.'); return; }
 
-// Admin / déconnexion
-const adminBtn=document.getElementById('adminBtn');
-function updateAdminBtn(){ adminBtn.textContent=sessionStorage.getItem('isAdmin')==='1'?'Déconnexion':'Mode Admin'; }
-adminBtn.addEventListener('click', e=>{
-  e.preventDefault();
-  if(sessionStorage.getItem('isAdmin')==='1'){ sessionStorage.removeItem('isAdmin'); alert('Déconnecté'); updateAdminBtn(); }
-  else location.href='login.html';
+  // Format ISO pour Google Calendar : YYYYMMDDTHHMMSSZ
+  let startDateTime = date.replace(/-/g,'');
+  let endDateTime = date.replace(/-/g,'');
+
+  if (time) {
+    const t = time.split(':');
+    startDateTime += 'T' + t[0].padStart(2,'0') + t[1].padStart(2,'0') + '00Z';
+    let hour = parseInt(t[0])+1;
+    hour = hour.toString().padStart(2,'0');
+    endDateTime += 'T' + hour + t[1].padStart(2,'0') + '00Z';
+  } else {
+    startDateTime += 'T090000Z';
+    endDateTime += 'T100000Z';
+  }
+
+  // 1️⃣ Google Calendar
+  const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateTime}/${endDateTime}&location=${lieu}`;
+  
+  // 2️⃣ iPhone / Outlook / Apple Calendar : générer un fichier ICS
+  const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${decodeURIComponent(title)}
+DTSTART:${startDateTime.replace(/Z$/,'')}
+DTEND:${endDateTime.replace(/Z$/,'')}
+LOCATION:${decodeURIComponent(lieu)}
+END:VEVENT
+END:VCALENDAR`;
+
+  const blob = new Blob([icsContent], { type: 'text/calendar' });
+  const url = URL.createObjectURL(blob);
+
+  // Demander à l'utilisateur ce qu'il veut faire
+  if (confirm('Ouvrir dans Google Calendar ? OK = Google, Annuler = Apple/Outlook')) {
+    window.open(googleUrl, '_blank');
+  } else {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'evenement.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 });
-
-updateAdminBtn();
-loadConcerts();
 </script>
-</body>
-</html>
