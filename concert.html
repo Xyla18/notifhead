@@ -6,39 +6,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Concerts</title>
 <style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  margin:0; padding:0; background:#121212; color:#fff;
-}
+body { margin:0; font-family:'Segoe UI',sans-serif; background:#121212; color:#fff; }
 header {
   display:flex; justify-content:space-between; align-items:center;
-  background:#000; padding:16px 24px; box-shadow:0 4px 10px rgba(0,0,0,0.7);
-  position: sticky; top:0; z-index:100;
+  padding:16px 24px; background:#000; box-shadow:0 4px 10px rgba(0,0,0,0.5); position:sticky; top:0;
 }
 header h1 { margin:0; font-size:1.8rem; }
 header .btn {
-  background:#ffcc00; border:none; padding:8px 16px; border-radius:6px;
-  font-weight:bold; cursor:pointer; transition: transform 0.2s;
-  text-decoration:none; color:#000;
+  background:#ff0000; color:#fff; padding:8px 16px; border-radius:8px; font-weight:bold;
+  text-decoration:none; transition:0.2s; cursor:pointer;
 }
-header .btn:hover { transform: scale(1.1); background:#fff; }
-#concertList {
-  max-width:900px; margin:24px auto; padding:0 16px;
-}
+header .btn:hover { transform:scale(1.05); background:#cc0000; }
+#concertList { max-width:900px; margin:24px auto; padding:0 16px; }
 .concert {
-  border:1px solid #333; border-radius:10px; padding:16px;
-  margin-bottom:20px; background:#1e1e1e; transition: transform 0.2s, box-shadow 0.2s;
+  background:#1e1e1e; border-radius:12px; padding:16px; margin-bottom:20px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.4); transition:transform 0.2s;
 }
-.concert:hover { transform: translateY(-5px); box-shadow:0 10px 20px rgba(0,0,0,0.5); }
-.concert img { max-width:100%; border-radius:8px; margin-top:10px; }
-.meta {
-  color:#ffcc00; font-size:0.9rem; margin-bottom:10px;
-}
-a.back {
-  display:inline-block; margin-top:20px; text-decoration:none;
-  color:#fff; border:1px solid #fff; padding:8px 12px; border-radius:6px;
-  transition:0.2s;
-}
+.concert:hover { transform:translateY(-5px); }
+.concert img { max-width:100%; border-radius:8px; margin-top:12px; }
+.meta a { color:#ffcc00; text-decoration:none; }
+.meta a:hover { text-decoration:underline; }
+a.back { display:inline-block; margin:16px; text-decoration:none; color:#fff; border:1px solid #fff; padding:8px 12px; border-radius:6px; transition:0.2s; }
 a.back:hover { background:#ffcc00; color:#000; }
 </style>
 </head>
@@ -51,9 +39,7 @@ a.back:hover { background:#ffcc00; color:#000; }
 
 <div id="concertList"></div>
 
-<div style="max-width:900px;margin:0 auto;">
-  <a href="index.html" class="back">← Retour</a>
-</div>
+<a href="index.html" class="back">← Retour</a>
 
 <script>
 function escapeHtml(str){
@@ -62,51 +48,34 @@ function escapeHtml(str){
 }
 
 function loadConcerts(){
-  let concerts = [];
-  try{ concerts = JSON.parse(localStorage.getItem('concerts') || '[]'); } catch(e){ concerts = []; }
-  const container = document.getElementById('concertList');
-  container.innerHTML = '';
-  if(concerts.length===0){ container.innerHTML='<p>Aucun concert disponible pour le moment.</p>'; return; }
-
+  let concerts=[];
+  try{ concerts=JSON.parse(localStorage.getItem('concerts')||'[]'); }catch(e){}
+  const container=document.getElementById('concertList');
+  container.innerHTML='';
+  if(concerts.length===0){ container.innerHTML='<p>Aucun concert disponible.</p>'; return; }
   concerts.forEach(c=>{
-    const div = document.createElement('div');
-    div.className='concert';
+    const div=document.createElement('div'); div.className='concert';
     div.innerHTML=`
       <h2>${escapeHtml(c.title)}</h2>
-      <div class="meta">
-        ${escapeHtml(c.date)} ${escapeHtml(c.time||'')} — 
-        ${c.lieu ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.lieu)}" target="_blank" style="color:#ffcc00;text-decoration:none;">${escapeHtml(c.lieu)}</a>` : ''}
-      </div>
+      <div class="meta">${escapeHtml(c.date)} ${escapeHtml(c.time||'')} — 
+      ${c.lieu ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.lieu)}" target="_blank">${escapeHtml(c.lieu)}</a>` : ''}</div>
       ${c.image ? `<img src="${c.image}" alt="${escapeHtml(c.title)}">` : ''}
-      <p>${escapeHtml(c.desc)}</p>
-    `;
+      <p>${escapeHtml(c.desc)}</p>`;
     container.appendChild(div);
   });
 }
 
-// Bouton admin/déconnexion
-const adminBtn = document.getElementById('adminBtn');
-function updateAdminButton(){
-  if(sessionStorage.getItem('isAdmin')==='1'){
-    adminBtn.textContent='Déconnexion';
-  } else {
-    adminBtn.textContent='Mode Admin';
-  }
-}
-adminBtn.addEventListener('click',e=>{
+// Admin / déconnexion
+const adminBtn=document.getElementById('adminBtn');
+function updateAdminBtn(){ adminBtn.textContent=sessionStorage.getItem('isAdmin')==='1'?'Déconnexion':'Mode Admin'; }
+adminBtn.addEventListener('click', e=>{
   e.preventDefault();
-  if(sessionStorage.getItem('isAdmin')==='1'){
-    sessionStorage.removeItem('isAdmin');
-    alert('Déconnecté');
-    updateAdminButton();
-  } else {
-    location.href='login.html';
-  }
+  if(sessionStorage.getItem('isAdmin')==='1'){ sessionStorage.removeItem('isAdmin'); alert('Déconnecté'); updateAdminBtn(); }
+  else location.href='login.html';
 });
 
-updateAdminButton();
+updateAdminBtn();
 loadConcerts();
 </script>
-
 </body>
 </html>
