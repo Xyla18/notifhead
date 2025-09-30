@@ -52,6 +52,26 @@ header::before {
 header h1 { font-size:3em; margin:0; z-index:3; position:relative; }
 header p { z-index:3; position:relative; }
 
+/* Bouton mute */
+#mute-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 25;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+#mute-btn:hover {
+  background: rgba(0,0,0,0.9);
+}
+
 /* Grille 2×2 pour les sections */
 .main {
   display: grid;
@@ -72,7 +92,7 @@ header p { z-index:3; position:relative; }
   cursor: pointer;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.5s ease;
 }
 .section:hover {
   transform: scale(1.05);
@@ -90,7 +110,11 @@ header p { z-index:3; position:relative; }
 
 /* Dégradés différenciés */
 .section.concert { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
-.section.facebook { background: linear-gradient(135deg, #1877f2, #3b5998); }
+.section.facebook { 
+  background: linear-gradient(135deg, #1877f2, #3b5998);
+  transition: background 0.5s ease, transform 0.3s;
+  background-size: cover;
+}
 .section.musiques { background: linear-gradient(135deg, #43cea2, #185a9d); }
 
 /* Notre histoire : transition entre deux images avec décalage */
@@ -124,13 +148,20 @@ header p { z-index:3; position:relative; }
   z-index: 1;
 }
 
-/* Chat fixe */
+/* Effet Facebook hover - zoom et image */
+.section.facebook:hover {
+  background: linear-gradient(135deg, rgba(24,119,242,0.6), rgba(59,89,152,0.6)), 
+              url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.05.39.png?raw=true') no-repeat center/cover;
+  transform: scale(1.05);
+}
+
+/* Chat fixe au-dessus de la banderole */
 .chat-container {
   position: fixed;
-  bottom: 10px;
+  bottom: 60px; /* au-dessus de la banderole */
   right: 10px;
   width: 100px;
-  z-index: 10;
+  z-index: 20;
 }
 .cute-cat {
   width: 100%;
@@ -169,18 +200,24 @@ header p { z-index:3; position:relative; }
   opacity: 1;
 }
 
-/* Banderole en bas */
+/* Banderole en bas - style chic */
 .footer-banner {
   position: fixed;
   bottom: 0;
   width: 100%;
-  background: #1a1a1a;
+  background: linear-gradient(135deg, #1a1a1a, #333333);
   color: #fff;
   text-align: center;
-  padding: 10px 0;
+  padding: 12px 0;
+  font-family: 'Georgia', serif;
   font-weight: bold;
   font-size: 1em;
-  z-index: 20;
+  z-index: 10;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.4);
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 
 /* Responsive */
@@ -192,10 +229,14 @@ header p { z-index:3; position:relative; }
   header h1 { font-size: 2em; }
   .guitar, .drums { width:120px; }
   .chat-container { width: 80px; }
+  #mute-btn { padding: 6px 10px; font-size: 0.9em; }
 }
 </style>
 </head>
 <body>
+
+<!-- Bouton Mute -->
+<button id="mute-btn">🔊</button>
 
 <header>
   <video autoplay muted loop playsinline>
@@ -233,8 +274,24 @@ header p { z-index:3; position:relative; }
 </div>
 
 <div class="footer-banner">
-  Accès réservés au groupe de musique NoTif Head
+  @2025-NoT' if' Head droit d'auteur
 </div>
+
+<!-- Musique de fond -->
+<audio id="bg-music" src="https://github.com/Xyla18/notifhead/blob/main/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3" loop autoplay></audio>
+
+<script>
+// Réglage du volume très bas
+const music = document.getElementById('bg-music');
+music.volume = 0.2;
+
+// Bouton mute/unmute
+const muteBtn = document.getElementById('mute-btn');
+muteBtn.addEventListener('click', () => {
+  music.muted = !music.muted;
+  muteBtn.textContent = music.muted ? '🔇' : '🔊';
+});
+</script>
 
 </body>
 </html>
