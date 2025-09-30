@@ -185,20 +185,20 @@ header p { z-index:3; position:relative; }
 </header>
 
 <div class="main">
-  <div class="section histoire" id="histoire">
+  <div class="section histoire" onclick="window.location.href='histoire.html'">
     <div class="sparkle"></div>
     <h2>Notre histoire</h2>
     <p>Découvrez nos débuts et notre parcours</p>
   </div>
-  <div class="section concert" id="concert">
+  <div class="section concert" onclick="window.location.href='concert.html'">
     <h2>Prochain concert</h2>
     <p>Dates, lieux et ambiance à venir</p>
   </div>
-  <div class="section facebook" id="facebook" onclick="window.open('https://www.facebook.com/didier.charbeaux.5/', '_blank')">
+  <div class="section facebook" onclick="window.open('https://www.facebook.com/didier.charbeaux.5/', '_blank')">
     <h2>Facebook</h2>
     <p>➡ Suivez-nous en ligne</p>
   </div>
-  <div class="section musiques" id="musiques">
+  <div class="section musiques" onclick="window.location.href='musiques.html'">
     <h2>Nos musiques</h2>
     <p>Écoutez nos morceaux et playlists</p>
   </div>
@@ -211,20 +211,14 @@ header p { z-index:3; position:relative; }
 
 <div class="footer-banner">@2025-NoT' if' Head droit d'auteur</div>
 
-<!-- Musique locale -->
 <audio id="bg-music" src="https://github.com/Xyla18/notifhead/blob/main/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3?raw=true" loop preload="auto"></audio>
 
 <script>
 const music = document.getElementById('bg-music');
 music.volume = 0.2;
-
-// Certains navigateurs bloquent autoplay -> lancer après une interaction
 document.addEventListener('click', () => {
-  if (music.paused) {
-    music.play().catch(()=>{});
-  }
+  if (music.paused) { music.play().catch(()=>{}); }
 }, { once: true });
-
 const muteBtn = document.getElementById('mute-btn');
 muteBtn.addEventListener('click', () => {
   music.muted = !music.muted;
