@@ -11,6 +11,8 @@ body {
   background: #f4f0e6;
   overflow-x: hidden;
 }
+
+/* Header avec vidéo et éléments flottants */
 header {
   position: relative;
   color: white;
@@ -49,6 +51,8 @@ header::before {
 }
 header h1 { font-size:3em; margin:0; z-index:3; position:relative; }
 header p { z-index:3; position:relative; }
+
+/* Bouton son */
 #mute-btn {
   position: fixed;
   top: 20px; left: 20px;
@@ -64,6 +68,8 @@ header p { z-index:3; position:relative; }
   transition: background 0.3s;
 }
 #mute-btn:hover { background: rgba(0,0,0,0.9); }
+
+/* Grille principale */
 .main {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -72,6 +78,8 @@ header p { z-index:3; position:relative; }
   padding: 40px;
   box-sizing: border-box;
 }
+
+/* Sections */
 .section {
   position: relative;
   border-radius: 20px;
@@ -89,35 +97,47 @@ header p { z-index:3; position:relative; }
 }
 .section h2 { margin:0; font-size:2em; }
 .section p { margin-top:10px; font-size:0.9em; opacity:0.9; }
+
+/* Couleurs des sections */
 .section.concert { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
 .section.musiques { background: linear-gradient(135deg, #43cea2, #185a9d); }
 
-/* Notre Histoire avec overlay et balayage */
+/* Section Notre Histoire avec effet parallax */
 .section.histoire {
   position: relative;
   background-image: url('https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true');
   background-size: cover;
   background-position: center;
   overflow: hidden;
+  border-radius: 20px;
+  transition: background-image 0.8s ease-in-out;
 }
 .section.histoire::after {
-  content:"";
-  position:absolute;
-  top:0; left:0; width:100%; height:100%;
+  content: "";
+  position: absolute;
+  top: 20px; /* décalage vers le bas */
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true');
   background-size: cover;
-  background-position: center 60%; /* Baisser légèrement la deuxième image */
-  opacity:0;
+  background-position: center 60%;
+  opacity: 0;
   transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
-  z-index:1;
+  z-index: 1;
+}
+.section.histoire h2,
+.section.histoire p {
+  position: relative;
+  z-index: 2; /* texte au-dessus */
 }
 .section.histoire:hover::after,
 .section.histoire.hovered::after {
-  opacity:1;
-  transform: translateY(20px);
+  opacity: 1;
+  transform: translateY(20px); /* effet flottant */
 }
 
-/* Facebook avec overlay et balayage */
+/* Section Facebook avec overlay */
 .section.facebook {
   position: relative;
   background-image: url('https://github.com/Xyla18/notifhead/blob/main/image.png?raw=true');
@@ -132,16 +152,13 @@ header p { z-index:3; position:relative; }
   top:0; left:0; width:100%; height:100%;
   background-image: url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.59.19.png?raw=true');
   background-size: cover;
-  background-position: center 55%; /* Baisser légèrement la deuxième image */
+  background-position: center 55%;
   opacity:0;
   transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
   z-index:0;
 }
 .section.facebook:hover::after,
-.section.facebook.hovered::after {
-  opacity:1;
-  transform: translateY(10px);
-}
+.section.facebook.hovered::after { opacity:1; transform: translateY(10px); }
 
 /* Chat */
 .chat-container { position: fixed; bottom:60px; right:10px; width:100px; z-index:20; }
@@ -161,6 +178,7 @@ header p { z-index:3; position:relative; }
   letter-spacing:1px; text-shadow:1px 1px 3px rgba(0,0,0,0.5);
 }
 
+/* Responsive */
 @media(max-width:768px){ 
   .main { grid-template-columns:1fr; grid-template-rows:auto; } 
   header h1{ font-size:2em;} 
