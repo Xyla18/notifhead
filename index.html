@@ -98,10 +98,16 @@ header p { z-index:3; position:relative; }
 .section p { margin-top:10px; font-size:0.9em; opacity:0.9; }
 .section:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
 
-.section.concert { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
-.section.musiques { background: linear-gradient(135deg, #43cea2, #185a9d); }
-
-/* Notre Histoire : deux images */
+.section.concert {
+  background-image: url('https://github.com/Xyla18/notifhead/blob/main/514229851_30262179796762411_1050042494187009706_n.jpg?raw=true');
+  background-size: cover;
+  background-position: center;
+}
+.section.facebook {
+  background-image: url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.59.19.png?raw=true');
+  background-size: cover;
+  background-position: center 15%; /* un peu plus bas */
+}
 .section.histoire {
   background-image: url('https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true');
   background-size: cover;
@@ -112,18 +118,7 @@ header p { z-index:3; position:relative; }
   background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true');
   background-position: center 15%;
 }
-
-/* Facebook : deux images */
-.section.facebook {
-  background-image: url('https://github.com/Xyla18/notifhead/blob/main/image.png?raw=true');
-  background-size: cover;
-  background-position: center;
-  transition: background 0.5s ease-in-out;
-}
-.section.facebook:hover {
-  background-image: url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.59.19.png?raw=true');
-  background-position: center 15%;
-}
+.section.musiques { background: linear-gradient(135deg, #43cea2, #185a9d); }
 
 /* Paillettes */
 .section.histoire .sparkle {
@@ -172,14 +167,14 @@ header p { z-index:3; position:relative; }
 </head>
 <body>
 
-<button id="mute-btn" aria-label="Activer/Désactiver la musique">🔊</button>
+<button id="mute-btn">🔊</button>
 
 <header>
-  <video autoplay muted loop playsinline preload="auto">
+  <video autoplay muted loop playsinline>
     <source src="invideo-ai-1080_Pluie_de_Sakura___effet_magique_sans_fon_2025-09-29_1.mp4_1759159019963.mp4" type="video/mp4">
   </video>
-  <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare flottante">
-  <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie animée">
+  <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare">
+  <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
   <h1>NoTif Head</h1>
   <p>Un son authentique, une vibe vintage 🎷🎸</p>
 </header>
@@ -211,14 +206,11 @@ header p { z-index:3; position:relative; }
 
 <div class="footer-banner">@2025-NoT' if' Head droit d'auteur</div>
 
-<audio id="bg-music" src="https://github.com/Xyla18/notifhead/blob/main/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3?raw=true" loop preload="auto"></audio>
+<audio id="bg-music" src="https://github.com/Xyla18/notifhead/blob/main/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3?raw=true" loop autoplay></audio>
 
 <script>
 const music = document.getElementById('bg-music');
 music.volume = 0.2;
-document.addEventListener('click', () => {
-  if (music.paused) { music.play().catch(()=>{}); }
-}, { once: true });
 const muteBtn = document.getElementById('mute-btn');
 muteBtn.addEventListener('click', () => {
   music.muted = !music.muted;
