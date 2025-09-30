@@ -58,7 +58,7 @@ document.getElementById('loginForm').addEventListener('submit', e=>{
 
   if(u===ADMIN_USER && p===ADMIN_PASS){
     sessionStorage.setItem('isAdmin','1');
-    location.href='admin.html';
+    location.href='admin.html'; // redirection correcte
   } else {
     errorDiv.textContent = 'Identifiant ou mot de passe incorrect';
   }
