@@ -9,58 +9,21 @@ body {
   margin: 0;
   font-family: 'Georgia', serif;
   background: #f4f0e6;
-  display: flex;
-  height: 100vh;
+  overflow-x: hidden;
+}
+
+/* HEADER avec vidéo en fond */
+header {
+  position: relative;
+  color: white;
+  padding: 80px 20px 120px;
+  text-align: center;
   overflow: hidden;
 }
 
-/* Menu vertical à droite */
-nav {
-  width: 200px;
-  background: #6b4226;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 3;
-}
-nav a {
-  color: white;
-  text-decoration: none;
-  font-weight: bold;
-  margin: 15px 0;
-  position: relative;
-  z-index: 3;
-}
-nav a:hover {
-  text-decoration: underline;
-}
-
-/* Grille principale */
-.main {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 20px;
-  padding: 20px;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 2;
-}
-
-.section {
-  background: rgba(255,255,255,0.9);
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  padding: 20px;
-  overflow-y: auto;
-}
-
 /* Vidéo en arrière-plan */
-video.bg-video {
-  position: fixed;
+header video {
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -70,58 +33,96 @@ video.bg-video {
   opacity: 0.7;
 }
 
-/* Dégradé par-dessus la vidéo */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+/* Dégradé superposé */
+header::before {
+  content: "";
+  position: absolute;
+  top:0; left:0;
+  width:100%; height:100%;
   background: linear-gradient(135deg, rgba(106,0,218,0.5), rgba(255,105,180,0.5), rgba(0,255,128,0.3));
   z-index: 1;
 }
 
-/* Instruments animés */
+/* Instruments animés flottants */
 .guitar, .drums {
-  position: absolute;
-  width: 180px;
+  position:absolute;
+  width:180px;
   animation: float 4s ease-in-out infinite alternate;
-  z-index: 2;
+  z-index:2;
 }
-.guitar { left: 10%; bottom: 20px; }
-.drums { right: 15%; bottom: 40px; }
+.guitar {left:10%; bottom:20px;}
+.drums {right:15%; bottom:40px;}
 @keyframes float {
-  0% { transform: translateY(0) rotate(-5deg); }
-  50% { transform: translateY(-25px) rotate(5deg); }
-  100% { transform: translateY(0) rotate(-5deg); }
+  0% {transform:translateY(0) rotate(-5deg);}
+  50% {transform:translateY(-25px) rotate(5deg);}
+  100% {transform:translateY(0) rotate(-5deg);}
+}
+
+/* Texte et nav */
+header h1 {font-size:3em; margin:0; z-index:3; position:relative;}
+header p {z-index:3; position:relative;}
+nav {
+  margin-top: 20px;
+  z-index:3;
+  position:relative;
+}
+nav a {
+  margin:0 15px;
+  color:white;
+  text-decoration:none;
+  font-weight:bold;
+}
+nav a:hover {text-decoration: underline;}
+
+/* Grille principale */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 20px;
+  padding: 40px;
+  box-sizing: border-box;
+}
+.section {
+  background: rgba(255,255,255,0.9);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  padding: 20px;
 }
 
 /* Responsive */
 @media(max-width: 768px) {
-  body { flex-direction: column; }
-  nav {
-    flex-direction: row;
-    width: 100%;
-    height: 60px;
-  }
-  nav a { margin: 0 10px; }
   .main {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
   }
-  .guitar, .drums { width: 120px; }
+  header h1 {font-size: 2em;}
+  .guitar, .drums {width:120px;}
 }
 </style>
 </head>
 <body>
 
-<!-- Vidéo + overlay -->
-<video class="bg-video" autoplay muted loop playsinline>
-  <source src="invideo-ai-1080_Pluie_de_Sakura___effet_magique_sans_fon_2025-09-29_1.mp4_1759159019963.mp4" type="video/mp4">
-</video>
-<div class="overlay"></div>
+<!-- HEADER avec vidéo et instruments -->
+<header>
+  <video autoplay muted loop playsinline>
+    <source src="invideo-ai-1080_Pluie_de_Sakura___effet_magique_sans_fon_2025-09-29_1.mp4_1759159019963.mp4" type="video/mp4">
+  </video>
 
-<!-- Contenu principal -->
+  <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare électrique">
+  <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
+
+  <h1>NoTif Head</h1>
+  <p>Un son authentique, une vibe vintage 🎷🎸</p>
+  <nav>
+    <a href="#histoire">Notre histoire</a>
+    <a href="#concert">Prochain concert</a>
+    <a href="#facebook">Facebook</a>
+    <a href="#musiques">Nos musiques</a>
+  </nav>
+</header>
+
+<!-- Grille 2x2 -->
 <div class="main">
   <div class="section" id="histoire">
     <h2>Notre histoire</h2>
@@ -140,18 +141,6 @@ video.bg-video {
     <p>Playlist, vidéos ou liens vers Spotify, YouTube...</p>
   </div>
 </div>
-
-<!-- Menu vertical -->
-<nav>
-  <a href="#histoire">Notre histoire</a>
-  <a href="#concert">Prochain concert</a>
-  <a href="#facebook">Facebook</a>
-  <a href="#musiques">Nos musiques</a>
-</nav>
-
-<!-- Guitare et batterie -->
-<img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare électrique">
-<img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
 
 </body>
 </html>
