@@ -1,31 +1,33 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Concerts</title>
-  <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #121212; color: #fff; }
-    header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: #000; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); }
-    header h1 { margin: 0; font-size: 1.8rem; }
-    header button { background: #ff0000; padding: 8px 16px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    header button:hover { background: #cc0000; transform: scale(1.05); }
-    .container { display: flex; flex-wrap: wrap; gap: 24px; margin: 24px; }
-    .card { background: #1e1e1e; padding: 16px; border-radius: 12px; flex: 1; min-width: 320px; }
-    label { display: block; margin-top: 12px; font-weight: bold; }
-    input, textarea { width: 100%; padding: 8px; margin-top: 6px; border-radius: 6px; border: none; }
-    input[type="file"] { padding: 3px; }
-    .actions { display: flex; gap: 8px; margin-top: 8px; }
-    .actions button { flex: 1; padding: 6px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    .actions button.delete { background: #ff5555; color: #fff; }
-    .actions button.edit { background: #00ccff; color: #000; }
-    .autocomplete-container { position: relative; }
-    .autocomplete-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: #fff; color: #000; max-height: 200px; overflow-y: auto; z-index: 10; border-radius: 6px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-    .autocomplete-suggestion { padding: 8px; cursor: pointer; }
-    .autocomplete-suggestion:hover { background: #f0f0f0; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Concerts</title>
+<style>
+body { margin: 0; font-family: 'Segoe UI',sans-serif; background: #121212; color: #fff; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: #000; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); }
+header h1 { margin: 0; font-size: 1.8rem; }
+header button { background: #ff0000; padding: 8px 16px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition:0.2s; }
+header button:hover { background: #cc0000; transform:scale(1.05); }
+.container { display: flex; flex-wrap: wrap; gap: 24px; margin: 24px; }
+.card { background: #1e1e1e; padding:16px; border-radius:12px; flex:1; min-width:320px; }
+label { display:block; margin-top:12px; font-weight:bold; }
+input,textarea { width:100%; padding:8px; margin-top:6px; border-radius:6px; border:none; }
+input[type=file]{ padding:3px; }
+.actions{ display:flex; gap:8px; margin-top:8px; }
+.actions button{ flex:1; padding:6px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
+.actions button.delete{ background:#ff5555; color:#fff; }
+.actions button.edit{ background:#00ccff; color:#000; }
+</style>
 </head>
 <body>
+<script>
+if(sessionStorage.getItem('isAdmin')!=='1'){
+  alert('Accès non autorisé');
+  location.href='login.html'; // redirection si non admin
+}
+</script>
 
 <header>
   <h1>Mode Admin</h1>
@@ -34,133 +36,16 @@
 
 <div class="container">
   <div class="card">
-    <h2>Concerts existants</h2>
-    <div id="concertList"></div>
-  </div>
-
-  <div class="card">
-    <h2>Ajouter / Modifier un concert</h2>
-    <form id="form">
-      <input type="hidden" id="idx">
-      <label>Titre<input id="title" required></label>
-      <label>Date<input type="date" id="date"></label>
-      <label>Heure<input type="time" id="time"></label>
-      <label>Lieu
-        <div id="autocomplete-container" class="autocomplete-container">
-          <input id="lieu" placeholder="Tapez le lieu">
-          <div id="autocomplete-suggestions" class="autocomplete-suggestions"></div>
-        </div>
-      </label>
-      <label>Image<input type="file" id="image" accept="image/*"></label>
-      <label>Description<textarea id="desc" rows="4"></textarea></label>
-      <div class="actions">
-        <button type="submit">Enregistrer</button>
-        <button type="button" id="btnReset">Annuler</button>
-        <button type="button" id="btnAddToCalendar">📅 Ajouter au calendrier</button>
-      </div>
-    </form>
+    <h2>Gestion des concerts</h2>
+    <p>Ici tu peux gérer tous les concerts...</p>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@geoapify/geocoder-autocomplete/dist/geocoder-autocomplete.min.js"></script>
 <script>
-  if (sessionStorage.getItem('isAdmin') !== '1') { alert('Accès non autorisé'); location.href = 'login.html'; }
-
-  document.getElementById('btnLogout').addEventListener('click', () => { sessionStorage.removeItem('isAdmin'); location.href = 'index.html'; });
-
-  const apiKey = 'YOUR_GOOGLE_API_KEY';
-  const autocomplete = new Geoapify.GeocoderAutocomplete(document.getElementById('autocomplete-container'), apiKey, {
-    placeholder: 'Tapez le lieu',
-    filter: ['countrycode:fr'],
-    types: ['address'],
-  });
-
-  autocomplete.on('select', (location) => {
-    document.getElementById('lieu').value = location.properties.formatted;
-  });
-
-  autocomplete.on('suggestions', (suggestions) => {
-    const suggestionsContainer = document.getElementById('autocomplete-suggestions');
-    suggestionsContainer.innerHTML = '';
-    suggestions.forEach((suggestion) => {
-      const div = document.createElement('div');
-      div.classList.add('autocomplete-suggestion');
-      div.textContent = suggestion.properties.formatted;
-      div.addEventListener('click', () => {
-        document.getElementById('lieu').value = suggestion.properties.formatted;
-        suggestionsContainer.innerHTML = '';
-      });
-      suggestionsContainer.appendChild(div);
-    });
-  });
-
-  function getConcerts() { return JSON.parse(localStorage.getItem('concerts') || '[]'); }
-  function saveConcerts(arr) { localStorage.setItem('concerts', JSON.stringify(arr)); }
-
-  function loadList() {
-    const list = getConcerts();
-    const container = document.getElementById('concertList');
-    container.innerHTML = '';
-    if (list.length === 0) { container.innerHTML = '<p>Aucun concert.</p>'; return; }
-    list.forEach((c, i) => {
-      const div = document.createElement('div');
-      div.className = 'concert-item';
-      div.innerHTML = `<strong>${c.title}</strong>
-        <div>${c.date} ${c.time || ''} — ${c.lieu || ''}</div>
-        ${c.image ? `<img src="${c.image}">` : ''}
-        <p>${c.desc || ''}</p>
-        <div class="actions">
-          <button class="edit" data-edit="${i}">Modifier</button>
-          <button class="delete" data-del="${i}">Supprimer</button>
-        </div>`;
-      container.appendChild(div);
-    });
-    container.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', e => editItem(Number(e.currentTarget.dataset.edit))));
-    container.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', e => { if (confirm('Supprimer ce concert ?')) deleteItem(Number(e.currentTarget.dataset.del)); }));
-  }
-
-  function editItem(i) {
-    const c = getConcerts()[i];
-    document.getElementById('idx').value = i;
-    document.getElementById('title').value = c.title || '';
-    document.getElementById('date').value = c.date || '';
-    document.getElementById('time').value = c.time || '';
-    document.getElementById('lieu').value = c.lieu || '';
-    document.getElementById('desc').value = c.desc || '';
-  }
-
-  function deleteItem(i) { const list = getConcerts(); list.splice(i, 1); saveConcerts(list); loadList(); }
-
-  document.getElementById('form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const idx = document.getElementById('idx').value;
-    const file = document.getElementById('image').files[0];
-    let imageData = '';
-    if (file) {
-      imageData = await new Promise(res => { const reader = new FileReader(); reader.onload = e => res(e.target.result); reader.readAsDataURL(file); });
-    } else if (idx) { imageData = getConcerts()[Number(idx)].image || ''; }
-    const concertData = {
-      title: document.getElementById('title').value.trim(),
-      date: document.getElementById('date').value,
-      time: document.getElementById('time').value,
-      lieu: document.getElementById('lieu').value.trim(),
-      image: imageData,
-      desc: document.getElementById('desc').value.trim(),
-    };
-    const concerts = getConcerts();
-    if (idx) concerts[Number(idx)] = concertData;
-    else concerts.push(concertData);
-    saveConcerts(concerts);
-    loadList();
-    document.getElementById('form').reset();
-    document.getElementById('idx').value = '';
-  });
-
-  document.getElementById('btnReset').addEventListener('click', () => { document.getElementById('form').reset(); document.getElementById('idx').value = ''; });
-
-  document.getElementById('btnAddToCalendar').addEventListener('click', () => {
-    const
-::contentReference[oaicite:8]{index=8}
- 
-
-                                                               
+document.getElementById('btnLogout').addEventListener('click',()=>{
+  sessionStorage.removeItem('isAdmin');
+  location.href='login.html';
+});
+</script>
+</body>
+</html>
