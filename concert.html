@@ -5,34 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Concerts</title>
 <style>
-body { margin:0; font-family:'Segoe UI',sans-serif; background:#f5f5f5; color:#111; }
+body { margin:0; font-family:'Segoe UI',sans-serif; background:#f9f9f9; color:#111; }
 header { display:flex; justify-content:space-between; align-items:center; padding:12px 24px; background:#202020; color:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.3);}
 header h1 { margin:0; font-size:1.6rem; }
-header button { padding:6px 12px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; transition:0.2s; }
+header button { padding:6px 12px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
 header button#btnAdmin { background:#ff0000; color:#fff; }
 header button#btnBack { background:#00ccff; color:#000; }
+
 .container { max-width:1000px; margin:24px auto; display:flex; flex-direction:column; gap:24px; }
-.concert-card { background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.15); padding:16px; display:flex; flex-direction:column; transition:transform 0.2s; }
-.concert-card:hover { transform:translateY(-4px); }
+.concert-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.15); padding:16px; display:flex; flex-direction:column; transition:0.2s; }
+.concert-card:hover { transform:scale(1.01); }
 .concert-header { display:flex; justify-content:space-between; align-items:center; }
-.concert-title { font-size:1.4rem; font-weight:bold; }
-.concert-info { margin-top:6px; font-size:0.95rem; color:#555; }
-.concert-actions { display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; }
-.concert-actions button { flex:1; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; min-width:120px; transition:0.2s; }
-button.map { background:#00c853; color:#fff; }
-button.calendar { background:#ffab00; color:#000; }
-button.present { background:#2979ff; color:#fff; }
-button.absent { background:#d50000; color:#fff; }
-.attendance { margin-top:8px; display:flex; gap:12px; font-weight:bold; }
-.attendance span { background:#eee; padding:4px 12px; border-radius:12px; color:#333; }
+.concert-title { font-size:1.3rem; font-weight:bold; }
+.concert-info { margin-top:8px; font-size:0.95rem; color:#555; }
+.concert-image { margin-top:12px; border-radius:8px; max-width:100%; }
+.concert-actions { display:flex; gap:12px; margin-top:12px; flex-wrap: wrap; }
+.concert-actions button { flex:1; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; transition:0.2s; }
+.concert-actions button.map { background:#00ff55; color:#000; }
+.concert-actions button.calendar { background:#ffaa00; color:#000; }
+.concert-actions button.present { background:#00ccff; color:#fff; }
+.concert-actions button.absent { background:#ff5555; color:#fff; }
+.concert-actions button:hover { transform:scale(1.05); }
+
 .comments { margin-top:12px; border-top:1px solid #eee; padding-top:8px; display:flex; flex-direction:column; gap:6px; }
 .comment { display:flex; justify-content:space-between; background:#f0f0f0; padding:6px 12px; border-radius:6px; }
-.comment .remove { color:#d50000; font-weight:bold; cursor:pointer; margin-left:8px; }
+.comment button { background:#d50000; color:#fff; border:none; border-radius:4px; cursor:pointer; padding:2px 6px; font-size:0.8rem; }
 .comment-form { display:flex; gap:6px; margin-top:8px; }
 .comment-form input, .comment-form textarea { flex:1; padding:6px; border-radius:6px; border:1px solid #ccc; }
-.comment-form button { padding:6px 12px; border:none; border-radius:6px; background:#2979ff; color:#fff; cursor:pointer; font-weight:bold; transition:0.2s; }
-img.concert-img { width:100%; max-height:300px; object-fit:cover; border-radius:8px; margin-top:8px; transition:transform 0.3s; }
-img.concert-img:hover { transform:scale(1.02); }
+.comment-form button { padding:6px 12px; border:none; border-radius:6px; background:#00ccff; color:#fff; cursor:pointer; font-weight:bold; }
+.no-concert { text-align:center; font-size:1.2rem; color:#777; margin-top:40px; }
 </style>
 </head>
 <body>
@@ -43,51 +44,54 @@ img.concert-img:hover { transform:scale(1.02); }
   <button id="btnAdmin">Admin</button>
 </header>
 
-<div class="container" id="concertList"></div>
+<div class="container" id="concertList">
+  <!-- Concerts seront ajoutés ici par JS -->
+</div>
 
 <script>
 // Navigation
 document.getElementById('btnBack').addEventListener('click',()=>{ location.href='index.html'; });
 document.getElementById('btnAdmin').addEventListener('click',()=>{ location.href='admin.html'; });
 
-// Données centralisées
+// Données depuis localStorage
 let concerts = JSON.parse(localStorage.getItem('concerts')||'[]');
-let comments = JSON.parse(localStorage.getItem('comments')||'{}');
-let attendance = JSON.parse(localStorage.getItem('attendance')||'{}');
+let comments = JSON.parse(localStorage.getItem('comments')||'{}'); // {concertIdx:[{user,text}]}
+let attendance = JSON.parse(localStorage.getItem('attendance')||'{}'); // {concertIdx:{present:0,absent:0}}
 
+// Sauvegarde
 function saveData(){
-  localStorage.setItem('concerts',JSON.stringify(concerts));
   localStorage.setItem('comments',JSON.stringify(comments));
   localStorage.setItem('attendance',JSON.stringify(attendance));
 }
 
+// Rendu des concerts
 function renderConcerts(){
   const container = document.getElementById('concertList');
   container.innerHTML='';
+
+  if(concerts.length===0){
+    container.innerHTML='<div class="no-concert">Aucun concert à venir.</div>';
+    return;
+  }
+
   concerts.forEach((c,i)=>{
-    const div=document.createElement('div'); div.className='concert-card';
+    const div = document.createElement('div'); div.className='concert-card';
+    const imgHTML = c.image?`<img src="${c.image}" class="concert-image">`:'';
+    const presentCount = (attendance[i]?.present)||0;
+    const absentCount = (attendance[i]?.absent)||0;
+
     div.innerHTML=`
-      <div class="concert-header">
-        <div class="concert-title">${c.title}</div>
-      </div>
-      <div class="concert-info">${c.date} ${c.time || ''} — ${c.lieu || ''}</div>
-      ${c.image ? `<img src="${c.image}" class="concert-img">` : ''}
+      <div class="concert-header"><div class="concert-title">${c.title}</div></div>
+      <div class="concert-info">${c.date} ${c.time||''} — ${c.lieu||''}</div>
+      ${imgHTML}
       <div class="concert-actions">
         <button class="map">📍 Voir sur Maps</button>
         <button class="calendar">📅 Ajouter au calendrier</button>
-        <button class="present">✅ Je serai présent</button>
-        <button class="absent">❌ Je ne serai pas présent</button>
-      </div>
-      <div class="attendance">
-        <span>Présents: ${attendance[i]?.present||0}</span>
-        <span>Absents: ${attendance[i]?.absent||0}</span>
+        <button class="present">✅ Je serai présent (${presentCount})</button>
+        <button class="absent">❌ Je ne serai pas présent (${absentCount})</button>
       </div>
       <div class="comments">
-        ${(comments[i]||[]).map((cm,j)=>`
-          <div class="comment">
-            <strong>${cm.user}</strong>: ${cm.text}
-            <span class="remove" data-idx="${i}" data-cidx="${j}">✖</span>
-          </div>`).join('')}
+        ${(comments[i]||[]).map((cm,j)=>`<div class="comment"><strong>${cm.user}</strong>: ${cm.text} <button data-comment="${j}">Supprimer</button></div>`).join('')}
         <div class="comment-form">
           <input type="text" placeholder="Votre nom" class="user">
           <textarea placeholder="Commentaire" class="text"></textarea>
@@ -97,41 +101,46 @@ function renderConcerts(){
     `;
     container.appendChild(div);
 
-    // Actions
+    // Actions Maps
     div.querySelector('.map').addEventListener('click',()=>{ 
       if(c.lieu) window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(c.lieu),'_blank'); 
     });
+
+    // Ajouter au calendrier
     div.querySelector('.calendar').addEventListener('click',()=>{ addToCalendar(c); });
 
-    // Présence
+    // Présence / Absence
     div.querySelector('.present').addEventListener('click',()=>{
-      if(!attendance[i]) attendance[i]={present:0,absent:0};
-      if(attendance[i].present>0){ attendance[i].present--; } else { attendance[i].present++; }
-      saveData(); renderConcerts();
+      attendance[i] = attendance[i] || {present:0,absent:0};
+      attendance[i].present++;
+      saveData();
+      renderConcerts();
     });
     div.querySelector('.absent').addEventListener('click',()=>{
-      if(!attendance[i]) attendance[i]={present:0,absent:0};
-      if(attendance[i].absent>0){ attendance[i].absent--; } else { attendance[i].absent++; }
-      saveData(); renderConcerts();
+      attendance[i] = attendance[i] || {present:0,absent:0};
+      attendance[i].absent++;
+      saveData();
+      renderConcerts();
     });
 
     // Ajouter commentaire
     div.querySelector('.add-comment').addEventListener('click',()=>{
       const user = div.querySelector('.user').value.trim();
       const text = div.querySelector('.text').value.trim();
-      if(!user||!text) return alert('Nom et commentaire requis');
-      if(!comments[i]) comments[i]=[];
+      if(!user || !text) return alert('Nom et commentaire requis');
+      comments[i] = comments[i]||[];
       comments[i].push({user,text});
-      saveData(); renderConcerts();
+      saveData();
+      renderConcerts();
     });
 
     // Supprimer commentaire
-    div.querySelectorAll('.comment .remove').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const idx = Number(btn.dataset.idx);
-        const cidx = Number(btn.dataset.cidx);
-        comments[idx].splice(cidx,1);
-        saveData(); renderConcerts();
+    div.querySelectorAll('.comment button').forEach(btn=>{
+      btn.addEventListener('click',e=>{
+        const idx = Number(e.currentTarget.dataset.comment);
+        comments[i].splice(idx,1);
+        saveData();
+        renderConcerts();
       });
     });
   });
@@ -144,7 +153,7 @@ function addToCalendar(c){
   const lieu=encodeURIComponent(c.lieu||'');
   let start=c.date.replace(/-/g,''); let end=c.date.replace(/-/g,'');
   if(c.time){ const t=c.time.split(':'); start+='T'+t[0].padStart(2,'0')+t[1]+'00Z'; let h=parseInt(t[0])+1; end+='T'+h.toString().padStart(2,'0')+t[1]+'00Z'; }
-  else{ start+='T190000Z'; end+='T210000Z'; }
+  else{ start+='T090000Z'; end+='T100000Z'; }
 
   const googleUrl=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&location=${lieu}`;
   const ics=`BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${decodeURIComponent(title)}\nDTSTART:${start.replace(/Z$/,'')}\nDTEND:${end.replace(/Z$/,'')}\nLOCATION:${decodeURIComponent(lieu)}\nEND:VEVENT\nEND:VCALENDAR`;
