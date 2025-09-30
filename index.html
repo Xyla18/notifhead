@@ -20,8 +20,6 @@ header {
   text-align: center;
   overflow: hidden;
 }
-
-/* Vidéo en arrière-plan */
 header video {
   position: absolute;
   top: 0;
@@ -32,8 +30,6 @@ header video {
   z-index: 0;
   opacity: 0.7;
 }
-
-/* Dégradé superposé */
 header::before {
   content: "";
   position: absolute;
@@ -42,8 +38,6 @@ header::before {
   background: linear-gradient(135deg, rgba(106,0,218,0.5), rgba(255,105,180,0.5), rgba(0,255,128,0.3));
   z-index: 1;
 }
-
-/* Instruments animés flottants */
 .guitar, .drums {
   position:absolute;
   width:180px;
@@ -57,8 +51,6 @@ header::before {
   50% {transform:translateY(-25px) rotate(5deg);}
   100% {transform:translateY(0) rotate(-5deg);}
 }
-
-/* Texte et nav */
 header h1 {font-size:3em; margin:0; z-index:3; position:relative;}
 header p {z-index:3; position:relative;}
 nav {
@@ -85,9 +77,29 @@ nav a:hover {text-decoration: underline;}
 }
 .section {
   background: rgba(255,255,255,0.9);
-  border-radius: 10px;
+  border-radius: 20px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   padding: 20px;
+  text-align: center;
+}
+
+/* Section Facebook avec design spécial */
+.section.facebook {
+  background: linear-gradient(135deg, #1877f2, #3b5998);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.section.facebook h2 {
+  margin: 0;
+  font-size: 2em;
+}
+.section.facebook p {
+  margin: 5px 0 0;
+  font-size: 0.9em;
+  opacity: 0.9;
 }
 
 /* Chat mignon avec bulle */
@@ -179,9 +191,9 @@ nav a:hover {text-decoration: underline;}
     <h2>Prochain concert</h2>
     <p>Infos, dates et lieux du prochain concert...</p>
   </div>
-  <div class="section" id="facebook">
+  <div class="section facebook" id="facebook">
     <h2>Facebook</h2>
-    <p><a href="https://www.facebook.com/didier.charbeaux.5" target="_blank">➡ Suivez-nous sur Facebook</a></p>
+    <p>➡ Suivez-nous sur Facebook</p>
   </div>
   <div class="section" id="musiques">
     <h2>Nos musiques</h2>
