@@ -111,7 +111,7 @@ header p { z-index:3; position:relative; }
   transition: background-image 0.5s ease-in-out, background-position 0.5s ease-in-out;
 }
 .section.histoire:hover {
-  background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239864384_n.jpg?raw=true');
+  background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807739864384_n.jpg?raw=true');
   background-position: center 10%;
 }
 .section.histoire .sparkle {
@@ -126,14 +126,21 @@ header p { z-index:3; position:relative; }
 }
 @keyframes sparkle { from {transform:translate(0,0);} to {transform:translate(30px,30px);} }
 
-/* Facebook avec effet hover */
+/* Facebook avec effet image au hover */
 .section.facebook {
+  position: relative;
+  border-radius: 20px;
+  padding: 40px 20px;
+  text-align: center;
+  color: white;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   background: linear-gradient(135deg, rgba(24,119,242,0.8), rgba(59,89,152,0.8));
-  transition: background 0.5s ease, transform 0.3s;
 }
 .section.facebook:hover {
-  background: linear-gradient(135deg, rgba(24,119,242,0.1), rgba(59,89,152,0.1)),
-              url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.05.39.png?raw=true') no-repeat center/cover;
+  background: url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.05.39.png?raw=true') no-repeat center/cover;
   transform: scale(1.05);
 }
 
@@ -278,3 +285,4 @@ muteBtn.addEventListener('click', () => {
 
 </body>
 </html>
+
