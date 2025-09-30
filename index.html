@@ -12,7 +12,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Header (on suppose que tu l’as déjà) */
+/* Header */
 header {
   position: relative;
   color: white;
@@ -74,7 +74,7 @@ nav a:hover { text-decoration: underline; }
   box-sizing: border-box;
 }
 
-/* Style de base pour les bulles / sections */
+/* Style de base pour les sections */
 .section {
   position: relative;
   border-radius: 20px;
@@ -105,43 +105,16 @@ nav a:hover { text-decoration: underline; }
 .section.facebook { background: linear-gradient(135deg, #1877f2, #3b5998); }
 .section.musiques { background: linear-gradient(135deg, #43cea2, #185a9d); }
 
-/* Mix visuel pour “Notre histoire” */
+/* Notre histoire : transition entre deux images */
 .section.histoire {
-  background: none; /* on met un fond personnalisé */
-  color: #fff;
+  background: url('https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true') no-repeat center/cover;
+  transition: background-image 0.5s ease-in-out;
 }
-.section.histoire::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  border-radius: 20px;
-  background: url('https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true') no-repeat center / cover;
-  opacity: 0.6;
-  z-index: 0;
-}
-.section.histoire::after {
-  content: "";
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  border-radius: 20px;
-  background: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true') no-repeat center / cover;
-  mix-blend-mode: overlay;
-  opacity: 0.4;
-  z-index: 0;
+.section.histoire:hover {
+  background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true');
 }
 
-/* Paillettes animées (derrière) */
-.section::before {
-  /* On veut que cette règle s’applique à toutes, sauf que pour histoire on double fond à gérer */
-  /* Pour les autres sections, on pourrait redéfinir ou n’avoir qu’un léger effet paillettes global */
-}
-@keyframes sparkle {
-  from { transform: translate(0,0); }
-  to { transform: translate(30px,30px); }
-}
-/* Pour “Notre histoire”, on peut superposer également un léger motif paillettes */
+/* Paillettes légères */
 .section.histoire .sparkle {
   position: absolute;
   top: -50%; left: -50%;
@@ -152,14 +125,18 @@ nav a:hover { text-decoration: underline; }
   opacity: 0.3;
   z-index: 0;
 }
+@keyframes sparkle {
+  from { transform: translate(0,0); }
+  to { transform: translate(30px,30px); }
+}
 
-/* Assurer les contenus (titre, paragraphe) au-dessus */
+/* Contenu au-dessus */
 .section * {
   position: relative;
   z-index: 1;
 }
 
-/* Chat fixe en bas à droite */
+/* Chat fixe */
 .chat-container {
   position: fixed;
   bottom: 10px;
@@ -223,7 +200,7 @@ nav a:hover { text-decoration: underline; }
     <source src="invideo-ai-1080_Pluie_de_Sakura___effet_magique_sans_fon_2025-09-29_1.mp4_1759159019963.mp4" type="video/mp4">
   </video>
   <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare">
-  <img src="https://images.emojiterra.com/google/noto-emoji/1f941.gif" class="drums" alt="Batterie">
+  <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
   <h1>NoTif Head</h1>
   <p>Un son authentique, une vibe vintage 🎷🎸</p>
   <nav>
@@ -235,11 +212,11 @@ nav a:hover { text-decoration: underline; }
 </header>
 
 <div class="main">
-  <a href="notrehistoire.html" class="section histoire" id="histoire">
+  <div class="section histoire" id="histoire">
     <div class="sparkle"></div>
     <h2>Notre histoire</h2>
     <p>Découvrez nos débuts et notre parcours</p>
-  </a>
+  </div>
   <a href="concert.html" class="section concert" id="concert">
     <h2>Prochain concert</h2>
     <p>Dates, lieux et ambiance à venir</p>
