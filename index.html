@@ -194,4 +194,28 @@ header p { z-index:3; position:relative; }
 </head>
 <body>
 
-<!--
+<!-- Musique -->
+<audio id="background-music" autoplay loop muted>
+  <source src="https://github.com/Xyla18/notifhead/blob/aa14cdbfaf4a3338954c9c025b87e115a903adae/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3?raw=true" type="audio/mp3">
+  Votre navigateur ne supporte pas l'élément audio.
+</audio>
+<button id="mute-btn">🔊</button>
+
+<script>
+const audio = document.getElementById('background-music');
+const muteBtn = document.getElementById('mute-btn');
+muteBtn.addEventListener('click', () => {
+  audio.muted = !audio.muted;
+  muteBtn.textContent = audio.muted ? '🔈' : '🔊';
+});
+audio.volume = 0.2;
+</script>
+
+<header>
+  <video autoplay muted loop playsinline>
+    <source src="invideo-ai-1080_Pluie_de_Sakura___effet_magique_sans_fon_2025-09-29_1.mp4_1759159019963.mp4" type="video/mp4">
+  </video>
+  <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare">
+  <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
+  <h1>NoTif Head</h1>
+  <p>Un son authentique
