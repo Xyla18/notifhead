@@ -12,7 +12,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Header avec vidéo et éléments flottants */
+/* Header */
 header {
   position: relative;
   color: white;
@@ -52,7 +52,7 @@ header::before {
 header h1 { font-size:3em; margin:0; z-index:3; position:relative; }
 header p { z-index:3; position:relative; }
 
-/* Bouton son */
+/* Bouton mute */
 #mute-btn {
   position: fixed;
   top: 20px; left: 20px;
@@ -69,7 +69,7 @@ header p { z-index:3; position:relative; }
 }
 #mute-btn:hover { background: rgba(0,0,0,0.9); }
 
-/* Grille principale */
+/* Grille 2x2 */
 .main {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -79,7 +79,7 @@ header p { z-index:3; position:relative; }
   box-sizing: border-box;
 }
 
-/* Sections */
+/* Section de base */
 .section {
   position: relative;
   border-radius: 20px;
@@ -91,80 +91,57 @@ header p { z-index:3; position:relative; }
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.section:hover, .section.hovered {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-}
 .section h2 { margin:0; font-size:2em; }
 .section p { margin-top:10px; font-size:0.9em; opacity:0.9; }
+.section:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
 
-/* Couleurs des sections */
 .section.concert { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
 .section.musiques { background: linear-gradient(135deg, #43cea2, #185a9d); }
 
-/* Section Notre Histoire avec effet parallax */
+/* Notre histoire : 2 images avec hover et click */
 .section.histoire {
-  position: relative;
   background-image: url('https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true');
   background-size: cover;
   background-position: center;
-  overflow: hidden;
-  border-radius: 20px;
-  transition: background-image 0.8s ease-in-out;
+  transition: background 0.5s ease-in-out;
 }
-.section.histoire::after {
-  content: "";
-  position: absolute;
-  top: 20px; /* décalage vers le bas */
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true');
-  background-size: cover;
-  background-position: center 60%;
-  opacity: 0;
-  transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
-  z-index: 1;
-}
-.section.histoire h2,
-.section.histoire p {
-  position: relative;
-  z-index: 2; /* texte au-dessus */
-}
-.section.histoire:hover::after,
-.section.histoire.hovered::after {
-  opacity: 1;
-  transform: translateY(20px); /* effet flottant */
+.section.histoire.hovered { 
+  background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807739862277_n.jpg?raw=true'); 
 }
 
-/* Section Facebook avec overlay */
+/* Facebook : même principe */
 .section.facebook {
-  position: relative;
-  background-image: url('https://github.com/Xyla18/notifhead/blob/main/image.png?raw=true');
+  background: linear-gradient(135deg, #1877f2, #3b5998);
   background-size: cover;
-  background-position: center 40%;
-  overflow: hidden;
-  border-radius: 20px;
+  transition: background 0.5s ease, transform 0.3s;
 }
-.section.facebook::after {
-  content:"";
-  position:absolute;
-  top:0; left:0; width:100%; height:100%;
-  background-image: url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.59.19.png?raw=true');
-  background-size: cover;
-  background-position: center 55%;
-  opacity:0;
-  transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+.section.facebook.hovered {
+  background: url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%2012.05.39.png?raw=true') no-repeat center/cover;
+  transform: scale(1.05);
+}
+
+/* Paillettes */
+.section.histoire .sparkle {
+  position: absolute;
+  top:-50%; left:-50%;
+  width:200%; height:200%;
+  background-image: radial-gradient(white 1px, transparent 1px);
+  background-size:30px 30px;
+  animation:sparkle 6s linear infinite;
+  opacity:0.3;
   z-index:0;
 }
-.section.facebook:hover::after,
-.section.facebook.hovered::after { opacity:1; transform: translateY(10px); }
+@keyframes sparkle { from {transform:translate(0,0);} to {transform:translate(30px,30px);} }
 
 /* Chat */
 .chat-container { position: fixed; bottom:60px; right:10px; width:100px; z-index:20; }
 .cute-cat { width:100%; transform-origin:bottom center; transition: transform 0.3s; }
 .cute-cat:hover { transform: scale(1.2) rotate(-10deg); }
-.chat-bubble { position:absolute; bottom:110%; right:70%; transform:translateX(50%); background:rgba(0,0,0,0.8); color:#fff; padding:5px 10px; border-radius:10px; font-size:0.8em; white-space: pre-line; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+.chat-bubble {
+  position:absolute; bottom:110%; right:70%; transform:translateX(50%);
+  background: rgba(0,0,0,0.8); color:#fff; padding:5px 10px; border-radius:10px;
+  font-size:0.8em; white-space: pre-line; opacity:0; pointer-events:none; transition:opacity 0.3s;
+}
 .chat-container:hover .chat-bubble { opacity:1; }
 
 /* Footer */
@@ -179,12 +156,12 @@ header p { z-index:3; position:relative; }
 }
 
 /* Responsive */
-@media(max-width:768px){ 
-  .main { grid-template-columns:1fr; grid-template-rows:auto; } 
-  header h1{ font-size:2em;} 
-  .guitar,.drums{width:120px;} 
-  .chat-container{width:80px;} 
-  #mute-btn{padding:6px 10px; font-size:0.9em; } 
+@media(max-width:768px) {
+  .main { grid-template-columns: 1fr; grid-template-rows: auto; }
+  header h1 { font-size:2em; }
+  .guitar, .drums { width:120px; }
+  .chat-container { width:80px; }
+  #mute-btn { padding:6px 10px; font-size:0.9em; }
 }
 </style>
 </head>
@@ -203,22 +180,10 @@ header p { z-index:3; position:relative; }
 </header>
 
 <div class="main">
-  <div class="section histoire" id="histoire">
-    <h2>Notre histoire</h2>
-    <p>Découvrez nos débuts et notre parcours</p>
-  </div>
-  <div class="section concert" id="concert">
-    <h2>Prochain concert</h2>
-    <p>Dates, lieux et ambiance à venir</p>
-  </div>
-  <div class="section facebook" id="facebook">
-    <h2>Facebook</h2>
-    <p>➡ Suivez-nous en ligne</p>
-  </div>
-  <div class="section musiques" id="musiques">
-    <h2>Nos musiques</h2>
-    <p>Écoutez nos morceaux et playlists</p>
-  </div>
+  <div class="section histoire" id="histoire"><div class="sparkle"></div><h2>Notre histoire</h2><p>Découvrez nos débuts et notre parcours</p></div>
+  <div class="section concert" id="concert"><h2>Prochain concert</h2><p>Dates, lieux et ambiance à venir</p></div>
+  <div class="section facebook" id="facebook"><h2>Facebook</h2><p>➡ Suivez-nous en ligne</p></div>
+  <div class="section musiques" id="musiques"><h2>Nos musiques</h2><p>Écoutez nos morceaux et playlists</p></div>
 </div>
 
 <div class="chat-container">
@@ -229,39 +194,26 @@ header p { z-index:3; position:relative; }
 <div class="footer-banner">@2025-NoT' if' Head droit d'auteur</div>
 
 <!-- Musique locale -->
-<audio id="bg-music" loop>
-  <source src="https://github.com/Xyla18/notifhead/blob/main/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3" type="audio/mp3">
-</audio>
+<audio id="bg-music" src="https://github.com/Xyla18/notifhead/blob/main/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3" loop autoplay></audio>
 
 <script>
+// Volume très bas
 const music = document.getElementById('bg-music');
 music.volume = 0.2;
-music.muted = false;
-document.body.addEventListener('click', function playMusicOnce(){
-  music.play();
-  document.body.removeEventListener('click', playMusicOnce);
-});
 
+// Bouton mute/unmute
 const muteBtn = document.getElementById('mute-btn');
-muteBtn.addEventListener('click', ()=>{
-  if(music.muted){ music.muted=false; muteBtn.textContent='🔊'; }
-  else { music.muted=true; muteBtn.textContent='🔇'; }
+muteBtn.addEventListener('click', () => {
+  music.muted = !music.muted;
+  muteBtn.textContent = music.muted ? '🔇' : '🔊';
 });
 
-// Hover/click mobile pour Notre Histoire
+// Hover PC / click mobile pour images
 const histoire = document.getElementById('histoire');
-histoire.addEventListener('click', function(){ 
-  this.classList.toggle('hovered'); 
-});
-
-// Hover/click mobile pour Facebook + redirection
 const facebook = document.getElementById('facebook');
-facebook.addEventListener('click', function(){ 
-  window.location.href = 'https://www.facebook.com/didier.charbeaux.5';
-});
-facebook.addEventListener('touchstart', function(){ 
-  this.classList.toggle('hovered'); 
-});
+
+histoire.addEventListener('click', () => histoire.classList.toggle('hovered'));
+facebook.addEventListener('click', () => facebook.classList.toggle('hovered'));
 </script>
 
 </body>
