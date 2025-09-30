@@ -1,0 +1,153 @@
+<!-- FILE: admin.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Mode privilège</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 20px auto; padding: 0 16px; }
+    header { display: flex; justify-content: space-between; align-items: center; }
+    .grid { display: grid; grid-template-columns: 1fr 400px; gap: 18px; margin-top: 18px; }
+    .card { border: 1px solid #ddd; padding: 12px; border-radius: 8px; }
+    label { display: block; margin-top: 8px; }
+    input, textarea { width: 100%; padding: 8px; margin-top: 6px; border-radius: 6px; border: 1px solid #ccc; }
+    .concert-item { border: 1px solid #eee; padding: 8px; border-radius: 6px; margin-bottom: 10px; }
+    .actions { display: flex; gap: 8px; margin-top: 8px; }
+    img { max-width: 100%; border-radius: 6px; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Mode privilège — Administration</h1>
+  <div>
+    <a href="index.html">← Retour</a>
+    <button id="btnLogout">Déconnexion</button>
+  </div>
+</header>
+
+<div class="grid" id="adminArea">
+  <!-- Liste des concerts existants -->
+  <div class="card">
+    <h2>Concerts existants</h2>
+    <div id="concertList"></div>
+  </div>
+
+  <!-- Formulaire ajout/modification -->
+  <div class="card">
+    <h2>Ajouter / Modifier un concert</h2>
+    <form id="form">
+      <input type="hidden" id="idx">
+      <label>Titre<input id="title" required></label>
+      <label>Date<input id="date" type="date"></label>
+      <label>Heure<input id="time" type="time"></label>
+      <label>Lieu<input id="lieu"></label>
+      <label>Image (URL)<input id="image"></label>
+      <label>Description<textarea id="desc" rows="5"></textarea></label>
+      <div class="actions">
+        <button type="submit">Enregistrer</button>
+        <button type="button" id="btnReset">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Vérifier session admin
+  if(sessionStorage.getItem('isAdmin') !== '1'){
+    alert('Accès non autorisé');
+    location.href = 'login.html';
+  }
+
+  // Déconnexion
+  document.getElementById('btnLogout').addEventListener('click', ()=>{
+    sessionStorage.removeItem('isAdmin');
+    location.href = 'index.html';
+  });
+
+  function getConcerts(){ return JSON.parse(localStorage.getItem('concerts')||'[]'); }
+  function saveConcerts(arr){ localStorage.setItem('concerts', JSON.stringify(arr)); }
+
+  function escapeHtml(str){ if(!str) return ''; return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function loadList(){
+    const list = getConcerts();
+    const container = document.getElementById('concertList');
+    container.innerHTML = '';
+    if(list.length === 0){ container.innerHTML = '<p>Aucun concert.</p>'; return; }
+    list.forEach((c,i)=>{
+      const div = document.createElement('div');
+      div.className='concert-item';
+      div.innerHTML = `
+        <strong>${escapeHtml(c.title)}</strong>
+        <div>${escapeHtml(c.date)} ${escapeHtml(c.time||'')} — ${escapeHtml(c.lieu||'')}</div>
+        ${c.image ? `<img src="${escapeHtml(c.image)}" alt="${escapeHtml(c.title)}">` : ''}
+        <p>${escapeHtml(c.desc)}</p>
+        <div class="actions">
+          <button data-edit="${i}">Modifier</button>
+          <button data-del="${i}">Supprimer</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+
+    // Handlers
+    container.querySelectorAll('[data-edit]').forEach(b=>{
+      b.addEventListener('click', e=>{ editItem(Number(e.currentTarget.dataset.edit)); });
+    });
+    container.querySelectorAll('[data-del]').forEach(b=>{
+      b.addEventListener('click', e=>{
+        if(confirm('Supprimer ce concert ?')) deleteItem(Number(e.currentTarget.dataset.del));
+      });
+    });
+  }
+
+  function editItem(i){
+    const c = getConcerts()[i];
+    document.getElementById('idx').value = i;
+    document.getElementById('title').value = c.title||'';
+    document.getElementById('date').value = c.date||'';
+    document.getElementById('time').value = c.time||'';
+    document.getElementById('lieu').value = c.lieu||'';
+    document.getElementById('image').value = c.image||'';
+    document.getElementById('desc').value = c.desc||'';
+  }
+
+  function deleteItem(i){
+    const list = getConcerts();
+    list.splice(i,1);
+    saveConcerts(list);
+    loadList();
+  }
+
+  document.getElementById('form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const idx = document.getElementById('idx').value;
+    const concerts = getConcerts();
+    const concertData = {
+      title: document.getElementById('title').value.trim(),
+      date: document.getElementById('date').value,
+      time: document.getElementById('time').value,
+      lieu: document.getElementById('lieu').value.trim(),
+      image: document.getElementById('image').value.trim(),
+      desc: document.getElementById('desc').value.trim()
+    };
+    if(idx){ concerts[Number(idx)] = concertData; }
+    else{ concerts.push(concertData); }
+    saveConcerts(concerts);
+    loadList();
+    document.getElementById('form').reset();
+    document.getElementById('idx').value = '';
+  });
+
+  document.getElementById('btnReset').addEventListener('click', ()=>{
+    document.getElementById('form').reset();
+    document.getElementById('idx').value = '';
+  });
+
+  loadList();
+</script>
+
+</body>
+</html>
