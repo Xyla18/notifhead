@@ -16,20 +16,16 @@ header button:hover { background:#cc0000; transform:scale(1.05); }
 label { display:block; margin-top:12px; font-weight:bold; }
 input,textarea { width:100%; padding:8px; margin-top:6px; border-radius:6px; border:none; }
 input[type="file"]{ padding:3px; }
-.concert-item { border:1px solid #333; padding:12px; border-radius:8px; margin-bottom:12px; transition:0.2s; }
-.concert-item:hover { background:#2a2a2a; }
-.concert-item img { max-width:100%; border-radius:6px; margin-top:6px; transition:transform 0.3s; }
-.concert-item img:hover { transform:scale(1.05); }
 .actions{ display:flex; gap:8px; margin-top:8px; }
-.actions button{ flex:1; padding:6px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; transition:0.2s; }
+.actions button{ flex:1; padding:6px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
 .actions button.delete{ background:#ff5555; color:#fff; }
 .actions button.edit{ background:#00ccff; color:#000; }
-.actions button:hover{ transform:scale(1.05); }
-
-.autocomplete-container { position: relative; }
-.autocomplete-suggestions { position: absolute; top:100%; left:0; right:0; background:#fff; color:#000; max-height:200px; overflow-y:auto; z-index:10; border-radius:6px; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
+.autocomplete-container { position:relative; }
+.autocomplete-suggestions { position:absolute; top:100%; left:0; right:0; background:#fff; color:#000; max-height:200px; overflow-y:auto; z-index:10; border-radius:6px; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
 .autocomplete-suggestion { padding:8px; cursor:pointer; }
 .autocomplete-suggestion:hover { background:#f0f0f0; }
+.concert-item { border:1px solid #333; padding:12px; border-radius:8px; margin-bottom:12px; }
+.concert-item img { max-width:100%; border-radius:6px; margin-top:6px; }
 </style>
 </head>
 <body>
@@ -40,7 +36,6 @@ input[type="file"]{ padding:3px; }
 </header>
 
 <div class="container">
-
   <div class="card">
     <h2>Concerts existants</h2>
     <div id="concertList"></div>
@@ -67,7 +62,6 @@ input[type="file"]{ padding:3px; }
       </div>
     </form>
   </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@geoapify/geocoder-autocomplete/dist/geocoder-autocomplete.min.js"></script>
@@ -76,23 +70,15 @@ if(sessionStorage.getItem('isAdmin')!=='1'){ alert('Accès non autorisé'); loca
 
 document.getElementById('btnLogout').addEventListener('click',()=>{ sessionStorage.removeItem('isAdmin'); location.href='index.html'; });
 
-const apiKey = 'YOUR_GEOAPIFY_API_KEY'; // Remplace par ta clé Geoapify
-const autocomplete = new Geoapify.GeocoderAutocomplete(document.getElementById('autocomplete-container'), apiKey, {
-    placeholder: 'Tapez le lieu',
-    filter: ['countrycode:fr'],
-    types: ['address'],
-});
-
-autocomplete.on('select', location => { document.getElementById('lieu').value = location.properties.formatted; });
-
-// Gestion concerts
+// LocalStorage gestion
 function getConcerts(){ return JSON.parse(localStorage.getItem('concerts')||'[]'); }
 function saveConcerts(arr){ localStorage.setItem('concerts',JSON.stringify(arr)); }
 
+// Chargement de la liste
 function loadList(){
   const list = getConcerts();
   const container = document.getElementById('concertList');
-  container.innerHTML = '';
+  container.innerHTML='';
   if(list.length===0){ container.innerHTML='<p>Aucun concert.</p>'; return; }
   list.forEach((c,i)=>{
     const div=document.createElement('div'); div.className='concert-item';
@@ -107,30 +93,41 @@ function loadList(){
     container.appendChild(div);
   });
 
-  container.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',e=>editItem(Number(e.currentTarget.dataset.edit))));
-  container.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{ if(confirm('Supprimer ce concert ?')) deleteItem(Number(e.currentTarget.dataset.del)); }));
+  // Boutons modifier
+  container.querySelectorAll('[data-edit]').forEach(b=>{
+    b.addEventListener('click', e=>{
+      const i = Number(e.currentTarget.dataset.edit);
+      const c = getConcerts()[i];
+      document.getElementById('idx').value = i;
+      document.getElementById('title').value = c.title||'';
+      document.getElementById('date').value = c.date||'';
+      document.getElementById('time').value = c.time||'';
+      document.getElementById('lieu').value = c.lieu||'';
+      document.getElementById('desc').value = c.desc||'';
+    });
+  });
+
+  // Boutons supprimer
+  container.querySelectorAll('[data-del]').forEach(b=>{
+    b.addEventListener('click', e=>{
+      if(!confirm('Supprimer ce concert ?')) return;
+      const i = Number(e.currentTarget.dataset.del);
+      const arr = getConcerts(); arr.splice(i,1);
+      saveConcerts(arr); loadList();
+    });
+  });
 }
 
-function editItem(i){
-  const c = getConcerts()[i];
-  document.getElementById('idx').value = i;
-  document.getElementById('title').value = c.title||'';
-  document.getElementById('date').value = c.date||'';
-  document.getElementById('time').value = c.time||'';
-  document.getElementById('lieu').value = c.lieu||'';
-  document.getElementById('desc').value = c.desc||'';
-}
-
-function deleteItem(i){ const list=getConcerts(); list.splice(i,1); saveConcerts(list); loadList(); }
-
+// Formulaire ajouter/modifier
 document.getElementById('form').addEventListener('submit', async e=>{
   e.preventDefault();
   const idx = document.getElementById('idx').value;
   const file = document.getElementById('image').files[0];
   let imageData='';
-  if(file){ imageData = await new Promise(res=>{ const reader = new FileReader(); reader.onload = e=>res(e.target.result); reader.readAsDataURL(file); }); }
-  else if(idx){ imageData = getConcerts()[Number(idx)].image||''; }
-  
+  if(file){
+    imageData = await new Promise(res=>{ const reader = new FileReader(); reader.onload=e=>res(e.target.result); reader.readAsDataURL(file); });
+  } else if(idx){ imageData = getConcerts()[Number(idx)].image||''; }
+
   const concertData = {
     title: document.getElementById('title').value.trim(),
     date: document.getElementById('date').value,
@@ -139,17 +136,49 @@ document.getElementById('form').addEventListener('submit', async e=>{
     image: imageData,
     desc: document.getElementById('desc').value.trim()
   };
-  
+
   const concerts = getConcerts();
   if(idx) concerts[Number(idx)] = concertData;
   else concerts.push(concertData);
+
   saveConcerts(concerts);
   loadList();
   document.getElementById('form').reset();
   document.getElementById('idx').value='';
 });
 
-document.getElementById('btnReset').addEventListener('click',()=>{ document.getElementById('form').reset(); document.getElementById('idx').value=''; });
+// Reset formulaire
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  document.getElementById('form').reset();
+  document.getElementById('idx').value='';
+});
+
+// Geoapify autocomplete
+const apiKey = 'YOUR_GEOAPIFY_KEY'; // Mets ta clé ici
+const autocomplete = new Geoapify.GeocoderAutocomplete(document.getElementById('autocomplete-container'), apiKey, {
+  placeholder: 'Tapez le lieu',
+  filter: ['countrycode:fr'],
+  types: ['address'],
+});
+
+autocomplete.on('select', location=>{
+  document.getElementById('lieu').value = location.properties.formatted;
+});
+
+autocomplete.on('suggestions', suggestions=>{
+  const suggestionsContainer = document.getElementById('autocomplete-suggestions');
+  suggestionsContainer.innerHTML='';
+  suggestions.forEach(s=>{
+    const div = document.createElement('div');
+    div.classList.add('autocomplete-suggestion');
+    div.textContent = s.properties.formatted;
+    div.addEventListener('click', ()=>{
+      document.getElementById('lieu').value = s.properties.formatted;
+      suggestionsContainer.innerHTML='';
+    });
+    suggestionsContainer.appendChild(div);
+  });
+});
 
 loadList();
 </script>
