@@ -1,4 +1,3 @@
-<!-- FILE: admin.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -44,7 +43,7 @@ input[type=file]{ padding:3px; }
 <label>Titre<input id="title" required></label>
 <label>Date<input type="date" id="date"></label>
 <label>Heure<input type="time" id="time"></label>
-<label>Lieu<input id="lieu" placeholder="Tapez le lieu"></label>
+<label>Lieu<input type="text" id="lieu" placeholder="Commencez à taper une adresse" required></label>
 <label>Image<input type="file" id="image" accept="image/*"></label>
 <label>Description<textarea id="desc" rows="4"></textarea></label>
 <div class="actions">
@@ -55,7 +54,10 @@ input[type=file]{ padding:3px; }
 </div>
 </div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY&libraries=places"></script>
+<!-- Geoapify Autosuggest -->
+<script src="https://unpkg.com/@geoapify/geocoder-autocomplete@1.4.1/dist/index.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@geoapify/geocoder-autocomplete@1.4.1/dist/geocoder-autocomplete.min.css">
+
 <script>
 if(sessionStorage.getItem('isAdmin')!=='1'){ alert('Accès non autorisé'); location.href='login.html'; }
 
@@ -122,12 +124,20 @@ document.getElementById('form').addEventListener('submit', async e=>{
 // Reset
 document.getElementById('btnReset').addEventListener('click',()=>{ document.getElementById('form').reset(); document.getElementById('idx').value=''; });
 
-// Google Places Autocomplete
-const input=document.getElementById('lieu');
-const autocomplete=new google.maps.places.Autocomplete(input);
-autocomplete.setFields(['name']); // uniquement le nom
+// --- Geoapify Autocomplete ---
+const geoInput = document.getElementById('lieu');
+const autoComplete = new Geoapify.Autocomplete(geoInput, {
+  apiKey: "VOTRE_CLE_API_GEOAPIFY",
+  placeSelect: true,
+  language: "fr",
+  countries: ["fr"], 
+});
+
+autoComplete.on('select', function(event){
+  geoInput.value = event.result.formatted; // Remplit le champ avec l'adresse complète
+});
+
 loadList();
 </script>
 </body>
 </html>
-
