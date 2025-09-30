@@ -4,80 +4,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Mode privilège</title>
+<title>Admin</title>
 <style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  margin:0; padding:0; background:#121212; color:#fff;
-}
-header {
-  display:flex; justify-content:space-between; align-items:center;
-  background:#000; padding:16px 24px; box-shadow:0 4px 10px rgba(0,0,0,0.7);
-}
+body { margin:0; font-family:'Segoe UI',sans-serif; background:#121212; color:#fff; }
+header { display:flex; justify-content:space-between; align-items:center; padding:16px 24px; background:#000; box-shadow:0 4px 10px rgba(0,0,0,0.5);}
 header h1 { margin:0; font-size:1.8rem; }
-header button {
-  background:#ffcc00; border:none; padding:8px 16px; border-radius:6px; font-weight:bold;
-  cursor:pointer; transition: transform 0.2s;
-}
-header button:hover { transform: scale(1.1); }
-.container { display:flex; gap:24px; margin:24px; flex-wrap:wrap; }
-.card { background:#1e1e1e; padding:16px; border-radius:10px; flex:1; min-width:320px; }
+header button { background:#ff0000; padding:8px 16px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; transition:0.2s; }
+header button:hover { background:#cc0000; transform:scale(1.05); }
+.container { display:flex; flex-wrap:wrap; gap:24px; margin:24px; }
+.card { background:#1e1e1e; padding:16px; border-radius:12px; flex:1; min-width:320px; }
 label { display:block; margin-top:12px; font-weight:bold; }
-input, textarea { width:100%; padding:8px; border-radius:6px; border:none; margin-top:6px; }
-input[type=file] { padding:3px; }
+input,textarea { width:100%; padding:8px; margin-top:6px; border-radius:6px; border:none; }
+input[type=file]{ padding:3px; }
 .concert-item { border:1px solid #333; padding:12px; border-radius:8px; margin-bottom:12px; }
 .concert-item img { max-width:100%; border-radius:6px; margin-top:6px; }
-.actions { display:flex; gap:8px; margin-top:8px; }
-.actions button { flex:1; padding:6px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
-.actions button.delete { background:#ff5555; color:#fff; }
-.actions button.edit { background:#00ccff; color:#000; }
+.actions{ display:flex; gap:8px; margin-top:8px; }
+.actions button{ flex:1; padding:6px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
+.actions button.delete{ background:#ff5555; color:#fff; }
+.actions button.edit{ background:#00ccff; color:#000; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Mode Privilège</h1>
+  <h1>Mode Admin</h1>
   <button id="btnLogout">Déconnexion</button>
 </header>
 
 <div class="container">
-  <!-- Liste concerts -->
-  <div class="card">
-    <h2>Concerts existants</h2>
-    <div id="concertList"></div>
-  </div>
+<div class="card">
+<h2>Concerts existants</h2>
+<div id="concertList"></div>
+</div>
 
-  <!-- Formulaire ajout -->
-  <div class="card">
-    <h2>Ajouter / Modifier un concert</h2>
-    <form id="form">
-      <input type="hidden" id="idx">
-      <label>Titre<input id="title" required></label>
-      <label>Date<input type="date" id="date"></label>
-      <label>Heure<input type="time" id="time"></label>
-      <label>Lieu<input id="lieu" placeholder="Tapez le lieu"></label>
-      <label>Image<input type="file" id="image" accept="image/*"></label>
-      <label>Description<textarea id="desc" rows="4"></textarea></label>
-      <div class="actions">
-        <button type="submit">Enregistrer</button>
-        <button type="button" id="btnReset">Annuler</button>
-      </div>
-    </form>
-  </div>
+<div class="card">
+<h2>Ajouter / Modifier un concert</h2>
+<form id="form">
+<input type="hidden" id="idx">
+<label>Titre<input id="title" required></label>
+<label>Date<input type="date" id="date"></label>
+<label>Heure<input type="time" id="time"></label>
+<label>Lieu<input id="lieu" placeholder="Tapez le lieu"></label>
+<label>Image<input type="file" id="image" accept="image/*"></label>
+<label>Description<textarea id="desc" rows="4"></textarea></label>
+<div class="actions">
+<button type="submit">Enregistrer</button>
+<button type="button" id="btnReset">Annuler</button>
+</div>
+</form>
+</div>
 </div>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY&libraries=places"></script>
 <script>
-if(sessionStorage.getItem('isAdmin')!=='1'){
-  alert('Accès non autorisé'); location.href='login.html';
-}
+if(sessionStorage.getItem('isAdmin')!=='1'){ alert('Accès non autorisé'); location.href='login.html'; }
 
-document.getElementById('btnLogout').addEventListener('click',()=>{
-  sessionStorage.removeItem('isAdmin');
-  location.href='index.html';
-});
+document.getElementById('btnLogout').addEventListener('click',()=>{ sessionStorage.removeItem('isAdmin'); location.href='index.html'; });
 
-// Gestion concert
 function getConcerts(){ return JSON.parse(localStorage.getItem('concerts')||'[]'); }
 function saveConcerts(arr){ localStorage.setItem('concerts',JSON.stringify(arr)); }
 
@@ -90,7 +73,7 @@ function loadList(){
     const div=document.createElement('div'); div.className='concert-item';
     div.innerHTML=`<strong>${c.title}</strong>
       <div>${c.date} ${c.time||''} — ${c.lieu||''}</div>
-      ${c.image ? `<img src="${c.image}">` : ''}
+      ${c.image?`<img src="${c.image}">`:''}
       <p>${c.desc||''}</p>
       <div class="actions">
         <button class="edit" data-edit="${i}">Modifier</button>
@@ -98,11 +81,8 @@ function loadList(){
       </div>`;
     container.appendChild(div);
   });
-
-  container.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', e=>editItem(Number(e.currentTarget.dataset.edit))));
-  container.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', e=>{
-    if(confirm('Supprimer ce concert ?')) deleteItem(Number(e.currentTarget.dataset.del));
-  }));
+  container.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',e=>editItem(Number(e.currentTarget.dataset.edit))));
+  container.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{ if(confirm('Supprimer ce concert ?')) deleteItem(Number(e.currentTarget.dataset.del)); }));
 }
 
 function editItem(i){
@@ -113,12 +93,9 @@ function editItem(i){
   document.getElementById('time').value=c.time||'';
   document.getElementById('lieu').value=c.lieu||'';
   document.getElementById('desc').value=c.desc||'';
-  // Pour image, on ne peut pas remplir file input pour sécurité. On laissera l'utilisateur le re-sélectionner si nécessaire.
 }
 
-function deleteItem(i){
-  const list=getConcerts(); list.splice(i,1); saveConcerts(list); loadList();
-}
+function deleteItem(i){ const list=getConcerts(); list.splice(i,1); saveConcerts(list); loadList(); }
 
 document.getElementById('form').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -126,15 +103,8 @@ document.getElementById('form').addEventListener('submit', async e=>{
   const file=document.getElementById('image').files[0];
   let imageData='';
   if(file){
-    imageData=await new Promise(res=>{
-      const reader=new FileReader();
-      reader.onload=e=>res(e.target.result);
-      reader.readAsDataURL(file);
-    });
-  } else if(idx){ // garder l'ancienne image si modification sans nouvelle image
-    imageData=getConcerts()[Number(idx)].image||'';
-  }
-
+    imageData=await new Promise(res=>{ const reader=new FileReader(); reader.onload=e=>res(e.target.result); reader.readAsDataURL(file); });
+  } else if(idx){ imageData=getConcerts()[Number(idx)].image||''; }
   const concertData={
     title: document.getElementById('title').value.trim(),
     date: document.getElementById('date').value,
@@ -146,23 +116,18 @@ document.getElementById('form').addEventListener('submit', async e=>{
   const concerts=getConcerts();
   if(idx) concerts[Number(idx)]=concertData;
   else concerts.push(concertData);
-  saveConcerts(concerts);
-  loadList();
-  document.getElementById('form').reset();
-  document.getElementById('idx').value='';
+  saveConcerts(concerts); loadList(); document.getElementById('form').reset(); document.getElementById('idx').value='';
 });
 
-// Réinitialisation formulaire
-document.getElementById('btnReset').addEventListener('click', ()=>{
-  document.getElementById('form').reset();
-  document.getElementById('idx').value='';
-});
+// Reset
+document.getElementById('btnReset').addEventListener('click',()=>{ document.getElementById('form').reset(); document.getElementById('idx').value=''; });
 
 // Google Places Autocomplete
-const input = document.getElementById('lieu');
-const autocomplete = new google.maps.places.Autocomplete(input);
-autocomplete.setFields(['name']);
+const input=document.getElementById('lieu');
+const autocomplete=new google.maps.places.Autocomplete(input);
+autocomplete.setFields(['name']); // uniquement le nom
 loadList();
 </script>
 </body>
 </html>
+
