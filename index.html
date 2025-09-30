@@ -103,13 +103,16 @@ header p { z-index:3; position:relative; }
 .section.concert { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
 .section.musiques { background: linear-gradient(135deg, #43cea2, #185a9d); }
 
-/* Notre histoire */
+/* Notre histoire avec transition image */
 .section.histoire {
-  background: url('https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true') no-repeat center/cover;
-  transition: background 0.5s ease-in-out;
+  background-image: url('https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true');
+  background-position: center;
+  background-size: cover;
+  transition: background-image 0.5s ease-in-out, background-position 0.5s ease-in-out;
 }
 .section.histoire:hover {
-  background: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239864384_n.jpg?raw=true') no-repeat center 10%/cover;
+  background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239864384_n.jpg?raw=true');
+  background-position: center 10%;
 }
 .section.histoire .sparkle {
   position: absolute;
@@ -123,13 +126,13 @@ header p { z-index:3; position:relative; }
 }
 @keyframes sparkle { from {transform:translate(0,0);} to {transform:translate(30px,30px);} }
 
-/* Facebook */
+/* Facebook avec effet hover */
 .section.facebook {
   background: linear-gradient(135deg, rgba(24,119,242,0.8), rgba(59,89,152,0.8));
   transition: background 0.5s ease, transform 0.3s;
 }
 .section.facebook:hover {
-  background: linear-gradient(135deg, rgba(24,119,242,0.1), rgba(59,89,152,0.1)), 
+  background: linear-gradient(135deg, rgba(24,119,242,0.1), rgba(59,89,152,0.1)),
               url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.05.39.png?raw=true') no-repeat center/cover;
   transform: scale(1.05);
 }
@@ -239,20 +242,37 @@ header p { z-index:3; position:relative; }
   @2025-NoT' if' Head droit d'auteur
 </div>
 
-<!-- Musique de fond -->
-<audio id="bg-music" src="https://github.com/Xyla18/notifhead/blob/main/Musique%20Rock%20Gratuite%20Libre%20de%20Droits%20Dynamique%20et%20Joyeuse%20%20Silent%20Partner%20-%20Drop%20and%20Roll.mp3?raw=true" loop autoplay></audio>
+<!-- YouTube Musique de fond -->
+<div id="player"></div>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-// Volume très faible pour ne pas déranger
-const music = document.getElementById('bg-music');
-music.volume = 0.1;
-music.play();
+let player;
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('player', {
+    height: '0',
+    width: '0',
+    videoId: 'hWuUN3o34Ss', // ID de ta vidéo
+    playerVars: { 
+      autoplay: 1, 
+      loop: 1, 
+      playlist: 'hWuUN3o34Ss',
+      controls: 0, 
+      modestbranding: 1
+    },
+    events: { 'onReady': onPlayerReady }
+  });
+}
+function onPlayerReady(event) {
+  event.target.setVolume(10); // très faible
+  event.target.playVideo();
+}
 
 // Bouton mute/unmute
 const muteBtn = document.getElementById('mute-btn');
 muteBtn.addEventListener('click', () => {
-  music.muted = !music.muted;
-  muteBtn.textContent = music.muted ? '🔇' : '🔊';
+  if(player.isMuted()) { player.unMute(); muteBtn.textContent='🔊'; }
+  else { player.mute(); muteBtn.textContent='🔇'; }
 });
 </script>
 
