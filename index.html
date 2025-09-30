@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NoTif Head</title>
+<title>NoTif Head — Notre Histoire Mix</title>
 <style>
 body {
   margin: 0;
@@ -12,7 +12,7 @@ body {
   overflow-x: hidden;
 }
 
-/* HEADER avec vidéo en fond */
+/* Header (on suppose que tu l’as déjà) */
 header {
   position: relative;
   color: white;
@@ -22,10 +22,8 @@ header {
 }
 header video {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   object-fit: cover;
   z-index: 0;
   opacity: 0.7;
@@ -44,15 +42,15 @@ header::before {
   animation: float 4s ease-in-out infinite alternate;
   z-index:2;
 }
-.guitar {left:10%; bottom:20px;}
-.drums {right:15%; bottom:40px;}
+.guitar { left:10%; bottom:20px; }
+.drums { right:15%; bottom:40px; }
 @keyframes float {
-  0% {transform:translateY(0) rotate(-5deg);}
-  50% {transform:translateY(-25px) rotate(5deg);}
-  100% {transform:translateY(0) rotate(-5deg);}
+  0% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-25px) rotate(5deg); }
+  100% { transform: translateY(0) rotate(-5deg); }
 }
-header h1 {font-size:3em; margin:0; z-index:3; position:relative;}
-header p {z-index:3; position:relative;}
+header h1 { font-size:3em; margin:0; z-index:3; position:relative; }
+header p { z-index:3; position:relative; }
 nav {
   margin-top: 20px;
   z-index:3;
@@ -64,9 +62,9 @@ nav a {
   text-decoration:none;
   font-weight:bold;
 }
-nav a:hover {text-decoration: underline;}
+nav a:hover { text-decoration: underline; }
 
-/* Grille principale */
+/* Grille 2×2 pour les sections */
 .main {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -76,7 +74,7 @@ nav a:hover {text-decoration: underline;}
   box-sizing: border-box;
 }
 
-/* Bulles animées */
+/* Style de base pour les bulles / sections */
 .section {
   position: relative;
   border-radius: 20px;
@@ -102,36 +100,66 @@ nav a:hover {text-decoration: underline;}
   opacity: 0.9;
 }
 
-/* Dégradés personnalisés */
-.section.histoire {background: linear-gradient(135deg, #ff9a9e, #fad0c4);}
-.section.concert {background: linear-gradient(135deg, #a18cd1, #fbc2eb);}
-.section.facebook {background: linear-gradient(135deg, #1877f2, #3b5998);}
-.section.musiques {background: linear-gradient(135deg, #43cea2, #185a9d);}
+/* Dégradés différenciés */
+.section.concert { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+.section.facebook { background: linear-gradient(135deg, #1877f2, #3b5998); }
+.section.musiques { background: linear-gradient(135deg, #43cea2, #185a9d); }
 
-/* Paillettes animées */
-.section::before {
+/* Mix visuel pour “Notre histoire” */
+.section.histoire {
+  background: none; /* on met un fond personnalisé */
+  color: #fff;
+}
+.section.histoire::before {
   content: "";
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background-image: radial-gradient(white 1px, transparent 1px);
-  background-size: 30px 30px;
-  animation: sparkle 6s linear infinite;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border-radius: 20px;
+  background: url('https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true') no-repeat center / cover;
+  opacity: 0.6;
+  z-index: 0;
+}
+.section.histoire::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border-radius: 20px;
+  background: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true') no-repeat center / cover;
+  mix-blend-mode: overlay;
   opacity: 0.4;
   z-index: 0;
 }
-@keyframes sparkle {
-  from {transform: translate(0,0);}
-  to {transform: translate(30px,30px);}
+
+/* Paillettes animées (derrière) */
+.section::before {
+  /* On veut que cette règle s’applique à toutes, sauf que pour histoire on double fond à gérer */
+  /* Pour les autres sections, on pourrait redéfinir ou n’avoir qu’un léger effet paillettes global */
 }
+@keyframes sparkle {
+  from { transform: translate(0,0); }
+  to { transform: translate(30px,30px); }
+}
+/* Pour “Notre histoire”, on peut superposer également un léger motif paillettes */
+.section.histoire .sparkle {
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background-image: radial-gradient(white 1px, transparent 1px);
+  background-size: 30px 30px;
+  animation: sparkle 6s linear infinite;
+  opacity: 0.3;
+  z-index: 0;
+}
+
+/* Assurer les contenus (titre, paragraphe) au-dessus */
 .section * {
   position: relative;
   z-index: 1;
 }
 
-/* Chat mignon avec bulle */
+/* Chat fixe en bas à droite */
 .chat-container {
   position: fixed;
   bottom: 10px;
@@ -182,23 +210,20 @@ nav a:hover {text-decoration: underline;}
     grid-template-columns: 1fr;
     grid-template-rows: auto;
   }
-  header h1 {font-size: 2em;}
-  .guitar, .drums {width:120px;}
-  .chat-container {width: 80px;}
+  header h1 { font-size: 2em; }
+  .guitar, .drums { width:120px; }
+  .chat-container { width: 80px; }
 }
 </style>
 </head>
 <body>
 
-<!-- HEADER avec vidéo et instruments -->
 <header>
   <video autoplay muted loop playsinline>
     <source src="invideo-ai-1080_Pluie_de_Sakura___effet_magique_sans_fon_2025-09-29_1.mp4_1759159019963.mp4" type="video/mp4">
   </video>
-
-  <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare électrique">
-  <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
-
+  <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare">
+  <img src="https://images.emojiterra.com/google/noto-emoji/1f941.gif" class="drums" alt="Batterie">
   <h1>NoTif Head</h1>
   <p>Un son authentique, une vibe vintage 🎷🎸</p>
   <nav>
@@ -209,9 +234,9 @@ nav a:hover {text-decoration: underline;}
   </nav>
 </header>
 
-<!-- Grille 2x2 -->
 <div class="main">
   <a href="notrehistoire.html" class="section histoire" id="histoire">
+    <div class="sparkle"></div>
     <h2>Notre histoire</h2>
     <p>Découvrez nos débuts et notre parcours</p>
   </a>
@@ -229,10 +254,8 @@ nav a:hover {text-decoration: underline;}
   </a>
 </div>
 
-<!-- Chat mignon -->
 <div class="chat-container">
-  <img src="https://static.vecteezy.com/system/resources/thumbnails/041/642/908/small_2x/ai-generated-cute-cat-reaching-up-with-paw-on-transparent-background-png.png" 
-       alt="Chat mignon" class="cute-cat">
+  <img src="https://static.vecteezy.com/system/resources/thumbnails/041/642/908/small_2x/ai-generated-cute-cat-reaching-up-with-paw-on-transparent-background-png.png" alt="Chat mignon" class="cute-cat">
   <div class="chat-bubble">Site produit et créé<br>par Xyla</div>
 </div>
 
