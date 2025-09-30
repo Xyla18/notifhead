@@ -174,7 +174,7 @@ document.getElementById('btnReset').addEventListener('click',()=>{
 // Geoapify Autocomplete
 const apiKey = 'YOUR_GEOAPIFY_KEY';
 const autocomplete = new Geoapify.GeocoderAutocomplete(document.getElementById('autocomplete-container'), apiKey, {
-  placeholder:'Tapez le lieu',
+  placeholder:'Tapez le lieu(A bien remplire)',
   filter:['countrycode:fr'],
   types:['address']
 });
