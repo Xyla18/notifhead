@@ -90,9 +90,9 @@ header p { z-index:3; position:relative; }
   cursor: pointer;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.5s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.section:hover {
+.section:hover, .section.hovered {
   transform: scale(1.05);
   box-shadow: 0 6px 20px rgba(0,0,0,0.4);
 }
@@ -103,46 +103,53 @@ header p { z-index:3; position:relative; }
 .section.concert { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
 .section.musiques { background: linear-gradient(135deg, #43cea2, #185a9d); }
 
-/* Notre histoire avec transition image */
+/* Notre histoire avec fondu */
 .section.histoire {
   background-image: url('https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true');
   background-position: center;
   background-size: cover;
-  transition: background-image 0.5s ease-in-out, background-position 0.5s ease-in-out;
-}
-.section.histoire.hovered {
-  background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true');
-  background-position: center 10%;
-}
-.section.histoire .sparkle {
-  position: absolute;
-  top: -50%; left: -50%;
-  width: 200%; height: 200%;
-  background-image: radial-gradient(white 1px, transparent 1px);
-  background-size: 30px 30px;
-  animation: sparkle 6s linear infinite;
-  opacity: 0.3;
-  z-index: 0;
-}
-@keyframes sparkle { from {transform:translate(0,0);} to {transform:translate(30px,30px);} }
-
-/* Facebook avec effet image au hover et clic mobile */
-.section.facebook {
   position: relative;
+}
+.section.histoire::after {
+  content: "";
+  position: absolute;
+  top:0; left:0;
+  width: 100%; height: 100%;
+  background-image: url('https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true');
+  background-size: cover;
+  background-position: center 10%;
+  opacity: 0;
+  transition: opacity 0.7s ease-in-out;
   border-radius: 20px;
-  padding: 40px 20px;
-  text-align: center;
-  color: white;
-  cursor: pointer;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 1;
+}
+.section.histoire:hover::after,
+.section.histoire.hovered::after { opacity: 1; }
+
+/* Facebook avec fondu */
+.section.facebook {
   background: linear-gradient(135deg, rgba(24,119,242,0.8), rgba(59,89,152,0.8));
+  position: relative;
 }
-.section.facebook.hovered {
-  background: url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.05.39.png?raw=true') no-repeat center/cover;
-  transform: scale(1.05);
+.section.facebook::after {
+  content: "";
+  position: absolute;
+  top:0; left:0;
+  width: 100%; height: 100%;
+  background-image: url('https://github.com/Xyla18/notifhead/blob/main/Capture%20d’écran%202025-09-30%20à%2012.05.39.png?raw=true');
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.7s ease-in-out;
+  border-radius: 20px;
+  z-index: 1;
 }
+.section.facebook:hover::after,
+.section.facebook.hovered::after { opacity: 1; }
+
+/* Contenu des sections au-dessus de l'image */
+.section.histoire > *,
+.section.facebook > * { position: relative; z-index: 2; }
 
 /* Chat */
 .chat-container {
@@ -207,7 +214,6 @@ header p { z-index:3; position:relative; }
 </head>
 <body>
 
-<!-- Bouton Mute -->
 <button id="mute-btn">🔊</button>
 
 <header>
@@ -245,28 +251,17 @@ header p { z-index:3; position:relative; }
   <div class="chat-bubble">Site produit et créé<br>par Xyla</div>
 </div>
 
-<div class="footer-banner">
-  @2025-NoT' if' Head droit d'auteur
-</div>
+<div class="footer-banner">@2025-NoT' if' Head droit d'auteur</div>
 
-<!-- YouTube Musique de fond -->
 <div id="player"></div>
-
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
 let player;
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
-    height: '0',
-    width: '0',
+    height: '0', width: '0',
     videoId: 'hWuUN3o34Ss',
-    playerVars: { 
-      autoplay: 1, 
-      loop: 1, 
-      playlist: 'hWuUN3o34Ss',
-      controls: 0, 
-      modestbranding: 1
-    },
+    playerVars: { autoplay: 1, loop: 1, playlist: 'hWuUN3o34Ss', controls: 0, modestbranding: 1 },
     events: { 'onReady': onPlayerReady }
   });
 }
@@ -274,26 +269,15 @@ function onPlayerReady(event) {
   event.target.setVolume(10);
   event.target.playVideo();
 }
-
-// Bouton mute/unmute
 const muteBtn = document.getElementById('mute-btn');
 muteBtn.addEventListener('click', () => {
   if(player.isMuted()) { player.unMute(); muteBtn.textContent='🔊'; }
   else { player.mute(); muteBtn.textContent='🔇'; }
 });
 
-// Notre Histoire mobile toggle
-const histoireSection = document.getElementById('histoire');
-histoireSection.addEventListener('click', () => {
-  histoireSection.classList.toggle('hovered');
-});
-
-// Facebook mobile toggle
-const fbSection = document.getElementById('facebook');
-fbSection.addEventListener('click', () => {
-  fbSection.classList.toggle('hovered');
-});
+// Toggle hover sur mobile
+document.getElementById('histoire').addEventListener('click', function() { this.classList.toggle('hovered'); });
+document.getElementById('facebook').addEventListener('click', function() { this.classList.toggle('hovered'); });
 </script>
-
 </body>
 </html>
