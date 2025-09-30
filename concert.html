@@ -19,7 +19,6 @@ header button#btnBack { background:#00ccff; color:#000; }
 .concert-info { margin-top:6px; font-size:0.95rem; color:#555; }
 .concert-actions { display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; }
 .concert-actions button { flex:1; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; min-width:120px; transition:0.2s; }
-.concert-actions button:hover { opacity:0.85; }
 button.map { background:#00c853; color:#fff; }
 button.calendar { background:#ffab00; color:#000; }
 button.present { background:#2979ff; color:#fff; }
@@ -28,10 +27,10 @@ button.absent { background:#d50000; color:#fff; }
 .attendance span { background:#eee; padding:4px 12px; border-radius:12px; color:#333; }
 .comments { margin-top:12px; border-top:1px solid #eee; padding-top:8px; display:flex; flex-direction:column; gap:6px; }
 .comment { display:flex; justify-content:space-between; background:#f0f0f0; padding:6px 12px; border-radius:6px; }
+.comment .remove { color:#d50000; font-weight:bold; cursor:pointer; margin-left:8px; }
 .comment-form { display:flex; gap:6px; margin-top:8px; }
 .comment-form input, .comment-form textarea { flex:1; padding:6px; border-radius:6px; border:1px solid #ccc; }
 .comment-form button { padding:6px 12px; border:none; border-radius:6px; background:#2979ff; color:#fff; cursor:pointer; font-weight:bold; transition:0.2s; }
-.comment-form button:hover { opacity:0.85; }
 img.concert-img { width:100%; max-height:300px; object-fit:cover; border-radius:8px; margin-top:8px; transition:transform 0.3s; }
 img.concert-img:hover { transform:scale(1.02); }
 </style>
@@ -44,17 +43,14 @@ img.concert-img:hover { transform:scale(1.02); }
   <button id="btnAdmin">Admin</button>
 </header>
 
-<div class="container" id="concertList">
-<!-- Les concerts seront ajoutés ici par JS -->
-</div>
+<div class="container" id="concertList"></div>
 
 <script>
 // Navigation
 document.getElementById('btnBack').addEventListener('click',()=>{ location.href='index.html'; });
 document.getElementById('btnAdmin').addEventListener('click',()=>{ location.href='admin.html'; });
 
-// LocalStorage centralisé
-const STORAGE_FILE = 'localstorage.html'; // fichier central
+// Données centralisées
 let concerts = JSON.parse(localStorage.getItem('concerts')||'[]');
 let comments = JSON.parse(localStorage.getItem('comments')||'{}');
 let attendance = JSON.parse(localStorage.getItem('attendance')||'{}');
@@ -87,7 +83,11 @@ function renderConcerts(){
         <span>Absents: ${attendance[i]?.absent||0}</span>
       </div>
       <div class="comments">
-        ${(comments[i]||[]).map(cm=>`<div class="comment"><strong>${cm.user}</strong>: ${cm.text}</div>`).join('')}
+        ${(comments[i]||[]).map((cm,j)=>`
+          <div class="comment">
+            <strong>${cm.user}</strong>: ${cm.text}
+            <span class="remove" data-idx="${i}" data-cidx="${j}">✖</span>
+          </div>`).join('')}
         <div class="comment-form">
           <input type="text" placeholder="Votre nom" class="user">
           <textarea placeholder="Commentaire" class="text"></textarea>
@@ -103,27 +103,36 @@ function renderConcerts(){
     });
     div.querySelector('.calendar').addEventListener('click',()=>{ addToCalendar(c); });
 
+    // Présence
     div.querySelector('.present').addEventListener('click',()=>{
       if(!attendance[i]) attendance[i]={present:0,absent:0};
-      attendance[i].present++;
-      saveData();
-      renderConcerts();
+      if(attendance[i].present>0){ attendance[i].present--; } else { attendance[i].present++; }
+      saveData(); renderConcerts();
     });
     div.querySelector('.absent').addEventListener('click',()=>{
       if(!attendance[i]) attendance[i]={present:0,absent:0};
-      attendance[i].absent++;
-      saveData();
-      renderConcerts();
+      if(attendance[i].absent>0){ attendance[i].absent--; } else { attendance[i].absent++; }
+      saveData(); renderConcerts();
     });
 
+    // Ajouter commentaire
     div.querySelector('.add-comment').addEventListener('click',()=>{
       const user = div.querySelector('.user').value.trim();
       const text = div.querySelector('.text').value.trim();
       if(!user||!text) return alert('Nom et commentaire requis');
       if(!comments[i]) comments[i]=[];
       comments[i].push({user,text});
-      saveData();
-      renderConcerts();
+      saveData(); renderConcerts();
+    });
+
+    // Supprimer commentaire
+    div.querySelectorAll('.comment .remove').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const idx = Number(btn.dataset.idx);
+        const cidx = Number(btn.dataset.cidx);
+        comments[idx].splice(cidx,1);
+        saveData(); renderConcerts();
+      });
     });
   });
 }
@@ -137,10 +146,7 @@ function addToCalendar(c){
   if(c.time){ const t=c.time.split(':'); start+='T'+t[0].padStart(2,'0')+t[1]+'00Z'; let h=parseInt(t[0])+1; end+='T'+h.toString().padStart(2,'0')+t[1]+'00Z'; }
   else{ start+='T190000Z'; end+='T210000Z'; }
 
-  // Google Calendar
   const googleUrl=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&location=${lieu}`;
-
-  // ICS pour Outlook / iPhone
   const ics=`BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${decodeURIComponent(title)}\nDTSTART:${start.replace(/Z$/,'')}\nDTEND:${end.replace(/Z$/,'')}\nLOCATION:${decodeURIComponent(lieu)}\nEND:VEVENT\nEND:VCALENDAR`;
   const blob=new Blob([ics],{type:'text/calendar'}); const url=URL.createObjectURL(blob);
 
