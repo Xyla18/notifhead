@@ -6,186 +6,152 @@
 <title>NoTif Head</title>
 <style>
 body {
+  margin: 0;
   font-family: 'Georgia', serif;
-  margin:0;
-  padding:0;
-  background:#f4f0e6;
-  text-align:center;
-  overflow-x: hidden;
-}
-
-/* HEADER avec vidéo en fond */
-header {
-  position: relative;
-  color: white;
-  padding: 80px 20px 150px;
+  background: #f4f0e6;
+  display: flex;
+  height: 100vh;
   overflow: hidden;
 }
 
+/* Menu vertical à droite */
+nav {
+  width: 200px;
+  background: #6b4226;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 3;
+}
+nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  margin: 15px 0;
+  position: relative;
+  z-index: 3;
+}
+nav a:hover {
+  text-decoration: underline;
+}
+
+/* Grille principale */
+.main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 20px;
+  padding: 20px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+}
+
+.section {
+  background: rgba(255,255,255,0.9);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  padding: 20px;
+  overflow-y: auto;
+}
+
 /* Vidéo en arrière-plan */
-header video {
-  position: absolute;
+video.bg-video {
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   z-index: 0;
-  opacity: 0.7; /* légère transparence pour le dégradé */
+  opacity: 0.7;
 }
 
-/* Dégradé superposé */
-header::before {
-  content: "";
-  position: absolute;
-  top:0; left:0;
-  width:100%; height:100%;
+/* Dégradé par-dessus la vidéo */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(135deg, rgba(106,0,218,0.5), rgba(255,105,180,0.5), rgba(0,255,128,0.3));
   z-index: 1;
 }
 
-/* Instruments animés flottants */
+/* Instruments animés */
 .guitar, .drums {
-  position:absolute;
-  width:180px;
+  position: absolute;
+  width: 180px;
   animation: float 4s ease-in-out infinite alternate;
-  z-index:2;
+  z-index: 2;
 }
-.guitar {left:10%; bottom:20px;}
-.drums {right:15%; bottom:40px;}
+.guitar { left: 10%; bottom: 20px; }
+.drums { right: 15%; bottom: 40px; }
 @keyframes float {
-  0% {transform:translateY(0) rotate(-5deg);}
-  50% {transform:translateY(-25px) rotate(5deg);}
-  100% {transform:translateY(0) rotate(-5deg);}
+  0% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-25px) rotate(5deg); }
+  100% { transform: translateY(0) rotate(-5deg); }
 }
 
-/* Texte et nav */
-header h1{font-size:3em; margin:0; z-index:3; position:relative;}
-header p{z-index:3; position:relative;}
-nav a{margin:0 15px; color:white; text-decoration:none; font-weight:bold; z-index:3; position:relative;}
-nav a:hover{text-decoration:underline;}
-
-/* SECTIONS */
-.section{padding:50px 20px;}
-.photos img{width:250px; margin:10px; border:5px solid #6b4226; border-radius:10px; transition:transform 0.3s;}
-.photos img:hover{transform:scale(1.05);}
-footer{background:#6b4226; color:white; padding:20px; margin-top:40px;}
-footer a{color:#ffd27f; text-decoration:none;}
-
-/* Chat mignon avec bulle */
-.chat-container {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  width: 100px;
-  z-index: 10;
-  pointer-events: auto;
-}
-
-.cute-cat {
-  width: 100%;
-  transform-origin: bottom center;
-  transition: transform 0.3s;
-}
-
-.cute-cat:hover {
-  transform: scale(1.2) rotate(-10deg);
-}
-
-/* Bulle au survol avec flèche */
-.chat-bubble {
-  position: absolute;
-  bottom: 110%;
-  right: 70%;
-  transform: translateX(50%);
-  background: rgba(0,0,0,0.8);
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 10px;
-  font-size: 0.8em;
-  white-space: pre-line;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-.chat-bubble::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 5px;
-  border-style: solid;
-  border-color: rgba(0,0,0,0.8) transparent transparent transparent;
-}
-.chat-container:hover .chat-bubble {
-  opacity: 1;
-}
-
-/* RESPONSIVE */
-@media(max-width:768px){
-  header h1{font-size:2em;}
-  header p{font-size:1em;}
-  .guitar, .drums{width:120px; bottom:0; left:auto; right:auto; position:relative; margin:10px 0;}
-  .photos img{width:180px;}
-  .chat-container{width:80px;}
-}
-@media(max-width:414px){
-  header h1{font-size:1.8em;}
-  header p{font-size:0.9em;}
-  .guitar,.drums{width:100px; margin:5px 0;}
-  .photos img{width:150px;}
-  nav a{margin:0 10px; font-size:0.9em;}
-  .chat-container{position: relative; bottom:auto; right:auto; display:block; width:60px; margin:20px auto;}
+/* Responsive */
+@media(max-width: 768px) {
+  body { flex-direction: column; }
+  nav {
+    flex-direction: row;
+    width: 100%;
+    height: 60px;
+  }
+  nav a { margin: 0 10px; }
+  .main {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+  .guitar, .drums { width: 120px; }
 }
 </style>
 </head>
 <body>
 
-<header>
-  <video autoplay muted loop playsinline>
-    <source src="invideo-ai-1080_Pluie_de_Sakura___effet_magique_sans_fon_2025-09-29_1.mp4_1759159019963.mp4" type="video/mp4">
-  </video>
+<!-- Vidéo + overlay -->
+<video class="bg-video" autoplay muted loop playsinline>
+  <source src="invideo-ai-1080_Pluie_de_Sakura___effet_magique_sans_fon_2025-09-29_1.mp4_1759159019963.mp4" type="video/mp4">
+</video>
+<div class="overlay"></div>
 
-  <img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare électrique">
-  <img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
-
-  <h1>NoTif Head</h1>
-  <p>Un son authentique, une vibe vintage 🎷🎸</p>
-  <nav>
-    <a href="#about">À propos</a>
-    <a href="#photos">Photos</a>
-    <a href="#contact">Contact</a>
-  </nav>
-</header>
-
-<section id="about" class="section">
-  <h2><p>Bienvenue sur le site officiel de <strong>NoTif Head</strong>.</h2>
-</section>
-
-<section id="photos" class="section photos">
-  <h2>C'est nous!</h2>
-  <img src="https://github.com/Xyla18/notifhead/blob/main/484991122_3973854602886692_4991807738239862277_n.jpg?raw=true" alt="Concert 1">
-  <img src="https://github.com/Xyla18/notifhead/blob/main/488894721_3989726451299507_4752720464827864384_n.jpg?raw=true" alt="Concert 2">
-  <img src="https://github.com/Xyla18/notifhead/blob/main/555727631_4162497657355718_2703381832388341131_n.jpg?raw=true" alt="Concert 3">
-</section>
-
-<section id="contact" class="section">
-  <h2>Nous suivre</h2>
-  <p><a href="https://www.facebook.com/didier.charbeaux.5" target="_blank">Facebook</a></p>
-</section>
-
-<footer>
-  <p>&copy; 2025 NoTif Head - Tous droits réservés</p>
-</footer>
-
-<!-- Chat avec bulle -->
-<div class="chat-container">
-  <img src="https://static.vecteezy.com/system/resources/thumbnails/041/642/908/small_2x/ai-generated-cute-cat-reaching-up-with-paw-on-transparent-background-png.png" 
-       alt="Chat mignon" class="cute-cat">
-  <div class="chat-bubble">Site produit et créé<br>par Xyla</div>
+<!-- Contenu principal -->
+<div class="main">
+  <div class="section" id="histoire">
+    <h2>Notre histoire</h2>
+    <p>Ici on raconte l’origine et l’évolution du groupe...</p>
+  </div>
+  <div class="section" id="concert">
+    <h2>Prochain concert</h2>
+    <p>Infos, dates et lieux du prochain concert...</p>
+  </div>
+  <div class="section" id="facebook">
+    <h2>Facebook</h2>
+    <p><a href="https://www.facebook.com/didier.charbeaux.5" target="_blank">➡ Suivez-nous sur Facebook</a></p>
+  </div>
+  <div class="section" id="musiques">
+    <h2>Nos musiques</h2>
+    <p>Playlist, vidéos ou liens vers Spotify, YouTube...</p>
+  </div>
 </div>
+
+<!-- Menu vertical -->
+<nav>
+  <a href="#histoire">Notre histoire</a>
+  <a href="#concert">Prochain concert</a>
+  <a href="#facebook">Facebook</a>
+  <a href="#musiques">Nos musiques</a>
+</nav>
+
+<!-- Guitare et batterie -->
+<img src="https://github.com/Xyla18/notifhead/blob/main/2cb9d0fdff29540d2e9e55c9e2659e-unscreen.gif?raw=true" class="guitar" alt="Guitare électrique">
+<img src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f941.gif" class="drums" alt="Batterie">
 
 </body>
 </html>
-
