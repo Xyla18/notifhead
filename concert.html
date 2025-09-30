@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Concerts</title>
+<title>Concerts Admin</title>
 <style>
 body { margin:0; font-family:'Segoe UI',sans-serif; background:#121212; color:#fff; }
 header { display:flex; justify-content:space-between; align-items:center; padding:16px 24px; background:#000; box-shadow:0 4px 10px rgba(0,0,0,0.5);}
@@ -21,6 +21,8 @@ input[type=file]{ padding:3px; }
 .actions button{ flex:1; padding:6px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
 .actions button.delete{ background:#ff5555; color:#fff; }
 .actions button.edit{ background:#00ccff; color:#000; }
+.actions button.maps{ background:#00ff55; color:#000; }
+.actions button.calendar{ background:#ffaa00; color:#000; }
 .autocomplete-suggestions { position:absolute; background:#fff; color:#000; max-height:150px; overflow-y:auto; z-index:10; border-radius:6px; margin-top:2px; }
 .autocomplete-suggestion { padding:6px; cursor:pointer; }
 .autocomplete-suggestion:hover { background:#f0f0f0; }
@@ -30,7 +32,7 @@ input[type=file]{ padding:3px; }
 <body>
 
 <header>
-  <h1>Mode Admin</h1>
+  <h1>Mode Admin Concerts</h1>
   <button id="btnLogout">Déconnexion</button>
 </header>
 
@@ -49,7 +51,6 @@ input[type=file]{ padding:3px; }
       <div style="display:flex; gap:8px; align-items:center;">
         <input type="date" id="date">
         <input type="time" id="time">
-        <button type="button" id="btnAddToCalendar" style="padding:6px 12px; border:none; border-radius:6px; background:#00ccff; color:#000; cursor:pointer;">📅 Ajouter au calendrier</button>
       </div>
       <label>Lieu
         <div class="position-relative">
@@ -62,6 +63,7 @@ input[type=file]{ padding:3px; }
       <div class="actions">
         <button type="submit">Enregistrer</button>
         <button type="button" id="btnReset">Annuler</button>
+        <button type="button" id="btnAddToCalendar">📅 Ajouter au calendrier</button>
       </div>
     </form>
   </div>
@@ -75,8 +77,11 @@ document.getElementById('btnLogout').addEventListener('click',()=>{ sessionStora
 // Gestion concerts
 function getConcerts(){ return JSON.parse(localStorage.getItem('concerts')||'[]'); }
 function saveConcerts(arr){ localStorage.setItem('concerts',JSON.stringify(arr)); }
+
 function loadList(){
-  const list=getConcerts(); const container=document.getElementById('concertList'); container.innerHTML='';
+  const list=getConcerts(); 
+  const container=document.getElementById('concertList'); 
+  container.innerHTML='';
   if(list.length===0){ container.innerHTML='<p>Aucun concert.</p>'; return; }
   list.forEach((c,i)=>{
     const div=document.createElement('div'); div.className='concert-item';
@@ -87,12 +92,24 @@ function loadList(){
       <div class="actions">
         <button class="edit" data-edit="${i}">Modifier</button>
         <button class="delete" data-del="${i}">Supprimer</button>
+        <button class="maps" data-map="${i}">🗺 Voir sur Maps</button>
+        <button class="calendar" data-cal="${i}">📅 Ajouter au calendrier</button>
       </div>`;
     container.appendChild(div);
   });
+  // Event listeners
   container.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',e=>editItem(Number(e.currentTarget.dataset.edit))));
   container.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{ if(confirm('Supprimer ce concert ?')) deleteItem(Number(e.currentTarget.dataset.del)); }));
+  container.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',e=>{
+    const c=getConcerts()[Number(e.currentTarget.dataset.map)];
+    if(c.lieu) window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(c.lieu),'_blank');
+  }));
+  container.querySelectorAll('[data-cal]').forEach(b=>b.addEventListener('click',e=>{
+    const c=getConcerts()[Number(e.currentTarget.dataset.cal)];
+    addToCalendar(c);
+  }));
 }
+
 function editItem(i){
   const c=getConcerts()[i];
   document.getElementById('idx').value=i;
@@ -102,6 +119,7 @@ function editItem(i){
   document.getElementById('lieu').value=c.lieu||'';
   document.getElementById('desc').value=c.desc||'';
 }
+
 function deleteItem(i){ const list=getConcerts(); list.splice(i,1); saveConcerts(list); loadList(); }
 
 // Formulaire
@@ -128,7 +146,7 @@ document.getElementById('form').addEventListener('submit', async e=>{
 });
 document.getElementById('btnReset').addEventListener('click',()=>{ document.getElementById('form').reset(); document.getElementById('idx').value=''; });
 
-// Autocomplétion OSM/Photon
+// Autocomplétion Photon/OpenStreetMap
 const lieuInput=document.getElementById('lieu');
 const suggestionsContainer=document.getElementById('lieu-suggestions');
 lieuInput.addEventListener('input',async ()=>{
@@ -137,28 +155,38 @@ lieuInput.addEventListener('input',async ()=>{
   const resp=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lang=fr`);
   const data=await resp.json();
   data.features.forEach(f=>{
-    const div=document.createElement('div'); div.className='autocomplete-suggestion'; div.textContent=f.properties.name+', '+(f.properties.city||'')+', '+(f.properties.country||'');
+    const div=document.createElement('div'); div.className='autocomplete-suggestion';
+    div.textContent=f.properties.name+', '+(f.properties.city||'')+', '+(f.properties.country||'');
     div.addEventListener('click',()=>{ lieuInput.value=div.textContent; suggestionsContainer.innerHTML=''; });
     suggestionsContainer.appendChild(div);
   });
 });
 
-// Ajouter au calendrier
+// Ajouter au calendrier depuis le formulaire
 document.getElementById('btnAddToCalendar').addEventListener('click',()=>{
-  const title=encodeURIComponent(document.getElementById('title').value||'Concert');
-  const lieu=encodeURIComponent(document.getElementById('lieu').value||'');
-  const date=document.getElementById('date').value;
-  const time=document.getElementById('time').value;
-  if(!date){ alert('Choisissez une date'); return; }
-  let start=date.replace(/-/g,''); let end=date.replace(/-/g,'');
-  if(time){ const t=time.split(':'); start+='T'+t[0].padStart(2,'0')+t[1]+'00Z'; let h=parseInt(t[0])+1; end+='T'+h.toString().padStart(2,'0')+t[1]+'00Z'; }
+  const concert={
+    title: document.getElementById('title').value,
+    date: document.getElementById('date').value,
+    time: document.getElementById('time').value,
+    lieu: document.getElementById('lieu').value
+  };
+  addToCalendar(concert);
+});
+
+// Fonction générique ajout calendrier
+function addToCalendar(c){
+  if(!c.date){ alert('Choisissez une date'); return; }
+  const title=encodeURIComponent(c.title||'Concert');
+  const lieu=encodeURIComponent(c.lieu||'');
+  let start=c.date.replace(/-/g,''); let end=c.date.replace(/-/g,'');
+  if(c.time){ const t=c.time.split(':'); start+='T'+t[0].padStart(2,'0')+t[1]+'00Z'; let h=parseInt(t[0])+1; end+='T'+h.toString().padStart(2,'0')+t[1]+'00Z'; }
   else{ start+='T090000Z'; end+='T100000Z'; }
   const googleUrl=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&location=${lieu}`;
   const ics=`BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${decodeURIComponent(title)}\nDTSTART:${start.replace(/Z$/,'')}\nDTEND:${end.replace(/Z$/,'')}\nLOCATION:${decodeURIComponent(lieu)}\nEND:VEVENT\nEND:VCALENDAR`;
   const blob=new Blob([ics],{type:'text/calendar'}); const url=URL.createObjectURL(blob);
   if(confirm('Ouvrir Google Calendar ? OK=Google, Annuler=Apple/Outlook')){ window.open(googleUrl,'_blank'); }
   else{ const a=document.createElement('a'); a.href=url; a.download='evenement.ics'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-});
+}
 
 loadList();
 </script>
