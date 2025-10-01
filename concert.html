@@ -5,14 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Concerts</title>
 <style>
-body { 
-  margin:0; 
-  font-family:'Segoe UI',sans-serif; 
-  color:#111; 
+/* Image de fond floutée */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: url('https://github.com/Xyla18/notifhead/blob/main/514229851_30262179796762411_1050042494187009706_n.jpg?raw=true') 
-              no-repeat center center fixed; 
+              no-repeat center center;
   background-size: cover;
+  filter: blur(8px);     /* 🌟 intensité du flou */
+  transform: scale(1.05); /* évite des bords vides à cause du blur */
+  z-index: -1;           /* reste derrière le contenu */
 }
+
 header { 
   display:flex; 
   justify-content:space-between; 
