@@ -1,46 +1,115 @@
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-  import { getFirestore, collection, query, orderBy, onSnapshot } 
-    from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, setDoc, addDoc, deleteDoc } 
+  from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
-  // ======= Config Firebase =======
-  const firebaseConfig = {
-    apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
-    authDomain: "notifhead.firebaseapp.com",
-    projectId: "notifhead",
-    storageBucket: "notifhead.firebasestorage.app",
-    messagingSenderId: "190210184035",
-    appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
-    measurementId: "G-HWW5Z08H60"
-  };
+// Config Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
+  authDomain: "notifhead.firebaseapp.com",
+  projectId: "notifhead",
+  storageBucket: "notifhead.firebasestorage.app",
+  messagingSenderId: "190210184035",
+  appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
+  measurementId: "G-HWW5Z08H60"
+};
 
-  // Init Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  // ======= Récupérer et afficher les concerts =======
-  const container = document.getElementById("concertList");
-  const concertsRef = collection(db, "concerts");
-  const concertsQuery = query(concertsRef, orderBy("date"));
+const container = document.getElementById("concertList");
+const concertsRef = collection(db, "concerts");
+const concertsQuery = query(concertsRef, orderBy("date"));
 
-  onSnapshot(concertsQuery, (snapshot) => {
-    container.innerHTML = "";
-    if(snapshot.empty){
-      container.innerHTML = "<p>Aucun concert disponible.</p>";
-      return;
-    }
+// Fonction pour ajouter participant
+async function addParticipant(concertId, name, status){
+  if(!name) return;
+  const userRef = doc(db, "concerts", concertId, "participants", name);
+  await setDoc(userRef, { name, status });
+}
 
-    snapshot.forEach(docSnap => {
-      const c = docSnap.data();
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <h2>${c.title}</h2>
-        <p><strong>Date :</strong> ${c.date || ''} ${c.time || ''}</p>
-        <p><strong>Lieu :</strong> ${c.lieu || ''}</p>
-        <p>${c.desc || ''}</p>
+// Fonction pour ajouter un commentaire
+async function addComment(concertId, name, text){
+  if(!name || !text) return;
+  const commentsRef = collection(db, "concerts", concertId, "comments");
+  await addDoc(commentsRef, { name, text });
+}
+
+// Affichage en temps réel
+onSnapshot(concertsQuery, snapshot=>{
+  container.innerHTML = "";
+  snapshot.forEach(async docSnap=>{
+    const c = docSnap.data();
+    const concertId = docSnap.id;
+    const div = document.createElement("div");
+    div.className = "card";
+
+    // Participants
+    const participantsCol = collection(db, "concerts", concertId, "participants");
+    let participantsHtml = "<p>Chargement des participants...</p>";
+
+    onSnapshot(participantsCol, partSnap=>{
+      const present = [];
+      const absent = [];
+      partSnap.forEach(p=>{
+        const d = p.data();
+        if(d.status==="present") present.push(d.name);
+        if(d.status==="absent") absent.push(d.name);
+      });
+      participantsHtml = `
+        <div>✅ Présents: ${present.join(", ") || "-"}</div>
+        <div>❌ Absents: ${absent.join(", ") || "-"}</div>
       `;
-      container.appendChild(div);
+      div.querySelector(".participants")?.remove();
+      const partDiv = document.createElement("div");
+      partDiv.className="participants";
+      partDiv.innerHTML=participantsHtml;
+      div.appendChild(partDiv);
     });
+
+    // Commentaires
+    const commentsCol = collection(db, "concerts", concertId, "comments");
+    let commentsHtml = "<p>Chargement des commentaires...</p>";
+
+    onSnapshot(commentsCol, comSnap=>{
+      commentsHtml = comSnap.docs.map(doc=>`<div><strong>${doc.data().name}:</strong> ${doc.data().text}</div>`).join("");
+      div.querySelector(".comments")?.remove();
+      const comDiv = document.createElement("div");
+      comDiv.className="comments";
+      comDiv.innerHTML = commentsHtml;
+      div.appendChild(comDiv);
+    });
+
+    div.innerHTML += `
+      <h2>${c.title}</h2>
+      <p>${c.date} ${c.time || ""} — ${c.lieu || ""}</p>
+      <p>${c.desc || ""}</p>
+      <button class="present">✅ Je viens</button>
+      <button class="absent">❌ Je ne viens pas</button>
+      <div class="comment-form">
+        <input type="text" placeholder="Nom" class="user">
+        <input type="text" placeholder="Commentaire" class="text">
+        <button class="add-comment">Ajouter</button>
+      </div>
+    `;
+    container.appendChild(div);
+
+    // Événements
+    div.querySelector(".present").onclick = ()=>{
+      const name = prompt("Votre nom pour confirmer la présence:");
+      addParticipant(concertId, name, "present");
+    };
+    div.querySelector(".absent").onclick = ()=>{
+      const name = prompt("Votre nom pour confirmer l'absence:");
+      addParticipant(concertId, name, "absent");
+    };
+    div.querySelector(".add-comment").onclick = ()=>{
+      const name = div.querySelector(".user").value.trim();
+      const text = div.querySelector(".text").value.trim();
+      addComment(concertId, name, text);
+      div.querySelector(".user").value="";
+      div.querySelector(".text").value="";
+    };
   });
+});
 </script>
