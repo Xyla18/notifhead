@@ -5,39 +5,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Concerts</title>
 <style>
-body { font-family:sans-serif; background:#121212; color:#fff; margin:0; }
-header { padding:16px; background:#000; text-align:center; }
-.container { padding:20px; max-width:700px; margin:auto; }
+body { font-family:'Segoe UI', sans-serif; margin:0; background:#121212; color:#fff; }
+header { display:flex; justify-content:space-between; align-items:center; padding:16px; background:#000; }
+header h1 { margin:0; }
+header button { padding:6px 12px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
+header button#btnLogout { background:#ff5555; color:#fff; }
+header button#btnBack { background:#00ccff; color:#000; }
+.container { max-width:800px; margin:24px auto; padding:0 16px; display:flex; flex-direction:column; gap:24px; }
+.card { background:#1e1e1e; padding:16px; border-radius:12px; }
 input,textarea,button { width:100%; margin:6px 0; padding:8px; border-radius:6px; border:none; }
-button { cursor:pointer; background:#00ccff; color:#000; font-weight:bold; }
+input[type="file"] { padding:3px; }
+button.save { background:#00ccff; color:#000; font-weight:bold; }
 button.delete { background:#ff5555; color:#fff; }
-.concert { background:#1e1e1e; margin:10px 0; padding:12px; border-radius:8px; }
+.concert-item { background:#2a2a2a; padding:12px; border-radius:8px; margin-bottom:12px; }
+img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
+.participants, .comments { font-size:0.9rem; margin-top:6px; }
 </style>
 </head>
 <body>
-<header><h1>Admin Concerts</h1></header>
-<div class="container">
-<h2>Ajouter / Modifier</h2>
-<form id="form">
-  <input type="hidden" id="docId">
-  <input id="title" placeholder="Titre" required>
-  <input type="date" id="date">
-  <input type="time" id="time">
-  <input id="lieu" placeholder="Lieu">
-  <textarea id="desc" placeholder="Description"></textarea>
-  <button type="submit">Enregistrer</button>
-</form>
+<header>
+  <button id="btnBack">← Retour</button>
+  <h1>Admin Concerts</h1>
+  <button id="btnLogout">Déconnexion</button>
+</header>
 
-<h2>Liste des concerts</h2>
-<div id="concertList">Chargement...</div>
+<div class="container">
+  <div class="card">
+    <h2>Ajouter / Modifier un concert</h2>
+    <form id="form">
+      <input type="hidden" id="docId">
+      <input id="title" placeholder="Titre" required>
+      <input type="date" id="date">
+      <input type="time" id="time">
+      <input id="lieu" placeholder="Lieu">
+      <input type="file" id="image" accept="image/*">
+      <textarea id="desc" placeholder="Description"></textarea>
+      <button type="submit" class="save">Enregistrer</button>
+    </form>
+  </div>
+
+  <h2>Liste des concerts</h2>
+  <div id="concertList">Chargement...</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } 
   from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } 
+  from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
 
-// Config Firebase
+// ===== Firebase Config =====
 const firebaseConfig = {
   apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
   authDomain: "notifhead.firebaseapp.com",
@@ -50,56 +68,93 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const concertsRef = collection(db,"concerts");
+const storage = getStorage(app);
 
 const form = document.getElementById("form");
 const list = document.getElementById("concertList");
 
-// Ajouter / Modifier
+// Navigation
+document.getElementById("btnBack").onclick = ()=>{ window.location.href="concerts.html"; }
+document.getElementById("btnLogout").onclick = ()=>{ alert("Déconnexion"); window.location.href="login.html"; }
+
+// Ajouter / Modifier concert
 form.addEventListener("submit", async e=>{
   e.preventDefault();
-  const data = {
-    title: document.getElementById("title").value,
-    date: document.getElementById("date").value,
-    time: document.getElementById("time").value,
-    lieu: document.getElementById("lieu").value,
-    desc: document.getElementById("desc").value
-  };
   const docId = document.getElementById("docId").value;
+  const title = document.getElementById("title").value;
+  const date = document.getElementById("date").value;
+  const time = document.getElementById("time").value;
+  const lieu = document.getElementById("lieu").value;
+  const desc = document.getElementById("desc").value;
+  const file = document.getElementById("image").files[0];
+
+  let imagePath = null;
+  if(file){
+    const storageRef = ref(storage, `concertImages/${Date.now()}_${file.name}`);
+    await uploadBytes(storageRef,file);
+    imagePath = storageRef.fullPath;
+  }
+
+  const data = { title,date,time,lieu,desc };
+  if(imagePath) data.imagePath = imagePath;
+
   if(docId){
     await updateDoc(doc(db,"concerts",docId),data);
   } else {
-    await addDoc(concertsRef,data);
+    await addDoc(collection(db,"concerts"),data);
   }
+
   form.reset(); document.getElementById("docId").value="";
 });
 
-// Liste en temps réel
+// Liste concerts avec participants et commentaires
+const concertsRef = collection(db,"concerts");
 onSnapshot(concertsRef, snapshot=>{
   list.innerHTML="";
-  snapshot.forEach(docSnap=>{
+  snapshot.forEach(async docSnap=>{
     const c = docSnap.data();
+    const concertId = docSnap.id;
     const div = document.createElement("div");
-    div.className="concert";
+    div.className="concert-item";
+
+    // Image
+    let imgTag = '';
+    if(c.imagePath){
+      const imgRef = ref(storage,c.imagePath);
+      const url = await getDownloadURL(imgRef);
+      imgTag = `<img src="${url}" class="concert-img">`;
+    }
+
     div.innerHTML = `
-      <strong>${c.title}</strong> - ${c.date} ${c.time}<br>
+      ${imgTag}
+      <strong>${c.title}</strong> - ${c.date} ${c.time || ''}<br>
       <em>${c.lieu}</em><br>
-      ${c.desc}<br>
-      <button data-id="${docSnap.id}" class="edit">Modifier</button>
-      <button data-id="${docSnap.id}" class="delete">Supprimer</button>
+      ${c.desc || ''}<br>
+      <div class="participants">Chargement participants...</div>
+      <div class="comments">Chargement commentaires...</div>
+      <button class="edit" data-id="${concertId}">Modifier</button>
+      <button class="delete" data-id="${concertId}">Supprimer</button>
     `;
     list.appendChild(div);
-  });
 
-  document.querySelectorAll(".delete").forEach(btn=>{
-    btn.onclick = async ()=>{ await deleteDoc(doc(db,"concerts",btn.dataset.id)); };
-  });
+    // Participants en temps réel
+    const participantsCol = collection(db,"concerts",concertId,"participants");
+    onSnapshot(participantsCol, partSnap=>{
+      const present = [], absent = [];
+      partSnap.forEach(p=>{ const d=p.data(); if(d.status==="present") present.push(d.name); if(d.status==="absent") absent.push(d.name); });
+      div.querySelector(".participants").innerHTML = `✅ Présents: ${present.join(", ")||"-"}<br>❌ Absents: ${absent.join(", ")||"-"}`;
+    });
 
-  document.querySelectorAll(".edit").forEach(btn=>{
-    btn.onclick = ()=>{
-      const docSnap = snapshot.docs.find(d=>d.id===btn.dataset.id);
-      const c = docSnap.data();
-      document.getElementById("docId").value = btn.dataset.id;
+    // Commentaires en temps réel
+    const commentsCol = collection(db,"concerts",concertId,"comments");
+    onSnapshot(commentsCol, comSnap=>{
+      div.querySelector(".comments").innerHTML = comSnap.docs.map(doc=>`<div><strong>${doc.data().name}:</strong> ${doc.data().text}</div>`).join("");
+    });
+
+    // Boutons
+    div.querySelector(".delete").onclick = async ()=>{ await deleteDoc(doc(db,"concerts",concertId)); };
+    div.querySelector(".edit").onclick = ()=>{
+      document.getElementById("docId").value = concertId;
       document.getElementById("title").value = c.title;
       document.getElementById("date").value = c.date;
       document.getElementById("time").value = c.time;
