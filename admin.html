@@ -8,27 +8,18 @@
 body { margin:0; font-family:'Segoe UI',sans-serif; background:#121212; color:#fff; }
 header { display:flex; justify-content:space-between; align-items:center; padding:16px 24px; background:#000; box-shadow:0 4px 10px rgba(0,0,0,0.5);}
 header h1 { margin:0; font-size:1.8rem; }
-header button { background:#ff0000; padding:8px 16px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; transition:0.2s; }
-header button:hover { background:#cc0000; transform:scale(1.05); }
+header button { background:#ff0000; padding:8px 16px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; }
 .container { display:flex; flex-wrap:wrap; gap:24px; margin:24px; }
 .card { background:#1e1e1e; padding:16px; border-radius:12px; flex:1; min-width:320px; }
-label { display:block; margin-top:12px; font-weight:bold; }
 input,textarea { width:100%; padding:8px; margin-top:6px; border-radius:6px; border:none; }
-input[type="file"]{ padding:3px; }
 .actions{ display:flex; gap:8px; margin-top:8px; }
 .actions button{ flex:1; padding:6px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
 .actions button.delete{ background:#ff5555; color:#fff; }
 .actions button.edit{ background:#00ccff; color:#000; }
-.autocomplete-container { position:relative; }
-.autocomplete-suggestions { position:absolute; top:100%; left:0; right:0; background:#fff; color:#000; max-height:200px; overflow-y:auto; z-index:10; border-radius:6px; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
-.autocomplete-suggestion { padding:8px; cursor:pointer; }
-.autocomplete-suggestion:hover { background:#f0f0f0; }
 .concert-item { border:1px solid #333; padding:12px; border-radius:8px; margin-bottom:12px; }
-.concert-item img { max-width:100%; border-radius:6px; margin-top:6px; }
 </style>
 </head>
 <body>
-
 <header>
   <h1>Mode Admin</h1>
   <button id="btnLogout">Déconnexion</button>
@@ -47,13 +38,7 @@ input[type="file"]{ padding:3px; }
       <label>Titre<input id="title" required></label>
       <label>Date<input type="date" id="date"></label>
       <label>Heure<input type="time" id="time"></label>
-      <label>Lieu
-        <div id="autocomplete-container" class="autocomplete-container">
-          <input id="lieu" placeholder="Tapez le lieu">
-          <div id="autocomplete-suggestions" class="autocomplete-suggestions"></div>
-        </div>
-      </label>
-      <label>Image<input type="file" id="image" accept="image/*"></label>
+      <label>Lieu<input id="lieu"></label>
       <label>Description<textarea id="desc" rows="4"></textarea></label>
       <div class="actions">
         <button type="submit">Enregistrer</button>
@@ -63,142 +48,91 @@ input[type="file"]{ padding:3px; }
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@geoapify/geocoder-autocomplete/dist/geocoder-autocomplete.min.js"></script>
-<script>
-const JSON_URL = 'https://tonserveur.com/concerts.json'; // Remplace par ton URL JSON
+<script type="module">
+// ===== Firebase =====
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } 
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-if(sessionStorage.getItem('isAdmin')!=='1'){ alert('Accès non autorisé'); location.href='login.html'; }
-document.getElementById('btnLogout').addEventListener('click',()=>{ sessionStorage.removeItem('isAdmin'); location.href='index.html'; });
+const firebaseConfig = {
+  apiKey: "TON_API_KEY",
+  authDomain: "TON_PROJET.firebaseapp.com",
+  projectId: "TON_PROJET",
+  storageBucket: "TON_PROJET.appspot.com",
+  messagingSenderId: "XXX",
+  appId: "XXX"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const colRef = collection(db, "concerts");
 
-// Fetch GET
-async function getConcerts(){
-  const res = await fetch(JSON_URL);
-  return await res.json();
-}
+// ===== Logout fictif =====
+document.getElementById('btnLogout').addEventListener('click',()=>{ 
+  sessionStorage.removeItem('isAdmin'); 
+  location.href='index.html'; 
+});
 
-// Fetch PUT pour sauvegarder
-async function saveConcerts(concerts){
-  await fetch(JSON_URL, {
-    method:'PUT',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(concerts)
-  });
-}
-
-// Affichage
-async function loadList(){
-  const list = await getConcerts();
-  const container = document.getElementById('concertList');
-  container.innerHTML='';
-  if(list.length===0){ container.innerHTML='<p>Aucun concert.</p>'; return; }
-  list.forEach((c,i)=>{
+// ===== Liste en temps réel =====
+const concertList = document.getElementById('concertList');
+onSnapshot(colRef, snapshot=>{
+  concertList.innerHTML = '';
+  snapshot.forEach(docSnap=>{
+    const c = docSnap.data();
     const div = document.createElement('div');
-    div.className='concert-item';
-    div.innerHTML=`
-      <strong>${c.title}</strong>
-      <div>${c.date} ${c.time||''} — ${c.lieu||''}</div>
-      ${c.image?`<img src="${c.image}">`:''}
-      <p>${c.desc||''}</p>
+    div.className = 'concert-item';
+    div.innerHTML = `
+      <strong>${c.title}</strong><br>
+      ${c.date || ''} ${c.time || ''} — ${c.lieu || ''}<br>
+      <p>${c.desc || ''}</p>
       <div class="actions">
-        <button class="edit" data-edit="${i}">Modifier</button>
-        <button class="delete" data-del="${i}">Supprimer</button>
-      </div>`;
-    container.appendChild(div);
-  });
-
-  container.querySelectorAll('.edit').forEach(b=>{
-    b.addEventListener('click', async e=>{
-      const i = Number(e.currentTarget.dataset.edit);
-      const concerts = await getConcerts();
-      const c = concerts[i];
-      document.getElementById('idx').value=i;
-      document.getElementById('title').value=c.title||'';
-      document.getElementById('date').value=c.date||'';
-      document.getElementById('time').value=c.time||'';
-      document.getElementById('lieu').value=c.lieu||'';
-      document.getElementById('desc').value=c.desc||'';
+        <button class="edit">Modifier</button>
+        <button class="delete">Supprimer</button>
+      </div>
+    `;
+    // Edit
+    div.querySelector('.edit').addEventListener('click',()=>{
+      document.getElementById('idx').value = docSnap.id;
+      document.getElementById('title').value = c.title;
+      document.getElementById('date').value = c.date || '';
+      document.getElementById('time').value = c.time || '';
+      document.getElementById('lieu').value = c.lieu || '';
+      document.getElementById('desc').value = c.desc || '';
     });
-  });
-
-  container.querySelectorAll('.delete').forEach(b=>{
-    b.addEventListener('click', async e=>{
-      if(!confirm('Supprimer ce concert ?')) return;
-      const i = Number(e.currentTarget.dataset.del);
-      const concerts = await getConcerts();
-      concerts.splice(i,1);
-      await saveConcerts(concerts);
-      loadList();
+    // Delete
+    div.querySelector('.delete').addEventListener('click',async()=>{
+      if(confirm("Supprimer ce concert ?")){
+        await deleteDoc(doc(db,"concerts",docSnap.id));
+      }
     });
+    concertList.appendChild(div);
   });
-}
+});
 
-// Formulaire
+// ===== Ajout / Modif =====
 document.getElementById('form').addEventListener('submit', async e=>{
   e.preventDefault();
-  const idx = document.getElementById('idx').value;
-  const file = document.getElementById('image').files[0];
-  let imageData='';
-  if(file){
-    imageData = await new Promise(res=>{
-      const reader = new FileReader();
-      reader.onload = e=>res(e.target.result);
-      reader.readAsDataURL(file);
-    });
-  }
-
-  const concertData = {
+  const data = {
     title: document.getElementById('title').value.trim(),
     date: document.getElementById('date').value,
     time: document.getElementById('time').value,
-    lieu: document.getElementById('lieu(A bien remplire)').value.trim(),
-    desc: document.getElementById('desc').value.trim(),
-    image: imageData
+    lieu: document.getElementById('lieu').value.trim(),
+    desc: document.getElementById('desc').value.trim()
   };
-
-  const concerts = await getConcerts();
-  if(idx!=='') concerts[Number(idx)] = concertData;
-  else concerts.push(concertData);
-
-  await saveConcerts(concerts);
-  loadList();
-  document.getElementById('form').reset();
-  document.getElementById('idx').value='';
+  const id = document.getElementById('idx').value;
+  if(id){
+    await updateDoc(doc(db,"concerts",id), data);
+  } else {
+    await addDoc(colRef, data);
+  }
+  e.target.reset();
+  document.getElementById('idx').value = '';
 });
 
-// Reset
+// ===== Reset =====
 document.getElementById('btnReset').addEventListener('click',()=>{
   document.getElementById('form').reset();
   document.getElementById('idx').value='';
 });
-
-// Geoapify Autocomplete
-const apiKey = 'YOUR_GEOAPIFY_KEY';
-const autocomplete = new Geoapify.GeocoderAutocomplete(document.getElementById('autocomplete-container'), apiKey, {
-  placeholder:'Tapez le lieu(A bien remplire)',
-  filter:['countrycode:fr'],
-  types:['address']
-});
-
-autocomplete.on('select', location=>{
-  document.getElementById('lieu').value = location.properties.formatted;
-});
-
-autocomplete.on('suggestions', suggestions=>{
-  const container = document.getElementById('autocomplete-suggestions');
-  container.innerHTML='';
-  suggestions.forEach(s=>{
-    const div = document.createElement('div');
-    div.classList.add('autocomplete-suggestion');
-    div.textContent = s.properties.formatted;
-    div.addEventListener('click', ()=>{
-      document.getElementById('lieu').value = s.properties.formatted;
-      container.innerHTML='';
-    });
-    container.appendChild(div);
-  });
-});
-
-loadList();
 </script>
 </body>
 </html>
