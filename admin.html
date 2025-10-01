@@ -1,85 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Concerts</title>
+<style>
+body { font-family:sans-serif; background:#121212; color:#fff; margin:0; }
+header { padding:16px; background:#000; text-align:center; }
+.container { padding:20px; max-width:700px; margin:auto; }
+input,textarea,button { width:100%; margin:6px 0; padding:8px; border-radius:6px; border:none; }
+button { cursor:pointer; background:#00ccff; color:#000; font-weight:bold; }
+button.delete { background:#ff5555; color:#fff; }
+.concert { background:#1e1e1e; margin:10px 0; padding:12px; border-radius:8px; }
+</style>
+</head>
+<body>
+<header><h1>Admin Concerts</h1></header>
+<div class="container">
+<h2>Ajouter / Modifier</h2>
+<form id="form">
+  <input type="hidden" id="docId">
+  <input id="title" placeholder="Titre" required>
+  <input type="date" id="date">
+  <input type="time" id="time">
+  <input id="lieu" placeholder="Lieu">
+  <textarea id="desc" placeholder="Description"></textarea>
+  <button type="submit">Enregistrer</button>
+</form>
+
+<h2>Liste des concerts</h2>
+<div id="concertList">Chargement...</div>
+</div>
+
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } 
-    from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } 
+  from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
-  // ======= Config Firebase =======
-  const firebaseConfig = {
-    apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
-    authDomain: "notifhead.firebaseapp.com",
-    projectId: "notifhead",
-    storageBucket: "notifhead.firebasestorage.app",
-    messagingSenderId: "190210184035",
-    appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
-    measurementId: "G-HWW5Z08H60"
+// Config Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
+  authDomain: "notifhead.firebaseapp.com",
+  projectId: "notifhead",
+  storageBucket: "notifhead.firebasestorage.app",
+  messagingSenderId: "190210184035",
+  appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
+  measurementId: "G-HWW5Z08H60"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const concertsRef = collection(db,"concerts");
+
+const form = document.getElementById("form");
+const list = document.getElementById("concertList");
+
+// Ajouter / Modifier
+form.addEventListener("submit", async e=>{
+  e.preventDefault();
+  const data = {
+    title: document.getElementById("title").value,
+    date: document.getElementById("date").value,
+    time: document.getElementById("time").value,
+    lieu: document.getElementById("lieu").value,
+    desc: document.getElementById("desc").value
   };
+  const docId = document.getElementById("docId").value;
+  if(docId){
+    await updateDoc(doc(db,"concerts",docId),data);
+  } else {
+    await addDoc(concertsRef,data);
+  }
+  form.reset(); document.getElementById("docId").value="";
+});
 
-  // Init Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const concertsRef = collection(db, "concerts");
-
-  const form = document.getElementById("form");
-  const list = document.getElementById("concertList");
-
-  // Ajouter ou modifier un concert
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const data = {
-      title: document.getElementById("title").value,
-      date: document.getElementById("date").value,
-      time: document.getElementById("time").value,
-      lieu: document.getElementById("lieu").value,
-      desc: document.getElementById("desc").value
-    };
-    const docId = document.getElementById("docId").value;
-
-    if(docId){
-      await updateDoc(doc(db, "concerts", docId), data);
-    } else {
-      await addDoc(concertsRef, data);
-    }
-
-    form.reset();
-    document.getElementById("docId").value = "";
+// Liste en temps réel
+onSnapshot(concertsRef, snapshot=>{
+  list.innerHTML="";
+  snapshot.forEach(docSnap=>{
+    const c = docSnap.data();
+    const div = document.createElement("div");
+    div.className="concert";
+    div.innerHTML = `
+      <strong>${c.title}</strong> - ${c.date} ${c.time}<br>
+      <em>${c.lieu}</em><br>
+      ${c.desc}<br>
+      <button data-id="${docSnap.id}" class="edit">Modifier</button>
+      <button data-id="${docSnap.id}" class="delete">Supprimer</button>
+    `;
+    list.appendChild(div);
   });
 
-  // Liste en temps réel
-  onSnapshot(concertsRef, (snapshot) => {
-    list.innerHTML = "";
-    snapshot.forEach(docSnap => {
+  document.querySelectorAll(".delete").forEach(btn=>{
+    btn.onclick = async ()=>{ await deleteDoc(doc(db,"concerts",btn.dataset.id)); };
+  });
+
+  document.querySelectorAll(".edit").forEach(btn=>{
+    btn.onclick = ()=>{
+      const docSnap = snapshot.docs.find(d=>d.id===btn.dataset.id);
       const c = docSnap.data();
-      const div = document.createElement("div");
-      div.className = "concert";
-      div.innerHTML = `
-        <strong>${c.title}</strong> - ${c.date} ${c.time}<br>
-        <em>${c.lieu}</em><br>
-        ${c.desc}<br>
-        <button data-id="${docSnap.id}" class="edit">Modifier</button>
-        <button data-id="${docSnap.id}" class="delete">Supprimer</button>
-      `;
-      list.appendChild(div);
-    });
-
-    // Suppression
-    document.querySelectorAll(".delete").forEach(btn => {
-      btn.onclick = async () => {
-        await deleteDoc(doc(db, "concerts", btn.dataset.id));
-      };
-    });
-
-    // Edition
-    document.querySelectorAll(".edit").forEach(btn => {
-      btn.onclick = () => {
-        const docSnap = snapshot.docs.find(d => d.id === btn.dataset.id);
-        const c = docSnap.data();
-        document.getElementById("docId").value = btn.dataset.id;
-        document.getElementById("title").value = c.title;
-        document.getElementById("date").value = c.date;
-        document.getElementById("time").value = c.time;
-        document.getElementById("lieu").value = c.lieu;
-        document.getElementById("desc").value = c.desc;
-      };
-    });
+      document.getElementById("docId").value = btn.dataset.id;
+      document.getElementById("title").value = c.title;
+      document.getElementById("date").value = c.date;
+      document.getElementById("time").value = c.time;
+      document.getElementById("lieu").value = c.lieu;
+      document.getElementById("desc").value = c.desc;
+    };
   });
+});
 </script>
+</body>
+</html>
