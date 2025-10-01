@@ -6,8 +6,9 @@
 <title>Concerts</title>
 <style>
 body { font-family:'Segoe UI', sans-serif; margin:0; background:#f9f9f9; }
-header { display:flex; justify-content:center; align-items:center; padding:16px; background:#202020; color:#fff; }
+header { display:flex; justify-content:space-between; align-items:center; padding:16px; background:#202020; color:#fff; }
 header h1 { margin:0; font-size:1.8rem; }
+header button { background:#00ccff; color:#000; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; }
 .container { max-width:900px; margin:24px auto; display:flex; flex-direction:column; gap:24px; padding:0 16px; }
 .card { background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.15); }
 .card h2 { margin-top:0; }
@@ -18,10 +19,16 @@ button { margin:4px; padding:6px 12px; border:none; border-radius:6px; cursor:po
 .comment-form button { background:#00ccff; color:#fff; }
 .comments { margin-top:12px; }
 .participants { margin-top:8px; font-size:0.95rem; }
+img.concert-img { max-width:100%; border-radius:8px; margin-top:8px; }
 </style>
 </head>
 <body>
-<header><h1>Concerts à venir</h1></header>
+<header>
+  <button id="btnBack">← Retour</button>
+  <h1>Concerts à venir</h1>
+  <button id="btnLogin">Admin</button>
+</header>
+
 <div class="container" id="concertList">
 <p>Chargement des concerts...</p>
 </div>
@@ -30,6 +37,7 @@ button { margin:4px; padding:6px 12px; border:none; border-radius:6px; cursor:po
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getFirestore, collection, query, orderBy, onSnapshot, doc, setDoc, addDoc } 
   from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
 
 // ===== Config Firebase =====
 const firebaseConfig = {
@@ -44,10 +52,15 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 const container = document.getElementById("concertList");
 const concertsRef = collection(db,"concerts");
 const concertsQuery = query(concertsRef, orderBy("date"));
+
+// Navigation
+document.getElementById("btnBack").onclick = ()=>{ window.history.back(); }
+document.getElementById("btnLogin").onclick = ()=>{ window.location.href="admin.html"; }
 
 // Ajouter participant
 async function addParticipant(concertId, name, status){
@@ -72,8 +85,19 @@ onSnapshot(concertsQuery, snapshot=>{
     const div = document.createElement("div");
     div.className="card";
 
-    // Boutons et formulaire
-    div.innerHTML = `
+    // Image depuis Firebase Storage
+    let imgTag = '';
+    if(c.imagePath){
+      const imgRef = ref(storage, c.imagePath);
+      getDownloadURL(imgRef).then(url=>{
+        const imgEl = document.createElement("img");
+        imgEl.src = url;
+        imgEl.className="concert-img";
+        div.prepend(imgEl);
+      });
+    }
+
+    div.innerHTML += `
       <h2>${c.title}</h2>
       <p>${c.date} ${c.time || ''} — ${c.lieu || ''}</p>
       <p>${c.desc || ''}</p>
@@ -103,7 +127,6 @@ onSnapshot(concertsQuery, snapshot=>{
       div.querySelector(".comments").innerHTML = comSnap.docs.map(doc=>`<div><strong>${doc.data().name}:</strong> ${doc.data().text}</div>`).join("");
     });
 
-    // Événements boutons
     div.querySelector(".present").onclick = ()=>{
       const name = prompt("Votre nom pour confirmer la présence:");
       addParticipant(concertId,name,"present");
@@ -116,7 +139,8 @@ onSnapshot(concertsQuery, snapshot=>{
       const name = div.querySelector(".user").value.trim();
       const text = div.querySelector(".text").value.trim();
       addComment(concertId,name,text);
-      div.querySelector(".user").value=""; div.querySelector(".text").value="";
+      div.querySelector(".user").value="";
+      div.querySelector(".text").value="";
     };
   });
 });
