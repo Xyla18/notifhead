@@ -14,11 +14,10 @@ header button#btnBack { background:#00ccff; color:#000; }
 .container { max-width:800px; margin:24px auto; padding:0 16px; display:flex; flex-direction:column; gap:24px; }
 .card { background:#1e1e1e; padding:16px; border-radius:12px; }
 input,textarea,button { width:100%; margin:6px 0; padding:8px; border-radius:6px; border:none; }
+input[type="file"] { padding:3px; }
 button.save { background:#00ccff; color:#000; font-weight:bold; }
 button.delete { background:#ff5555; color:#fff; }
 .concert-item { background:#2a2a2a; padding:12px; border-radius:8px; margin-bottom:12px; }
-.participants, .comments { font-size:0.9rem; margin-top:6px; }
-.status { margin-top:8px; color:#00ccff; font-size:0.9rem; }
 img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
 </style>
 </head>
@@ -35,13 +34,12 @@ img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
     <form id="form">
       <input type="hidden" id="docId">
       <input id="title" placeholder="Titre" required>
-      <input type="date" id="date" required>
+      <input type="date" id="date">
       <input type="time" id="time">
       <input id="lieu" placeholder="Lieu">
-      <input id="imagePath" placeholder="URL ou chemin de l'image">
+      <input type="file" id="image" accept="image/*">
       <textarea id="desc" placeholder="Description"></textarea>
       <button type="submit" class="save">Enregistrer</button>
-      <div class="status" id="status"></div>
     </form>
   </div>
 
@@ -53,13 +51,15 @@ img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } 
   from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } 
+  from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
 
-// ===== Firebase Config (avec .app) =====
+// ===== Firebase Config =====
 const firebaseConfig = {
   apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
   authDomain: "notifhead.firebaseapp.com",
   projectId: "notifhead",
-  storageBucket: "notifhead.firebasestorage.app", // reste en .app
+  storageBucket: "notifhead.appspot.com", // ✅ Important : garder .appspot.com pour le stockage
   messagingSenderId: "190210184035",
   appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
   measurementId: "G-HWW5Z08H60"
@@ -67,14 +67,14 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 const form = document.getElementById("form");
 const list = document.getElementById("concertList");
-const statusEl = document.getElementById("status");
 
 // Navigation
-document.getElementById("btnBack").onclick = ()=> window.location.href = "concerts.html";
-document.getElementById("btnLogout").onclick = ()=> { alert("Déconnexion"); window.location.href = "login.html"; };
+document.getElementById("btnBack").onclick = ()=>{ window.location.href="concerts.html"; }
+document.getElementById("btnLogout").onclick = ()=>{ alert("Déconnexion"); window.location.href="login.html"; }
 
 // Ajouter / Modifier concert
 form.addEventListener("submit", async e=>{
@@ -84,38 +84,36 @@ form.addEventListener("submit", async e=>{
   const date = document.getElementById("date").value;
   const time = document.getElementById("time").value;
   const lieu = document.getElementById("lieu").value;
-  const imagePath = document.getElementById("imagePath").value.trim();
   const desc = document.getElementById("desc").value;
-
-  if(!title || !date){
-    alert("Titre et date sont obligatoires.");
-    return;
-  }
-
-  statusEl.textContent = "Enregistrement en cours...";
+  const file = document.getElementById("image").files[0];
 
   try {
-    const data = { title, date, time, lieu, desc };
-    if(imagePath) data.imagePath = imagePath;
+    let imagePath = null;
+    if (file) {
+      const storageRef = ref(storage, `concertImages/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      imagePath = await getDownloadURL(storageRef);
+    }
 
-    if(docId){
-      await updateDoc(doc(db,"concerts",docId), data);
-      statusEl.textContent = "✅ Concert mis à jour avec succès !";
+    const data = { title, date, time, lieu, desc };
+    if (imagePath) data.imagePath = imagePath;
+
+    if (docId) {
+      await updateDoc(doc(db, "concerts", docId), data);
     } else {
-      await addDoc(collection(db,"concerts"), data);
-      statusEl.textContent = "✅ Concert ajouté avec succès !";
+      await addDoc(collection(db, "concerts"), data);
     }
 
     form.reset();
     document.getElementById("docId").value = "";
-  } catch(err){
+    alert("✅ Concert enregistré avec succès !");
+  } catch (err) {
     console.error(err);
-    alert("Erreur: " + err.message);
-    statusEl.textContent = "❌ Erreur : " + err.message;
+    alert("❌ Erreur lors de l'enregistrement : " + err.message);
   }
 });
 
-// Liste concerts en temps réel
+// Liste concerts avec images
 const concertsRef = collection(db,"concerts");
 onSnapshot(concertsRef, snapshot=>{
   list.innerHTML="";
@@ -125,37 +123,32 @@ onSnapshot(concertsRef, snapshot=>{
     const div = document.createElement("div");
     div.className="concert-item";
 
-    const imgTag = c.imagePath ? `<img src="${c.imagePath}" class="concert-img">` : "";
+    const imgTag = c.imagePath ? `<img src="${c.imagePath}" class="concert-img">` : '';
 
     div.innerHTML = `
       ${imgTag}
       <strong>${c.title}</strong> - ${c.date} ${c.time || ''}<br>
-      <em>${c.lieu || ''}</em><br>
+      <em>${c.lieu}</em><br>
       ${c.desc || ''}<br>
       <button class="edit" data-id="${concertId}">Modifier</button>
       <button class="delete" data-id="${concertId}">Supprimer</button>
     `;
-
     list.appendChild(div);
 
+    // Boutons
+    div.querySelector(".delete").onclick = async ()=>{
+      await deleteDoc(doc(db,"concerts",concertId));
+    };
     div.querySelector(".edit").onclick = ()=>{
       document.getElementById("docId").value = concertId;
       document.getElementById("title").value = c.title;
       document.getElementById("date").value = c.date;
       document.getElementById("time").value = c.time;
       document.getElementById("lieu").value = c.lieu;
-      document.getElementById("imagePath").value = c.imagePath || "";
       document.getElementById("desc").value = c.desc;
-    };
-
-    div.querySelector(".delete").onclick = async ()=>{
-      if(confirm("Supprimer ce concert ?")){
-        await deleteDoc(doc(db,"concerts",concertId));
-      }
     };
   });
 });
 </script>
 </body>
 </html>
-
