@@ -20,6 +20,7 @@ button.delete { background:#ff5555; color:#fff; }
 .concert-item { background:#2a2a2a; padding:12px; border-radius:8px; margin-bottom:12px; }
 img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
 .participants, .comments { font-size:0.9rem; margin-top:6px; }
+.status { margin-top:8px; color:#00ccff; font-size:0.9rem; }
 </style>
 </head>
 <body>
@@ -41,6 +42,7 @@ img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
       <input type="file" id="image" accept="image/*">
       <textarea id="desc" placeholder="Description"></textarea>
       <button type="submit" class="save">Enregistrer</button>
+      <div class="status" id="status"></div>
     </form>
   </div>
 
@@ -50,19 +52,17 @@ img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { 
-  getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot 
-} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-import { 
-  getStorage, ref, uploadBytes, getDownloadURL 
-} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } 
+  from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } 
+  from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
 
-// === Configuration Firebase ===
+// ===== Firebase Config corrigée =====
 const firebaseConfig = {
   apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
   authDomain: "notifhead.firebaseapp.com",
   projectId: "notifhead",
-  storageBucket: "notifhead.appspot.com", // ✅ correction ici
+  storageBucket: "notifhead.appspot.com", // ✅ CORRIGÉ
   messagingSenderId: "190210184035",
   appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
   measurementId: "G-HWW5Z08H60"
@@ -74,127 +74,102 @@ const storage = getStorage(app);
 
 const form = document.getElementById("form");
 const list = document.getElementById("concertList");
+const statusEl = document.getElementById("status");
 
-// === Navigation ===
+// Navigation
 document.getElementById("btnBack").onclick = ()=> window.location.href = "concerts.html";
-document.getElementById("btnLogout").onclick = ()=> {
-  alert("Déconnexion");
-  window.location.href = "login.html";
-};
+document.getElementById("btnLogout").onclick = ()=> { alert("Déconnexion"); window.location.href = "login.html"; };
 
-// === Ajouter ou modifier un concert ===
-form.addEventListener("submit", async e => {
+// Ajouter / Modifier concert
+form.addEventListener("submit", async e=>{
   e.preventDefault();
-
   const docId = document.getElementById("docId").value;
-  const title = document.getElementById("title").value.trim();
+  const title = document.getElementById("title").value;
   const date = document.getElementById("date").value;
   const time = document.getElementById("time").value;
-  const lieu = document.getElementById("lieu").value.trim();
-  const desc = document.getElementById("desc").value.trim();
+  const lieu = document.getElementById("lieu").value;
+  const desc = document.getElementById("desc").value;
   const file = document.getElementById("image").files[0];
+
+  if(!title || !date){
+    alert("Titre et date sont obligatoires.");
+    return;
+  }
+
+  statusEl.textContent = "Enregistrement en cours...";
 
   try {
     let imagePath = null;
-
-    if (file) {
+    if(file){
       const storageRef = ref(storage, `concertImages/${Date.now()}_${file.name}`);
       await uploadBytes(storageRef, file);
       imagePath = storageRef.fullPath;
     }
 
     const data = { title, date, time, lieu, desc };
-    if (imagePath) data.imagePath = imagePath;
+    if(imagePath) data.imagePath = imagePath;
 
-    if (docId) {
-      await updateDoc(doc(db, "concerts", docId), data);
-      alert("Concert mis à jour !");
+    if(docId){
+      await updateDoc(doc(db,"concerts",docId), data);
+      statusEl.textContent = "✅ Concert mis à jour avec succès !";
     } else {
-      await addDoc(collection(db, "concerts"), data);
-      alert("Concert ajouté !");
+      await addDoc(collection(db,"concerts"), data);
+      statusEl.textContent = "✅ Concert ajouté avec succès !";
     }
 
     form.reset();
     document.getElementById("docId").value = "";
-  } catch (err) {
+  } catch(err){
     console.error(err);
-    alert("Erreur : " + err.message);
+    alert("Erreur: " + err.message);
+    statusEl.textContent = "❌ Erreur : " + err.message;
   }
 });
 
-// === Liste des concerts en temps réel ===
-const concertsRef = collection(db, "concerts");
-
-onSnapshot(concertsRef, snapshot => {
-  list.innerHTML = "";
-  snapshot.forEach(async docSnap => {
+// Liste concerts en temps réel
+const concertsRef = collection(db,"concerts");
+onSnapshot(concertsRef, snapshot=>{
+  list.innerHTML="";
+  snapshot.forEach(async docSnap=>{
     const c = docSnap.data();
     const concertId = docSnap.id;
     const div = document.createElement("div");
-    div.className = "concert-item";
+    div.className="concert-item";
 
-    // Image
     let imgTag = "";
-    if (c.imagePath) {
+    if(c.imagePath){
       try {
-        const imgRef = ref(storage, c.imagePath);
+        const imgRef = ref(storage,c.imagePath);
         const url = await getDownloadURL(imgRef);
         imgTag = `<img src="${url}" class="concert-img">`;
-      } catch (e) {
-        console.warn("Image non trouvée :", e);
+      } catch(e) {
+        console.warn("Erreur image:", e);
       }
     }
 
     div.innerHTML = `
       ${imgTag}
-      <strong>${c.title}</strong> - ${c.date || ""} ${c.time || ""}<br>
-      <em>${c.lieu || ""}</em><br>
-      ${c.desc || ""}<br>
-      <div class="participants">Chargement participants...</div>
-      <div class="comments">Chargement commentaires...</div>
+      <strong>${c.title}</strong> - ${c.date} ${c.time || ''}<br>
+      <em>${c.lieu || ''}</em><br>
+      ${c.desc || ''}<br>
       <button class="edit" data-id="${concertId}">Modifier</button>
       <button class="delete" data-id="${concertId}">Supprimer</button>
     `;
 
     list.appendChild(div);
 
-    // Participants en temps réel
-    const participantsCol = collection(db, "concerts", concertId, "participants");
-    onSnapshot(participantsCol, partSnap => {
-      const present = [], absent = [];
-      partSnap.forEach(p => {
-        const d = p.data();
-        if (d.status === "present") present.push(d.name);
-        if (d.status === "absent") absent.push(d.name);
-      });
-      div.querySelector(".participants").innerHTML = `
-        ✅ Présents: ${present.join(", ") || "-"}<br>
-        ❌ Absents: ${absent.join(", ") || "-"}
-      `;
-    });
-
-    // Commentaires en temps réel
-    const commentsCol = collection(db, "concerts", concertId, "comments");
-    onSnapshot(commentsCol, comSnap => {
-      div.querySelector(".comments").innerHTML = comSnap.docs.map(doc => `
-        <div><strong>${doc.data().name} :</strong> ${doc.data().text}</div>
-      `).join("");
-    });
-
-    // Modifier un concert
-    div.querySelector(".edit").onclick = () => {
+    div.querySelector(".edit").onclick = ()=>{
       document.getElementById("docId").value = concertId;
-      document.getElementById("title").value = c.title || "";
-      document.getElementById("date").value = c.date || "";
-      document.getElementById("time").value = c.time || "";
-      document.getElementById("lieu").value = c.lieu || "";
-      document.getElementById("desc").value = c.desc || "";
+      document.getElementById("title").value = c.title;
+      document.getElementById("date").value = c.date;
+      document.getElementById("time").value = c.time;
+      document.getElementById("lieu").value = c.lieu;
+      document.getElementById("desc").value = c.desc;
     };
 
-    // Supprimer un concert
-    div.querySelector(".delete").onclick = async () => {
-      if (confirm("Supprimer ce concert ?")) {
-        await deleteDoc(doc(db, "concerts", concertId));
+    div.querySelector(".delete").onclick = async ()=>{
+      if(confirm("Supprimer ce concert ?")){
+        await deleteDoc(doc(db,"concerts",concertId));
       }
     };
   });
