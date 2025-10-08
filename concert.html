@@ -3,33 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Concerts</title>
+<title>Concerts à venir</title>
 <style>
 body { font-family:'Segoe UI', sans-serif; margin:0; background:#f9f9f9; color:#111; }
 header { display:flex; justify-content:space-between; align-items:center; padding:16px; background:#202020; color:#fff; }
 header h1 { margin:0; font-size:1.6rem; }
 header button { background:#00ccff; color:#000; padding:8px 12px; border:none; border-radius:8px; cursor:pointer; font-weight:700; }
 .container { max-width:900px; margin:24px auto; display:flex; flex-direction:column; gap:20px; padding:0 16px; }
-.card { background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.12); }
-.card h2 { margin:0 0 6px 0; }
-button.small { margin:6px 6px 6px 0; padding:6px 10px; border:none; border-radius:8px; cursor:pointer; font-weight:700; }
+.card { background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.15); }
+.card h2 { margin-top:0; }
+button { margin:4px; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; }
 .present { background:#00ccff; color:#fff; }
 .absent { background:#ff5555; color:#fff; }
-.comment-form input { padding:8px; border-radius:8px; border:1px solid #ddd; margin-right:6px; }
-img.concert-img { max-width:100%; border-radius:8px; margin-bottom:10px; display:block; }
-.meta-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-.comment-row { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding:6px 0; }
-.comment-row button { background:#ddd; color:#000; }
+.remove-btn { background:#777; color:#fff; margin-left:8px; }
+.comment-form input { width:60%; padding:6px; border-radius:6px; margin-right:6px; border:1px solid #ccc; }
+.comment-form button { background:#00ccff; color:#fff; }
+.comments { margin-top:12px; }
+.comment-item { margin-top:6px; padding:6px; background:#f1f1f1; border-radius:6px; }
+.participants { margin-top:8px; font-size:0.95rem; }
+img.concert-img { max-width:100%; border-radius:8px; margin-top:8px; }
 </style>
 </head>
 <body>
+
 <header>
   <button id="btnBack">← Retour</button>
   <h1>Concerts à venir</h1>
-  <div>
-    <button id="btnLoginGoogle">Connexion Google</button>
-    <button id="btnLogout" style="display:none;">Déconnexion</button>
-  </div>
+  <button id="btnLogin">Admin</button>
 </header>
 
 <div class="container" id="concertList">
@@ -37,18 +37,12 @@ img.concert-img { max-width:100%; border-radius:8px; margin-bottom:10px; display
 </div>
 
 <script type="module">
-/* ========== Imports Firebase ========== */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import {
-  getFirestore, collection, query, orderBy, onSnapshot,
-  doc, setDoc, addDoc, deleteDoc
-} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-import {
-  getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut
-} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, setDoc, deleteDoc, addDoc } 
+  from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
 
-/* ===== Config Firebase ===== */
+// === Config Firebase ===
 const firebaseConfig = {
   apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
   authDomain: "notifhead.firebaseapp.com",
@@ -61,190 +55,142 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
 const storage = getStorage(app);
 
-const container = document.getElementById("concertList");
-const btnLogin = document.getElementById("btnLoginGoogle");
-const btnLogout = document.getElementById("btnLogout");
-let currentUser = null;
+// === Navigation ===
+document.getElementById("btnBack").onclick = ()=> window.history.back();
+document.getElementById("btnLogin").onclick = ()=> window.location.href = "login.html";
 
-/* ==== Authentification Google ==== */
-const provider = new GoogleAuthProvider();
-
-btnLogin.onclick = () => signInWithPopup(auth, provider)
-  .then(result => { console.log("Connecté:", result.user.displayName); })
-  .catch(err => alert("Erreur de connexion : " + err.message));
-
-btnLogout.onclick = () => signOut(auth);
-
-onAuthStateChanged(auth, user => {
-  if(user){
-    currentUser = user;
-    btnLogin.style.display = "none";
-    btnLogout.style.display = "inline-block";
-    renderConcerts();
-  } else {
-    currentUser = null;
-    btnLogin.style.display = "inline-block";
-    btnLogout.style.display = "none";
-    container.innerHTML = "<p>Veuillez vous connecter pour voir les concerts.</p>";
-  }
-});
-
-/* ==== Fonctions Firestore ==== */
-async function addParticipant(concertId, name, status, uid){
-  const userRef = doc(db, "concerts", concertId, "participants", uid);
-  await setDoc(userRef, { name, status, uid, updatedAt: Date.now() });
+// === Gestion du pseudo local ===
+let username = localStorage.getItem("concert_username");
+if (!username) {
+  username = prompt("Entre ton pseudo pour cette session :");
+  if (username) localStorage.setItem("concert_username", username);
+  else username = "Anonyme";
 }
 
-async function removeParticipant(concertId, uid){
-  const userRef = doc(db, "concerts", concertId, "participants", uid);
+// === Fonctions Firestore ===
+async function addParticipant(concertId, name, status) {
+  const userRef = doc(db, "concerts", concertId, "participants", name);
+  await setDoc(userRef, { name, status });
+}
+
+async function removeParticipant(concertId, name) {
+  const userRef = doc(db, "concerts", concertId, "participants", name);
   await deleteDoc(userRef);
 }
 
-async function addComment(concertId, name, text, uid){
+async function addComment(concertId, name, text) {
   const commentsRef = collection(db, "concerts", concertId, "comments");
-  await addDoc(commentsRef, { name, text, uid, createdAt: Date.now() });
+  await addDoc(commentsRef, { name, text });
 }
 
-async function deleteComment(concertId, commentId){
-  const cDoc = doc(db, "concerts", concertId, "comments", commentId);
-  await deleteDoc(cDoc);
+async function deleteComment(concertId, commentId) {
+  await deleteDoc(doc(db, "concerts", concertId, "comments", commentId));
 }
 
-/* ==== Affichage des concerts ==== */
-function renderConcerts(){
-  const concertsRef = collection(db, "concerts");
-  const concertsQuery = query(concertsRef, orderBy("date"));
-  onSnapshot(concertsQuery, snapshot => {
-    container.innerHTML = "";
-    if(snapshot.empty){
-      container.innerHTML = "<p>Aucun concert pour l'instant.</p>";
-      return;
+// === Récupération concerts ===
+const container = document.getElementById("concertList");
+const concertsRef = collection(db, "concerts");
+const concertsQuery = query(concertsRef, orderBy("date"));
+
+onSnapshot(concertsQuery, snapshot => {
+  container.innerHTML = "";
+  snapshot.forEach(async docSnap => {
+    const c = docSnap.data();
+    const concertId = docSnap.id;
+    const div = document.createElement("div");
+    div.className = "card";
+
+    // Image depuis Firebase Storage
+    if (c.imagePath) {
+      const imgRef = ref(storage, c.imagePath);
+      const url = await getDownloadURL(imgRef);
+      const imgEl = document.createElement("img");
+      imgEl.src = url;
+      imgEl.className = "concert-img";
+      div.appendChild(imgEl);
     }
-    snapshot.forEach(docSnap => {
-      const c = docSnap.data();
-      const concertId = docSnap.id;
-      const div = document.createElement("div");
-      div.className = "card";
 
-      // Image
-      if(c.imagePath){
-        const imgRef = ref(storage, c.imagePath);
-        getDownloadURL(imgRef).then(url=>{
-          const imgEl = document.createElement("img");
-          imgEl.src = url;
-          imgEl.className = "concert-img";
-          div.prepend(imgEl);
-        });
-      }
+    // === Bloc info concert ===
+    div.innerHTML += `
+      <h2>${c.title}</h2>
+      <p>
+        <span class="date-link" style="color:#00f; cursor:pointer;">📅 ${c.date} ${c.time || ''}</span> —
+        <span class="lieu-link" style="color:#00f; cursor:pointer;">📍 ${c.lieu || ''}</span>
+      </p>
+      <p>${c.desc || ''}</p>
+      <button class="present">✅ Je viens</button>
+      <button class="absent">❌ Je ne viens pas</button>
+      <button class="remove-btn">🗑️ Retirer ma présence</button>
+      <div class="participants">Chargement participants...</div>
+      <div class="comments">Chargement commentaires...</div>
+      <div class="comment-form">
+        <input type="text" placeholder="Ton commentaire..." class="text">
+        <button class="add-comment">Ajouter</button>
+      </div>
+    `;
+    container.appendChild(div);
 
-      const title = document.createElement("h2");
-      title.textContent = c.title || "Concert";
-      div.appendChild(title);
+    // === Lien calendrier ===
+    div.querySelector(".date-link").onclick = () => {
+      const startDate = new Date(c.date + "T" + (c.time || "19:00")).toISOString().replace(/[-:]|\.\d{3}/g, "");
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(c.title)}&dates=${startDate}/${startDate}&details=${encodeURIComponent(c.desc || '')}&location=${encodeURIComponent(c.lieu || '')}`;
+      window.open(url, "_blank");
+    };
 
-      const pInfo = document.createElement("p");
-      pInfo.textContent = `${c.date} ${c.time || ""} — ${c.lieu || ""}`;
-      div.appendChild(pInfo);
+    // === Lien Google Maps ===
+    div.querySelector(".lieu-link").onclick = () => {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.lieu)}`, "_blank");
+    };
 
-      const pDesc = document.createElement("p");
-      pDesc.textContent = c.desc || "";
-      div.appendChild(pDesc);
-
-      // Boutons de présence
-      const presentBtn = document.createElement("button");
-      presentBtn.className = "small present";
-      presentBtn.textContent = "✅ Je viens";
-      presentBtn.onclick = () => {
-        if(!currentUser) return alert("Connecte-toi d'abord !");
-        addParticipant(concertId, currentUser.displayName, "present", currentUser.uid);
-      };
-
-      const absentBtn = document.createElement("button");
-      absentBtn.className = "small absent";
-      absentBtn.textContent = "❌ Je ne viens pas";
-      absentBtn.onclick = () => {
-        if(!currentUser) return alert("Connecte-toi d'abord !");
-        addParticipant(concertId, currentUser.displayName, "absent", currentUser.uid);
-      };
-
-      const removeBtn = document.createElement("button");
-      removeBtn.className = "small";
-      removeBtn.textContent = "🗑️ Retirer ma présence";
-      removeBtn.onclick = () => {
-        if(!currentUser) return alert("Connecte-toi d'abord !");
-        removeParticipant(concertId, currentUser.uid);
-      };
-
-      const metaRow = document.createElement("div");
-      metaRow.className = "meta-row";
-      metaRow.append(presentBtn, absentBtn, removeBtn);
-      div.appendChild(metaRow);
-
-      // Participants
-      const participantsDiv = document.createElement("div");
-      participantsDiv.innerHTML = "Chargement participants...";
-      div.appendChild(participantsDiv);
-
-      onSnapshot(collection(db,"concerts",concertId,"participants"), partSnap=>{
-        const present = [], absent = [];
-        partSnap.forEach(p=>{
-          const d = p.data();
-          if(d.status==="present") present.push(d.name);
-          else if(d.status==="absent") absent.push(d.name);
-        });
-        participantsDiv.innerHTML = `✅ Présents: ${present.join(", ")||"-"}<br>❌ Absents: ${absent.join(", ")||"-"}`;
+    // === Gestion des présences ===
+    const participantsCol = collection(db, "concerts", concertId, "participants");
+    onSnapshot(participantsCol, partSnap => {
+      const present = [], absent = [];
+      partSnap.forEach(p => {
+        const d = p.data();
+        if (d.status === "present") present.push(d.name);
+        if (d.status === "absent") absent.push(d.name);
       });
-
-      // Commentaires
-      const commentsDiv = document.createElement("div");
-      commentsDiv.className = "comments";
-      commentsDiv.innerHTML = "<strong>Commentaires:</strong>";
-      div.appendChild(commentsDiv);
-
-      const comCol = collection(db, "concerts", concertId, "comments");
-      onSnapshot(comCol, comSnap => {
-        const list = document.createElement("div");
-        comSnap.forEach(docCom=>{
-          const d = docCom.data();
-          const row = document.createElement("div");
-          row.className = "comment-row";
-          row.innerHTML = `<span><strong>${d.name}</strong>: ${d.text}</span>`;
-          if(currentUser && d.uid === currentUser.uid){
-            const delBtn = document.createElement("button");
-            delBtn.textContent = "🗑️";
-            delBtn.onclick = ()=> deleteComment(concertId, docCom.id);
-            row.appendChild(delBtn);
-          }
-          list.appendChild(row);
-        });
-        commentsDiv.innerHTML = "<strong>Commentaires:</strong>";
-        commentsDiv.appendChild(list);
-      });
-
-      // Formulaire commentaire
-      const formDiv = document.createElement("div");
-      formDiv.className = "comment-form";
-      const input = document.createElement("input");
-      input.placeholder = "Votre commentaire";
-      const send = document.createElement("button");
-      send.className = "small";
-      send.textContent = "Publier";
-      send.onclick = ()=>{
-        if(!currentUser) return alert("Connecte-toi d'abord !");
-        const text = input.value.trim();
-        if(!text) return;
-        addComment(concertId, currentUser.displayName, text, currentUser.uid);
-        input.value="";
-      };
-      formDiv.append(input, send);
-      div.appendChild(formDiv);
-
-      container.appendChild(div);
+      div.querySelector(".participants").innerHTML = `✅ Présents: ${present.join(", ") || "-"}<br>❌ Absents: ${absent.join(", ") || "-"}`;
     });
+
+    div.querySelector(".present").onclick = () => addParticipant(concertId, username, "present");
+    div.querySelector(".absent").onclick = () => addParticipant(concertId, username, "absent");
+    div.querySelector(".remove-btn").onclick = () => removeParticipant(concertId, username);
+
+    // === Commentaires ===
+    const commentsCol = collection(db, "concerts", concertId, "comments");
+    onSnapshot(commentsCol, comSnap => {
+      const list = comSnap.docs.map(doc => {
+        const d = doc.data();
+        const canDelete = d.name === username;
+        return `
+          <div class="comment-item">
+            <strong>${d.name} :</strong> ${d.text}
+            ${canDelete ? `<button class="remove-comment" data-id="${doc.id}">🗑️</button>` : ""}
+          </div>
+        `;
+      }).join("");
+      div.querySelector(".comments").innerHTML = list;
+
+      // Suppression commentaire
+      div.querySelectorAll(".remove-comment").forEach(btn => {
+        btn.onclick = () => deleteComment(concertId, btn.dataset.id);
+      });
+    });
+
+    // === Ajouter commentaire ===
+    div.querySelector(".add-comment").onclick = () => {
+      const text = div.querySelector(".text").value.trim();
+      if (!text) return;
+      addComment(concertId, username, text);
+      div.querySelector(".text").value = "";
+    };
   });
-}
+});
 </script>
+
 </body>
 </html>
