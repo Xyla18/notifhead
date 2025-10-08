@@ -19,6 +19,7 @@ button.delete { background:#ff5555; color:#fff; }
 .concert-item { background:#2a2a2a; padding:12px; border-radius:8px; margin-bottom:12px; }
 .participants, .comments { font-size:0.9rem; margin-top:6px; }
 .status { margin-top:8px; color:#00ccff; font-size:0.9rem; }
+img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
 </style>
 </head>
 <body>
@@ -37,6 +38,7 @@ button.delete { background:#ff5555; color:#fff; }
       <input type="date" id="date" required>
       <input type="time" id="time">
       <input id="lieu" placeholder="Lieu">
+      <input id="imagePath" placeholder="URL ou chemin de l'image">
       <textarea id="desc" placeholder="Description"></textarea>
       <button type="submit" class="save">Enregistrer</button>
       <div class="status" id="status"></div>
@@ -57,7 +59,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
   authDomain: "notifhead.firebaseapp.com",
   projectId: "notifhead",
-  storageBucket: "notifhead.firebasestorage.app", // ✅ reste en .app
+  storageBucket: "notifhead.firebasestorage.app", // reste en .app
   messagingSenderId: "190210184035",
   appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
   measurementId: "G-HWW5Z08H60"
@@ -82,6 +84,7 @@ form.addEventListener("submit", async e=>{
   const date = document.getElementById("date").value;
   const time = document.getElementById("time").value;
   const lieu = document.getElementById("lieu").value;
+  const imagePath = document.getElementById("imagePath").value.trim();
   const desc = document.getElementById("desc").value;
 
   if(!title || !date){
@@ -93,6 +96,7 @@ form.addEventListener("submit", async e=>{
 
   try {
     const data = { title, date, time, lieu, desc };
+    if(imagePath) data.imagePath = imagePath;
 
     if(docId){
       await updateDoc(doc(db,"concerts",docId), data);
@@ -121,7 +125,10 @@ onSnapshot(concertsRef, snapshot=>{
     const div = document.createElement("div");
     div.className="concert-item";
 
+    const imgTag = c.imagePath ? `<img src="${c.imagePath}" class="concert-img">` : "";
+
     div.innerHTML = `
+      ${imgTag}
       <strong>${c.title}</strong> - ${c.date} ${c.time || ''}<br>
       <em>${c.lieu || ''}</em><br>
       ${c.desc || ''}<br>
@@ -137,6 +144,7 @@ onSnapshot(concertsRef, snapshot=>{
       document.getElementById("date").value = c.date;
       document.getElementById("time").value = c.time;
       document.getElementById("lieu").value = c.lieu;
+      document.getElementById("imagePath").value = c.imagePath || "";
       document.getElementById("desc").value = c.desc;
     };
 
@@ -150,3 +158,4 @@ onSnapshot(concertsRef, snapshot=>{
 </script>
 </body>
 </html>
+
