@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Test Upload Musique + Jacket</title>
+<title>Test Upload Audio + Jacket</title>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
-// ⚡ Firebase config
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
   authDomain: "notifhead.firebaseapp.com",
@@ -25,11 +25,28 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// Vérifier admin (simulé)
+if(localStorage.getItem('musiques_admin') !== '1'){
+  alert("Accès admin requis !");
+  location.href = 'login2.html';
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("uploadForm");
   const progressAudio = document.getElementById("progressAudio");
   const progressJacket = document.getElementById("progressJacket");
   const status = document.getElementById("status");
+  const logoutBtn = document.getElementById("logout");
+  const libraryBtn = document.getElementById("library");
+
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem('musiques_admin');
+    location.href = 'index.html';
+  });
+
+  libraryBtn.addEventListener("click", () => {
+    location.href = 'musique.html';
+  });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -43,6 +60,8 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Remplis tous les champs !");
       return;
     }
+
+    status.textContent = "⏳ Upload en cours…";
 
     // Upload audio
     const audioRef = ref(storage, "musiques/" + Date.now() + "_" + audioFile.name);
@@ -103,6 +122,8 @@ button{background:linear-gradient(90deg,#ff0080,#ff33aa);color:white;cursor:poin
 button:hover{background:linear-gradient(90deg,#ff33aa,#ff66cc)}
 progress{height:10px;border-radius:5px;background:#333}
 #status{text-align:center;margin-top:10px;font-size:14px}
+.buttons{display:flex;justify-content:space-between;margin-top:15px}
+.buttons button{width:48%}
 </style>
 </head>
 <body>
@@ -118,6 +139,10 @@ progress{height:10px;border-radius:5px;background:#333}
   <span id="status"></span>
   <button type="submit">Publier</button>
 </form>
+<div class="buttons">
+  <button id="logout">Déconnexion</button>
+  <button id="library">Bibliothèque</button>
+</div>
 </div>
 </body>
 </html>
