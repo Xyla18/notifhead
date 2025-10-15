@@ -1,252 +1,89 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Musiques — Bibliothèque</title>
 
-<!-- Firebase v9+ modules via CDN (modulaire) -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-  import { getStorage, ref as sref, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  // === CONFIG FIREBASE (fourni) ===
-  const firebaseConfig = {
-    apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
-    authDomain: "notifhead.firebaseapp.com",
-    projectId: "notifhead",
-    storageBucket: "notifhead.firebasestorage.app",
-    messagingSenderId: "190210184035",
-    appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
-    measurementId: "G-HWW5Z08H60"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
+  authDomain: "notifhead.firebaseapp.com",
+  projectId: "notifhead",
+  storageBucket: "notifhead.appspot.com",
+  messagingSenderId: "190210184035",
+  appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
+  measurementId: "G-HWW5Z08H60"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  // Expose to window for other scripts below
-  window.__FB = { db, storage };
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.getElementById("tracksContainer");
+
+  const q = query(collection(db, "musiques"), orderBy("createdAt","desc"));
+  onSnapshot(q, (snap) => {
+    container.innerHTML = "";
+    snap.docs.forEach(doc => {
+      const data = doc.data();
+      const div = document.createElement("div");
+      div.className = "track";
+
+      const title = document.createElement("h3");
+      title.textContent = data.titre;
+      title.className = "title";
+      title.onclick = () => {
+        const queryStr = encodeURIComponent(data.titre + " " + data.artiste);
+        const links = [
+          {name:"Deezer", url:`https://www.deezer.com/search/${queryStr}`},
+          {name:"Spotify", url:`https://open.spotify.com/search/${queryStr}`},
+          {name:"Apple Music", url:`https://music.apple.com/us/search?term=${queryStr}`},
+          {name:"Shazam", url:`https://www.shazam.com/track-search?query=${queryStr}`}
+        ];
+        let menu = "Choisir un site pour écouter:\n";
+        links.forEach(l => menu += `${l.name}: ${l.url}\n`);
+        links[0].url && window.open(links[0].url,"_blank"); // ouvre Deezer par défaut
+      };
+
+      const artist = document.createElement("div");
+      artist.textContent = data.artiste;
+      artist.className = "artist";
+
+      const audio = document.createElement("audio");
+      audio.controls = true;
+      audio.src = data.url;
+
+      div.appendChild(title);
+      div.appendChild(artist);
+      div.appendChild(audio);
+      container.appendChild(div);
+    });
+  });
+});
 </script>
 
 <style>
-  :root{
-    --bg:#071026;
-    --card:#0b1220;
-    --muted:#9aa4b2;
-    --accent:#7c3aed;
-    --glass: rgba(255,255,255,0.03);
-  }
-  *{box-sizing:border-box}
-  body{margin:0; min-height:100vh; font-family:Inter, system-ui, Arial; background:linear-gradient(180deg,#071026, #050919); color:#eaf4ff}
-  header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px}
-  h1{margin:0;font-size:18px}
-  .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
-  .top-actions{display:flex;gap:8px;align-items:center}
-  main{padding:12px;max-width:980px;margin:0 auto}
-  .list{display:block;border-radius:12px;padding:12px;background:var(--card); box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-  .track{display:flex;gap:12px;align-items:center;padding:8px;border-radius:10px;margin-bottom:8px;background:var(--glass)}
-  .cover{width:56px;height:56px;border-radius:8px;flex:0 0 56px;object-fit:cover;background:#0b0f14}
-  .meta{flex:1;min-width:0}
-  .title{margin:0;font-size:15px;cursor:pointer}
-  .artist{margin:4px 0 0 0;color:var(--muted);font-size:13px}
-  .play-btn{background:var(--accent);border:none;padding:8px 10px;border-radius:10px;color:white;cursor:pointer}
-  .small{font-size:12px;color:var(--muted)}
-  footer.player{position:fixed;left:12px;right:12px;bottom:12px;background:linear-gradient(180deg, rgba(11,18,32,0.95), rgba(7,10,20,0.9));padding:10px;border-radius:14px;display:flex;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
-  .player-info{flex:1;min-width:0}
-  .player-controls{display:flex;gap:8px}
-  .search-menu{position:absolute;background:#0b1220;border-radius:8px;padding:8px;box-shadow:0 8px 20px rgba(0,0,0,0.6);z-index:50}
-  a.link-ext{display:block;padding:6px 10px;border-radius:6px;color:#e6eef8;text-decoration:none;font-size:14px}
-  a.link-ext:hover{background:rgba(255,255,255,0.02)}
-  .muted{color:var(--muted)}
-  @media(max-width:600px){ .cover{width:48px;height:48px} footer.player{left:8px;right:8px;padding:8px} }
+body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(180deg,#071026,#040619);color:white;display:flex;flex-direction:column;align-items:center;padding:20px}
+h1{text-align:center;color:#ff007a;margin-bottom:20px}
+.track{background:#1e1e2f;padding:12px;border-radius:14px;margin-bottom:10px;width:100%;max-width:500px}
+.title{cursor:pointer;font-size:16px;color:#ff77aa;margin:0}
+.artist{color:#9aa4b2;font-size:13px;margin:4px 0}
+audio{width:100%;margin-top:6px}
+.btns{display:flex;gap:10px;margin-bottom:20px}
+button{padding:8px 12px;border:none;border-radius:10px;background:#7c3aed;color:white;cursor:pointer}
+button:hover{background:#9c5ff0}
 </style>
 </head>
 <body>
-
-<header>
-  <h1>Musiques</h1>
-  <div class="top-actions">
-    <button class="btn" onclick="location.href='index.html'">Accueil</button>
-    <button class="btn" onclick="location.href='login2.html'">Connexion</button>
-  </div>
-</header>
-
-<main>
-  <section class="list" id="list">
-    <div id="tracksContainer" style="min-height:120px">
-      <p class="small muted">Chargement...</p>
-    </div>
-  </section>
-</main>
-
-<!-- Lecteur fixe -->
-<footer class="player" id="player" style="display:none">
-  <img src="" id="playerCover" class="cover" alt="cover">
-  <div class="player-info">
-    <div id="playerTitle" style="font-weight:600"></div>
-    <div id="playerArtist" class="small muted"></div>
-  </div>
-  <div class="player-controls">
-    <button id="prevBtn" class="play-btn">⏮</button>
-    <button id="playBtn" class="play-btn">▶</button>
-    <button id="nextBtn" class="play-btn">⏭</button>
-  </div>
-  <audio id="audio" style="display:none"></audio>
-</footer>
-
-<!-- Menu de recherche externe (affiché quand on clique sur un titre) -->
-<div id="searchMenu" class="search-menu" style="display:none"></div>
-
-<script type="module">
-  import { collection, query, orderBy, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-  import { ref as sref, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
-
-  const { db, storage } = window.__FB;
-
-  const tracksContainer = document.getElementById('tracksContainer');
-  const searchMenu = document.getElementById('searchMenu');
-
-  // Player elements
-  const audioEl = document.getElementById('audio');
-  const player = document.getElementById('player');
-  const playerCover = document.getElementById('playerCover');
-  const playerTitle = document.getElementById('playerTitle');
-  const playerArtist = document.getElementById('playerArtist');
-  const playBtn = document.getElementById('playBtn');
-  const prevBtn = document.getElementById('prevBtn');
-  const nextBtn = document.getElementById('nextBtn');
-
-  let tracks = []; // {id, title, artist, url, cover}
-  let indexPlaying = -1;
-
-  // helper default cover (base64 small svg or link). We'll use a simple svg data url:
-  const DEFAULT_COVER = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width=\"400\" height=\"400\"><rect width=\"100%\" height=\"100%\" fill=\"%230b1220\"/><text x=\"50%\" y=\"50%\" dominant-baseline=\"middle\" text-anchor=\"middle\" fill=\"%237c3aed\" font-size=\"28\">No Cover</text></svg>';
-
-  function renderTrackList(){
-    tracksContainer.innerHTML = '';
-    if(tracks.length === 0){
-      tracksContainer.innerHTML = '<p class="small muted">Aucune piste pour le moment.</p>';
-      return;
-    }
-    tracks.forEach((t, i) => {
-      const div = document.createElement('div'); div.className = 'track';
-      const img = document.createElement('img'); img.className = 'cover';
-      img.src = t.cover || DEFAULT_COVER;
-      img.alt = '';
-
-      const meta = document.createElement('div'); meta.className = 'meta';
-      const title = document.createElement('h3'); title.className = 'title'; title.textContent = t.title || 'Titre inconnu';
-      title.onclick = (ev) => { openSearchMenu(ev.currentTarget, t); };
-
-      const art = document.createElement('div'); art.className = 'artist'; art.textContent = t.artist || '';
-
-      meta.appendChild(title); meta.appendChild(art);
-
-      const play = document.createElement('button'); play.className = 'play-btn'; play.textContent = '▶';
-      play.onclick = () => { playIndex(i); };
-
-      div.appendChild(img); div.appendChild(meta); div.appendChild(play);
-      tracksContainer.appendChild(div);
-    });
-  }
-
-  function openSearchMenu(targetEl, track){
-    // menu under the title
-    const rect = targetEl.getBoundingClientRect();
-    searchMenu.style.left = (rect.left) + 'px';
-    searchMenu.style.top = (rect.bottom + window.scrollY + 6) + 'px';
-    searchMenu.innerHTML = '';
-
-    const q = encodeURIComponent((track.title || '') + ' ' + (track.artist || ''));
-
-    const links = [
-      {name:'Deezer', url: `https://www.deezer.com/search/${q}`},
-      {name:'Spotify', url: `https://open.spotify.com/search/${q}`},
-      {name:'Apple Music', url: `https://music.apple.com/us/search?term=${q}`},
-      {name:'Shazam', url: `https://www.shazam.com/track-search?query=${q}`}
-    ];
-
-    links.forEach(l => {
-      const a = document.createElement('a');
-      a.href = l.url; a.target = '_blank'; a.className = 'link-ext';
-      a.textContent = `Écouter sur ${l.name}`;
-      searchMenu.appendChild(a);
-    });
-
-    searchMenu.style.display = 'block';
-    // click away to close
-    setTimeout(()=> {
-      const onDoc = (e) => {
-        if(!searchMenu.contains(e.target)) {
-          searchMenu.style.display = 'none';
-          document.removeEventListener('click', onDoc);
-        }
-      };
-      document.addEventListener('click', onDoc);
-    }, 0);
-  }
-
-  // Player controls
-  function playIndex(i){
-    if(i < 0 || i >= tracks.length) return;
-    indexPlaying = i;
-    const t = tracks[i];
-    audioEl.src = t.url;
-    playerCover.src = t.cover || DEFAULT_COVER;
-    playerTitle.textContent = t.title;
-    playerArtist.textContent = t.artist || '';
-    player.style.display = 'flex';
-    audioEl.play();
-    playBtn.textContent = '⏸';
-  }
-
-  playBtn.onclick = () => {
-    if(audioEl.paused) { audioEl.play(); playBtn.textContent = '⏸'; }
-    else { audioEl.pause(); playBtn.textContent = '▶'; }
-  };
-  prevBtn.onclick = () => {
-    if(tracks.length === 0) return;
-    indexPlaying = (indexPlaying <= 0) ? tracks.length - 1 : indexPlaying - 1;
-    playIndex(indexPlaying);
-  };
-  nextBtn.onclick = () => {
-    if(tracks.length === 0) return;
-    indexPlaying = (indexPlaying >= tracks.length - 1) ? 0 : indexPlaying + 1;
-    playIndex(indexPlaying);
-  };
-  audioEl.onended = () => { nextBtn.click(); };
-
-  // Listen Firestore collection "tracks" in real-time
-  const tracksCol = collection(db, 'tracks');
-  const q = query(tracksCol, orderBy('createdAt', 'desc'));
-  onSnapshot(q, async (snap) => {
-    // build tracks array with download URLs
-    const docs = [];
-    for(const d of snap.docs){
-      const data = d.data();
-      const obj = { id: d.id, title: data.title || data.filename || 'Titre', artist: data.artist || '', cover: data.coverUrl || '', storagePath: data.storagePath || '' };
-      docs.push(obj);
-    }
-    // get download URLs for storagePath if present
-    const withUrls = await Promise.all(docs.map(async (doc) => {
-      if(doc.storagePath){
-        try { doc.url = await getDownloadURL(sref(storage, doc.storagePath)); }
-        catch(e){ doc.url = ''; }
-      } else doc.url = '';
-      return doc;
-    }));
-    tracks = withUrls;
-    renderTrackList();
-  }, (err) => {
-    tracksContainer.innerHTML = '<p class="small muted">Impossible de charger les pistes.</p>';
-    console.error(err);
-  });
-
-  // hide menu on scroll
-  window.addEventListener('scroll', () => { searchMenu.style.display = 'none'; });
-</script>
-
+<h1>🎵 Bibliothèque de Musiques</h1>
+<div class="btns">
+  <button onclick="location.href='index.html'">Accueil</button>
+  <button onclick="location.href='login2.html'">Connexion Admin</button>
+</div>
+<div id="tracksContainer"></div>
 </body>
 </html>
