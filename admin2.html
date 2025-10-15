@@ -10,23 +10,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebas
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
-// Config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
   authDomain: "notifhead.firebaseapp.com",
   projectId: "notifhead",
-  storageBucket: "notifhead.appspot.com", // ✅ bucket correct
+  storageBucket: "notifhead.appspot.com",
   messagingSenderId: "190210184035",
   appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
   measurementId: "G-HWW5Z08H60"
 };
 
-// Init Firebase
 const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 const db = getFirestore(app);
 
-// Vérifie si admin connecté
 if(localStorage.getItem('musiques_admin') !== '1'){
   alert("Accès admin requis !");
   location.href = 'login2.html';
@@ -90,33 +87,85 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <style>
-body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(180deg,#071026,#040619);color:white;display:flex;justify-content:center;align-items:center;height:100vh}
-.wrap{background:#1e1e2f;padding:28px;border-radius:20px;width:360px;box-shadow:0 0 20px rgba(255,0,122,0.4)}
-h1{text-align:center;margin-bottom:20px;color:#ff007a}
-input, button, progress{width:100%;margin:8px 0;padding:10px;border-radius:8px;border:none}
-input{background:#2a2a3b;color:white}
-button{background:#ff007a;color:white;cursor:pointer;transition:.3s}
-button:hover{background:#ff3399}
-#status{text-align:center;margin-top:10px;font-size:14px}
-#progress{height:8px;border-radius:4px}
-.btns{display:flex;justify-content:space-between;margin-top:12px}
-.btns button{width:48%}
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:#0b0b14;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.container{
+  background:#12121f;
+  padding:30px;
+  border-radius:25px;
+  width:380px;
+  box-shadow:0 0 30px rgba(255,0,150,0.3);
+}
+h1{
+  text-align:center;
+  margin-bottom:25px;
+  font-size:28px;
+  color:#ff00aa;
+}
+input, button, progress{
+  width:100%;
+  margin:12px 0;
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  font-size:14px;
+}
+input{
+  background:#1f1f33;
+  color:white;
+}
+button{
+  background:linear-gradient(90deg,#ff0080,#ff33aa);
+  color:white;
+  cursor:pointer;
+  font-weight:600;
+  transition:.3s;
+}
+button:hover{
+  background:linear-gradient(90deg,#ff33aa,#ff66cc);
+}
+#progress{
+  height:10px;
+  border-radius:5px;
+  background:#333;
+}
+#status{
+  text-align:center;
+  margin-top:10px;
+  font-size:14px;
+}
+.buttons{
+  display:flex;
+  justify-content:space-between;
+  margin-top:15px;
+}
+.buttons button{
+  width:48%;
+}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="container">
   <h1>📤 Upload Musique</h1>
   <form id="uploadForm">
-    <input type="text" id="titre" placeholder="Titre" required>
+    <input type="text" id="titre" placeholder="Titre de la musique" required>
     <input type="text" id="artiste" placeholder="Artiste" required>
     <input type="file" id="file" accept="audio/*" required>
     <progress id="progress" value="0" max="100"></progress>
     <span id="status"></span>
     <button type="submit">Publier</button>
   </form>
-  <div class="btns">
+  <div class="buttons">
     <button id="logout">Déconnexion</button>
-    <button id="library">Voir bibliothèque</button>
+    <button id="library">Bibliothèque</button>
   </div>
 </div>
 </body>
