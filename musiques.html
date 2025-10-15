@@ -44,9 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
           {name:"Apple Music", url:`https://music.apple.com/us/search?term=${queryStr}`},
           {name:"Shazam", url:`https://www.shazam.com/track-search?query=${queryStr}`}
         ];
-        let menu = "Choisir un site pour écouter:\n";
-        links.forEach(l => menu += `${l.name}: ${l.url}\n`);
-        links[0].url && window.open(links[0].url,"_blank"); // ouvre Deezer par défaut
+        // Ouvre le menu Deezer par défaut
+        window.open(links[0].url,"_blank");
       };
 
       const artist = document.createElement("div");
