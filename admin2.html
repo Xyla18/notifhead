@@ -1,218 +1,138 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Admin — Upload Musiques</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Upload musique</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-<!-- Firebase modules -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-  import { getStorage, ref as sref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+    // 🔥 Configuration Firebase corrigée
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
+      authDomain: "notifhead.firebaseapp.com",
+      projectId: "notifhead",
+      storageBucket: "notifhead.appspot.com",
+      messagingSenderId: "190210184035",
+      appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
+      measurementId: "G-HWW5Z08H60"
+    };
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
-    authDomain: "notifhead.firebaseapp.com",
-    projectId: "notifhead",
-    storageBucket: "notifhead.firebasestorage.app",
-    messagingSenderId: "190210184035",
-    appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
-    measurementId: "G-HWW5Z08H60"
-  };
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const storage = getStorage(app);
+    const db = getFirestore(app);
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+    // Upload musique
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("uploadForm");
+      const fileInput = document.getElementById("file");
+      const progress = document.getElementById("progress");
+      const status = document.getElementById("status");
 
-  window.__FB_ADMIN = { db, storage, sref, uploadBytesResumable, getDownloadURL, deleteObject, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, deleteDoc };
-</script>
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-<style>
-  :root{--bg:#071026;--card:#0b1220;--accent:#7c3aed;--muted:#9aa4b2}
-  body{margin:0;min-height:100vh;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#071026,#040619);color:#eaf4ff;display:flex;justify-content:center;padding:28px}
-  .wrap{width:980px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
-  header{display:flex;align-items:center;justify-content:space-between}
-  h1{margin:0;font-size:18px}
-  .cols{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-top:14px}
-  .panel{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px}
-  label{display:block;margin-top:8px;color:var(--muted);font-size:13px}
-  input[type="text"], input[type="file"]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
-  button{margin-top:12px;padding:10px;border-radius:10px;border:none;background:var(--accent);color:white;cursor:pointer}
-  .muted{color:var(--muted);font-size:13px}
-  .list{max-height:480px;overflow:auto;margin-top:8px}
-  .track{display:flex;gap:8px;align-items:center;padding:8px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.01)}
-  .cover{width:56px;height:56px;border-radius:8px;object-fit:cover;background:#0b0f14}
-  .tmeta{flex:1;min-width:0}
-  .danger{background:#ff3b3b}
-  @media(max-width:900px){ .cols{grid-template-columns:1fr} .wrap{padding:12px;width:100%} }
-</style>
+        const file = fileInput.files[0];
+        const titre = document.getElementById("titre").value;
+        const artiste = document.getElementById("artiste").value;
+
+        if (!file || !titre || !artiste) {
+          alert("Veuillez remplir tous les champs !");
+          return;
+        }
+
+        const storageRef = ref(storage, "musiques/" + file.name);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on("state_changed", 
+          (snapshot) => {
+            const percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            progress.value = percent;
+            status.textContent = `Téléversement : ${percent.toFixed(0)}%`;
+          }, 
+          (error) => {
+            console.error(error);
+            alert("Erreur d'upload : " + error.message);
+          }, 
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            await addDoc(collection(db, "musiques"), {
+              titre,
+              artiste,
+              url: downloadURL,
+              date: new Date()
+            });
+            status.textContent = "✅ Téléversement terminé !";
+            form.reset();
+            progress.value = 0;
+          }
+        );
+      });
+    });
+  </script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(180deg, #0a0a0f, #1a1a1f);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #ff007a;
+      font-weight: 600;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      background: #1e1e2f;
+      padding: 30px;
+      border-radius: 20px;
+      width: 350px;
+      box-shadow: 0 0 15px rgba(255, 0, 122, 0.3);
+    }
+    input, button, progress {
+      margin: 10px 0;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+    }
+    input {
+      background: #2a2a3b;
+      color: white;
+    }
+    button {
+      background: #ff007a;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #ff3399;
+    }
+    #status {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
-
-<div class="wrap">
-  <header>
-    <h1>Admin — Upload Musiques</h1>
-    <div>
-      <button onclick="location.href='musique.html'">Voir bibliothèque</button>
-      <button id="logout" class="danger" style="margin-left:8px">Déconnexion</button>
-    </div>
-  </header>
-
-  <div class="cols">
-    <div class="panel">
-      <div class="muted">Uploader un nouveau morceau</div>
-      <form id="uploadForm" style="margin-top:8px">
-        <label>Titre</label>
-        <input id="title" type="text" placeholder="Titre" required />
-        <label>Artiste</label>
-        <input id="artist" type="text" placeholder="Artiste" />
-        <label>Fichier audio (.mp3, .wav...)</label>
-        <input id="audioFile" type="file" accept="audio/*" required />
-        <label>Jaquette (optionnel)</label>
-        <input id="coverFile" type="file" accept="image/*" />
-        <button type="submit">Téléverser</button>
-      </form>
-
-      <div id="status" class="muted" style="margin-top:10px"></div>
-      <div style="margin-top:10px;color:var(--muted);font-size:13px">
-        Astuce : fichiers publics. Configure tes règles Firebase pour restreindre l'upload si nécessaire.
-      </div>
-    </div>
-
-    <aside class="panel">
-      <div class="muted">Musiques (sur Firebase)</div>
-      <div class="list" id="tracksList"></div>
-    </aside>
-  </div>
-</div>
-
-<script type="module">
-  import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-  import { ref as sref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
-
-  const { db, storage } = window.__FB_ADMIN;
-  const tracksCol = collection(db, 'tracks');
-
-  // Simple admin gate (client-side): vérifie le localStorage placé à la connexion
-  if(localStorage.getItem('musiques_admin') !== '1'){
-    alert("Accès admin requis. Connecte-toi d'abord.");
-    location.href = 'login2.html';
-  }
-
-  const uploadForm = document.getElementById('uploadForm');
-  const status = document.getElementById('status');
-  const tracksList = document.getElementById('tracksList');
-  const logoutBtn = document.getElementById('logout');
-
-  logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('musiques_admin');
-    location.href = 'musique.html';
-  });
-
-  uploadForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const title = document.getElementById('title').value.trim();
-    const artist = document.getElementById('artist').value.trim();
-    const audioFile = document.getElementById('audioFile').files[0];
-    const coverFile = document.getElementById('coverFile').files[0];
-
-    if(!audioFile){ alert('Choisis un fichier audio'); return; }
-    status.textContent = 'Préparation...';
-
-    try {
-      // 1) Upload audio to Storage under tracks/
-      const audioPath = `tracks/${Date.now()}_${audioFile.name}`;
-      const audioRef = sref(storage, audioPath);
-      const audioTask = uploadBytesResumable(audioRef, audioFile);
-      status.textContent = 'Téléversement audio... 0%';
-
-      audioTask.on('state_changed', (snap) => {
-        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-        status.textContent = `Téléversement audio... ${pct}%`;
-      });
-
-      await audioTask;
-      const audioUrl = await getDownloadURL(audioRef);
-
-      // 2) If cover provided, upload
-      let coverPath = '';
-      let coverUrl = '';
-      if(coverFile){
-        const cPath = `covers/${Date.now()}_${coverFile.name}`;
-        const coverRef = sref(storage, cPath);
-        const coverTask = uploadBytesResumable(coverRef, coverFile);
-        status.textContent = 'Téléversement jaquette...';
-        await coverTask;
-        coverUrl = await getDownloadURL(coverRef);
-        coverPath = cPath;
-      }
-
-      // 3) Save metadata to Firestore
-      await addDoc(tracksCol, {
-        title: title || audioFile.name,
-        artist: artist || '',
-        filename: audioFile.name,
-        storagePath: audioPath,
-        fileUrl: audioUrl,
-        coverUrl: coverUrl || '',
-        coverPath: coverPath || '',
-        uploadedBy: 'admin',
-        createdAt: serverTimestamp()
-      });
-
-      status.textContent = 'Téléversement terminé ✔';
-      uploadForm.reset();
-    } catch (err) {
-      console.error(err);
-      status.textContent = 'Erreur lors de l\'upload';
-      alert('Erreur lors de l\'upload : regarde la console.');
-    }
-  });
-
-  // List tracks in real-time
-  const q = query(tracksCol, orderBy('createdAt','desc'));
-  onSnapshot(q, async (snap) => {
-    tracksList.innerHTML = '';
-    for(const d of snap.docs){
-      const data = d.data();
-      const tr = document.createElement('div'); tr.className = 'track';
-      const img = document.createElement('img'); img.className = 'cover';
-      img.src = data.coverUrl || 'data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\"><rect width=\"100%\" height=\"100%\" fill=\"%230b1220\"/><text x=\"50%\" y=\"50%\" dominant-baseline=\"middle\" text-anchor=\"middle\" fill=\"%237c3aed\" font-size=\"16\">No Cover</text></svg>';
-      const meta = document.createElement('div'); meta.className = 'tmeta';
-      const t1 = document.createElement('div'); t1.textContent = data.title || data.filename;
-      const t2 = document.createElement('div'); t2.className = 'muted'; t2.textContent = data.artist || '';
-      meta.appendChild(t1); meta.appendChild(t2);
-
-      const btnDel = document.createElement('button'); btnDel.textContent = 'Supprimer'; btnDel.className = 'danger';
-      btnDel.onclick = async () => {
-        if(!confirm('Supprimer cette piste et le fichier du storage ?')) return;
-        try {
-          // delete storage objects if paths exist
-          if(data.storagePath) {
-            await deleteObject(sref(storage, data.storagePath));
-          }
-          if(data.coverPath) {
-            await deleteObject(sref(storage, data.coverPath));
-          }
-        } catch(e){
-          console.warn('Erreur suppression fichier (peut-être introuvable) :', e);
-        }
-        // delete doc
-        await deleteDoc(doc(db, 'tracks', d.id));
-      };
-
-      tr.appendChild(img); tr.appendChild(meta); tr.appendChild(btnDel);
-      tracksList.appendChild(tr);
-    }
-  }, (err) => {
-    tracksList.innerHTML = '<div class="muted">Impossible de charger la liste.</div>';
-    console.error(err);
-  });
-
-  // NOTE: -> Assure-toi que tes règles Firebase autorisent : lecture publique des fichiers et
-  // écriture contrôlée (ici écriture depuis le front est possible). Pour plus de sécurité,
-  // utilise Firebase Authentication + règles Firestore/Storage pour restreindre l'upload.
-</script>
+  <h1>📤 Upload musique</h1>
+  <form id="uploadForm">
+    <input type="text" id="titre" placeholder="Titre de la musique" required>
+    <input type="text" id="artiste" placeholder="Artiste" required>
+    <input type="file" id="file" accept="audio/*" required>
+    <progress id="progress" value="0" max="100"></progress>
+    <span id="status"></span>
+    <button type="submit">Publier</button>
+  </form>
 </body>
 </html>
