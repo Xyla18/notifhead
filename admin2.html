@@ -10,12 +10,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebas
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
-// Firebase config corrigée
+// Config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
   authDomain: "notifhead.firebaseapp.com",
   projectId: "notifhead",
-  storageBucket: "notifhead.appspot.com",
+  storageBucket: "notifhead.appspot.com", // ✅ bucket correct
   messagingSenderId: "190210184035",
   appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
   measurementId: "G-HWW5Z08H60"
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   libraryBtn.addEventListener("click", () => {
-    location.href = 'musiques.html';
+    location.href = 'musique.html';
   });
 
   form.addEventListener("submit", async (e) => {
