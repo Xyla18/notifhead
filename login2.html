@@ -1,0 +1,56 @@
+
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Connexion Admin</title>
+<style>
+  :root{--bg:#071026;--card:#0b1220;--accent:#7c3aed;--muted:#9aa4b2}
+  body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#071026,#040619);font-family:Inter,system-ui,Arial;color:#eaf4ff}
+  .card{width:360px;padding:20px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.6);text-align:center}
+  h1{margin:0 0 12px 0;font-size:20px}
+  input{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+  button{margin-top:14px;padding:10px 12px;border-radius:10px;border:none;background:var(--accent);color:white;cursor:pointer;width:100%}
+  .muted{color:var(--muted);font-size:13px;margin-top:8px}
+  a{color:var(--muted);text-decoration:none;font-size:13px;display:block;margin-top:8px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Connexion Admin</h1>
+    <div class="muted">Identifiants requis pour accéder au panneau d'upload</div>
+    <form id="loginForm" style="margin-top:12px">
+      <input id="user" placeholder="Identifiant" autocomplete="username" required />
+      <input id="pass" type="password" placeholder="Mot de passe" autocomplete="current-password" required />
+      <button type="submit">Se connecter</button>
+    </form>
+    <a href="musique.html">Retour à la bibliothèque</a>
+    <div id="msg" class="muted" style="visibility:hidden"></div>
+  </div>
+
+<script>
+  // identifiants demandés
+  const ADMIN_USER = 'NoTifHead';
+  const ADMIN_PASS = '04042014';
+
+  const form = document.getElementById('loginForm');
+  const msg = document.getElementById('msg');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const u = document.getElementById('user').value.trim();
+    const p = document.getElementById('pass').value.trim();
+    if(u === ADMIN_USER && p === ADMIN_PASS){
+      // token simple côté client
+      localStorage.setItem('musiques_admin', '1');
+      location.href = 'admin2.html';
+    } else {
+      msg.style.visibility = 'visible';
+      msg.textContent = 'Identifiants invalides.';
+      setTimeout(()=> msg.style.visibility = 'hidden', 2500);
+    }
+  });
+</script>
+</body>
+</html>
