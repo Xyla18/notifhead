@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Upload Musique</title>
+<title>Test Upload Musique + Jacket</title>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
+// ⚡ Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
   authDomain: "notifhead.firebaseapp.com",
@@ -21,65 +22,71 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
 const db = getFirestore(app);
-
-if(localStorage.getItem('musiques_admin') !== '1'){
-  alert("Accès admin requis !");
-  location.href = 'login2.html';
-}
+const storage = getStorage(app);
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("uploadForm");
-  const progress = document.getElementById("progress");
+  const progressAudio = document.getElementById("progressAudio");
+  const progressJacket = document.getElementById("progressJacket");
   const status = document.getElementById("status");
-  const logoutBtn = document.getElementById("logout");
-  const libraryBtn = document.getElementById("library");
-
-  logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem('musiques_admin');
-    location.href = 'index.html';
-  });
-
-  libraryBtn.addEventListener("click", () => {
-    location.href = 'musique.html';
-  });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const titre = document.getElementById("titre").value.trim();
     const artiste = document.getElementById("artiste").value.trim();
-    const audioFile = document.getElementById("file").files[0];
+    const audioFile = document.getElementById("fileAudio").files[0];
+    const jacketFile = document.getElementById("fileJacket").files[0];
 
-    if(!titre || !artiste || !audioFile){
+    if(!titre || !artiste || !audioFile || !jacketFile){
       alert("Remplis tous les champs !");
       return;
     }
 
-    const storageRef = ref(storage, "musiques/" + Date.now() + "_" + audioFile.name);
-    const uploadTask = uploadBytesResumable(storageRef, audioFile);
+    // Upload audio
+    const audioRef = ref(storage, "musiques/" + Date.now() + "_" + audioFile.name);
+    const uploadAudio = uploadBytesResumable(audioRef, audioFile);
 
-    uploadTask.on("state_changed", 
-      (snapshot) => {
-        const percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        progress.value = percent;
-        status.textContent = `Téléversement : ${percent.toFixed(0)}%`;
-      }, 
-      (err) => {
-        console.error(err);
-        status.textContent = "Erreur lors du téléversement";
+    uploadAudio.on("state_changed",
+      (snap) => {
+        const pct = (snap.bytesTransferred / snap.totalBytes) * 100;
+        progressAudio.value = pct;
+        status.textContent = `Téléversement audio : ${pct.toFixed(0)}%`;
       },
+      (err) => { console.error(err); status.textContent = "Erreur audio"; },
       async () => {
-        const url = await getDownloadURL(uploadTask.snapshot.ref);
-        await addDoc(collection(db, "musiques"), {
-          titre,
-          artiste,
-          url,
-          createdAt: serverTimestamp()
-        });
-        status.textContent = "✅ Téléversement terminé !";
-        form.reset();
-        progress.value = 0;
+        const audioURL = await getDownloadURL(audioRef);
+
+        // Upload jacket
+        const jacketRef = ref(storage, "jacket/" + Date.now() + "_" + jacketFile.name);
+        const uploadJacket = uploadBytesResumable(jacketRef, jacketFile);
+
+        uploadJacket.on("state_changed",
+          (snapJ) => {
+            const pctJ = (snapJ.bytesTransferred / snapJ.totalBytes) * 100;
+            progressJacket.value = pctJ;
+            status.textContent = `Téléversement pochette : ${pctJ.toFixed(0)}%`;
+          },
+          (err) => { console.error(err); status.textContent = "Erreur jacket"; },
+          async () => {
+            const jacketURL = await getDownloadURL(jacketRef);
+
+            // Sauvegarde Firestore
+            await addDoc(collection(db, "musiques"), {
+              titre,
+              artiste,
+              audioURL,
+              jacketURL,
+              createdAt: serverTimestamp()
+            });
+
+            status.textContent = "✅ Téléversement terminé !";
+            form.reset();
+            progressAudio.value = 0;
+            progressJacket.value = 0;
+          }
+        );
       }
     );
   });
@@ -87,86 +94,30 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <style>
-body{
-  margin:0;
-  font-family:'Poppins',sans-serif;
-  background:#0b0b14;
-  color:white;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-.container{
-  background:#12121f;
-  padding:30px;
-  border-radius:25px;
-  width:380px;
-  box-shadow:0 0 30px rgba(255,0,150,0.3);
-}
-h1{
-  text-align:center;
-  margin-bottom:25px;
-  font-size:28px;
-  color:#ff00aa;
-}
-input, button, progress{
-  width:100%;
-  margin:12px 0;
-  padding:12px;
-  border-radius:12px;
-  border:none;
-  font-size:14px;
-}
-input{
-  background:#1f1f33;
-  color:white;
-}
-button{
-  background:linear-gradient(90deg,#ff0080,#ff33aa);
-  color:white;
-  cursor:pointer;
-  font-weight:600;
-  transition:.3s;
-}
-button:hover{
-  background:linear-gradient(90deg,#ff33aa,#ff66cc);
-}
-#progress{
-  height:10px;
-  border-radius:5px;
-  background:#333;
-}
-#status{
-  text-align:center;
-  margin-top:10px;
-  font-size:14px;
-}
-.buttons{
-  display:flex;
-  justify-content:space-between;
-  margin-top:15px;
-}
-.buttons button{
-  width:48%;
-}
+body{margin:0;font-family:Poppins,sans-serif;background:#0b0b14;color:white;display:flex;justify-content:center;align-items:center;height:100vh}
+.container{background:#12121f;padding:25px;border-radius:25px;width:400px;box-shadow:0 0 30px rgba(255,0,150,0.3)}
+h1{text-align:center;color:#ff00aa;margin-bottom:20px}
+input, button, progress{width:100%;margin:10px 0;padding:12px;border-radius:12px;border:none;font-size:14px}
+input{background:#1f1f33;color:white}
+button{background:linear-gradient(90deg,#ff0080,#ff33aa);color:white;cursor:pointer;font-weight:600;transition:.3s}
+button:hover{background:linear-gradient(90deg,#ff33aa,#ff66cc)}
+progress{height:10px;border-radius:5px;background:#333}
+#status{text-align:center;margin-top:10px;font-size:14px}
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>📤 Upload Musique</h1>
-  <form id="uploadForm">
-    <input type="text" id="titre" placeholder="Titre de la musique" required>
-    <input type="text" id="artiste" placeholder="Artiste" required>
-    <input type="file" id="file" accept="audio/*" required>
-    <progress id="progress" value="0" max="100"></progress>
-    <span id="status"></span>
-    <button type="submit">Publier</button>
-  </form>
-  <div class="buttons">
-    <button id="logout">Déconnexion</button>
-    <button id="library">Bibliothèque</button>
-  </div>
+<h1>Test Upload Audio + Jacket</h1>
+<form id="uploadForm">
+  <input type="text" id="titre" placeholder="Titre de la musique" required>
+  <input type="text" id="artiste" placeholder="Artiste" required>
+  <input type="file" id="fileAudio" accept="audio/*" required>
+  <progress id="progressAudio" value="0" max="100"></progress>
+  <input type="file" id="fileJacket" accept="image/*" required>
+  <progress id="progressJacket" value="0" max="100"></progress>
+  <span id="status"></span>
+  <button type="submit">Publier</button>
+</form>
 </div>
 </body>
 </html>
