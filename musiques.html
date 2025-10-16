@@ -3,102 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NoTifHead - Bibliothèque</title>
-<script type="module" src="https://esm.sh/@supabase/supabase-js@2"></script>
+<title>Nos Musiques</title>
 <style>
-body { font-family:'Poppins',sans-serif; background:#0f0f0f; color:#fff; margin:0; padding:0; }
-header { display:flex; justify-content:space-between; align-items:center; padding:20px; background:#181818; border-bottom:1px solid #222; }
-header h1 { margin:0; font-size:1.5em; color:#1db954; }
-header nav button { background:none; border:1px solid #1db954; color:#1db954; border-radius:20px; padding:8px 16px; margin-left:10px; cursor:pointer; transition:0.3s; }
-header nav button:hover { background:#1db954; color:#fff; }
-main { max-width:900px; margin:40px auto; padding:0 20px; }
-.musique { display:flex; align-items:center; background:#1a1a1a; margin-bottom:15px; padding:10px; border-radius:15px; box-shadow:0 0 10px rgba(0,0,0,0.3); }
-.musique img { width:60px; height:60px; border-radius:10px; margin-right:15px; object-fit:cover; }
-.musique-details { flex:1; cursor:pointer; }
-.musique-details h3 { margin:0; color:#1db954; }
-.musique-details p { margin:2px 0 0; color:#ccc; font-size:0.9em; }
-audio { width:150px; outline:none; }
+body{font-family:'Segoe UI',sans-serif;margin:0;background:#121212;color:#fff}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px;background:#000}
+header h1{margin:0}
+header button{padding:6px 12px;border:none;border-radius:6px;font-weight:bold;cursor:pointer}
+header button#btnHome{background:#00ccff;color:#000}
+header button#btnLogin{background:#ff5555;color:#fff}
+.container{max-width:800px;margin:24px auto;padding:0 16px;display:flex;flex-direction:column;gap:24px}
+.music-item{background:#2a2a2a;padding:12px;border-radius:8px;margin-bottom:12px}
+audio{width:100%;margin-top:6px;display:block}
+.title-link{color:#00ccff;cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
-
 <header>
-<h1>NoTifHead</h1>
-<nav>
-<button onclick="window.location.href='index.html'">🏠 Accueil</button>
-<button onclick="window.location.href='admin2.html'">🔧 Admin</button>
-</nav>
+  <button id="btnHome">Accueil</button>
+  <h1>Nos Musiques</h1>
+  <button id="btnLogin">Connexion Admin</button>
 </header>
 
-<main id="bibliotheque">
-<!-- Musiques chargées ici -->
-</main>
+<div class="container" id="musicList">Chargement...</div>
 
 <script type="module">
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const bibliotheque = document.getElementById("bibliotheque");
+document.getElementById("btnHome").onclick=()=>window.location.href="index.html";
+document.getElementById("btnLogin").onclick=()=>window.location.href="admin2.html";
 
-async function chargerMusiques() {
-  const { data, error } = await supabase.from("musiques").select("*").order("id",{ascending:false});
-  if(error) return console.error(error);
+const list=document.getElementById("musicList");
 
-  data.forEach(track => {
-    const div = document.createElement("div");
-    div.className = "musique";
-
-    const img = document.createElement("img");
-    img.src = track.jacket_url;
-    div.appendChild(img);
-
-    const details = document.createElement("div");
-    details.className = "musique-details";
-
-    const titre = document.createElement("h3");
-    titre.textContent = track.titre;
-    details.appendChild(titre);
-
-    const artiste = document.createElement("p");
-    artiste.textContent = track.artiste;
-    details.appendChild(artiste);
-
-    details.addEventListener("click", () => {
-      const sites = {
-        "Spotify": `https://open.spotify.com/search/${encodeURIComponent(track.titre+" "+track.artiste)}`,
-        "Deezer": `https://www.deezer.com/search/${encodeURIComponent(track.titre+" "+track.artiste)}`,
-        "Apple Music": `https://music.apple.com/search?term=${encodeURIComponent(track.titre+" "+track.artiste)}`,
-        "Shazam": `https://www.shazam.com/fr/search?q=${encodeURIComponent(track.titre+" "+track.artiste)}`
-      };
-      let choix = prompt(`Où rechercher "${track.titre}" ?\n1. Spotify\n2. Deezer\n3. Apple Music\n4. Shazam`, "1");
-      if(!choix) return;
-      let url;
-      switch(choix.trim()){
-        case "1": url=sites.Spotify; break;
-        case "2": url=sites.Deezer; break;
-        case "3": url=sites["Apple Music"]; break;
-        case "4": url=sites.Shazam; break;
-        default: url=sites.Spotify;
+async function loadMusics(){
+  const { data, error } = await supabase.from('musics').select('*').order('id',{ascending:true});
+  if(error){ list.innerHTML="Erreur: "+error.message; return; }
+  list.innerHTML="";
+  data.forEach(m=>{
+    const div=document.createElement("div"); div.className="music-item";
+    const titleLink = document.createElement("span");
+    titleLink.className="title-link"; titleLink.innerText = m.title;
+    titleLink.onclick = ()=>{
+      const choice = prompt(`Ouvre sur : 1=Deezer, 2=Spotify, 3=Apple Music, 4=Shazam (numéro)`,"1");
+      if(!choice) return;
+      const q=encodeURIComponent(m.title+" "+(m.artist||""));
+      let url="";
+      switch(choice){
+        case "1": url=`https://www.deezer.com/search/${q}`; break;
+        case "2": url=`https://open.spotify.com/search/${q}`; break;
+        case "3": url=`https://music.apple.com/search?term=${q}`; break;
+        case "4": url=`https://www.shazam.com/track-search?query=${q}`; break;
+        default: return;
       }
       window.open(url,"_blank");
-    });
+    };
+    div.appendChild(titleLink);
 
-    div.appendChild(details);
+    const p=document.createElement("p"); p.innerText = m.artist||""; div.appendChild(p);
+    const audio=document.createElement("audio"); audio.controls=true; audio.src=m.audio_url; div.appendChild(audio);
 
-    const audio = document.createElement("audio");
-    audio.controls = true;
-    audio.src = track.audio_url;
-    div.appendChild(audio);
-
-    bibliotheque.appendChild(div);
+    list.appendChild(div);
   });
 }
 
-chargerMusiques();
+loadMusics();
 </script>
-
 </body>
 </html>
+
