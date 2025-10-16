@@ -41,4 +41,39 @@ document.getElementById("btnLogin").onclick = ()=>window.location.href="admin2.h
 
 async function loadMusics(){
   const { data, error } = await supabase.from('musics').select('*').order('id',{ascending:true});
- 
+  const list = document.getElementById("musicList");
+  if(error){ list.innerHTML="Erreur: "+error.message; return; }
+  list.innerHTML="";
+  data.forEach(m=>{
+    const div = document.createElement("div"); div.className="music-card";
+
+    const img = document.createElement("img"); img.className="cover";
+    img.src = m.cover_url || "https://via.placeholder.com/200";
+    div.appendChild(img);
+
+    const titleLink = document.createElement("div"); titleLink.className="music-title"; 
+    titleLink.innerText = m.title + " - " + (m.artist||"");
+    titleLink.onclick = ()=>{
+      const site = prompt("Sur quel site rechercher ? (spotify/deezer/apple/shazam)").toLowerCase();
+      const query = encodeURIComponent(m.title + " " + (m.artist||""));
+      let url="";
+      if(site==="spotify") url=`https://open.spotify.com/search/${query}`;
+      else if(site==="deezer") url=`https://www.deezer.com/search/${query}`;
+      else if(site==="apple") url=`https://music.apple.com/search?term=${query}`;
+      else if(site==="shazam") url=`https://www.shazam.com/fr/search?q=${query}`;
+      if(url) window.open(url,"_blank");
+      else alert("Site non reconnu");
+    };
+    div.appendChild(titleLink);
+
+    const audio = document.createElement("audio"); audio.controls=true; audio.src=m.audio_url;
+    div.appendChild(audio);
+
+    list.appendChild(div);
+  });
+}
+
+loadMusics();
+</script>
+</body>
+</html>
