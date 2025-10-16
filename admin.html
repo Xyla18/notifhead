@@ -37,7 +37,7 @@ img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
       <input type="date" id="date">
       <input type="time" id="time">
       <input id="lieu" placeholder="Lieu">
-      <input type="file" id="image_url" accept="image/*">
+      <input type="file" id="image" accept="image/*">
       <textarea id="desc" placeholder="Description"></textarea>
       <button type="submit" class="save">Enregistrer</button>
     </form>
@@ -62,6 +62,14 @@ document.getElementById("btnLogout").onclick = ()=>{ window.location.href="login
 const form = document.getElementById("form");
 const list = document.getElementById("concertList");
 
+// Fonction pour nettoyer le nom du fichier (éviter Invalid key)
+function sanitizeFileName(filename){
+  return filename
+    .replace(/\s+/g, "_")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // retire accents
+    .replace(/[^a-zA-Z0-9_.-]/g, "");
+}
+
 // Ajouter / Modifier concert
 form.addEventListener("submit", async e=>{
   e.preventDefault();
@@ -71,13 +79,14 @@ form.addEventListener("submit", async e=>{
   const time = document.getElementById("time").value;
   const lieu = document.getElementById("lieu").value;
   const desc = document.getElementById("desc").value;
-  const file = document.getElementById("image_url").files[0];
+  const file = document.getElementById("image").files[0];
 
   try {
     let image_url = null;
     if(file){
+      const safeName = `${Date.now()}_${sanitizeFileName(file.name)}`;
       const { data, error } = await supabase.storage.from('concerts').upload(
-        `images/${Date.now()}_${file.name}`, file, {upsert:true}
+        `images/${safeName}`, file, {upsert:true}
       );
       if(error) throw error;
       const { publicURL } = supabase.storage.from('concerts').getPublicUrl(data.path);
