@@ -1,218 +1,132 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Concerts</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Concerts</title>
 <style>
-  :root{--bg:#f9f9f9;--card:#fff;--muted:#666;--primary:#00ccff;--danger:#ff5555}
-  body{font-family:Segoe UI, Roboto, sans-serif;margin:0;background:var(--bg);color:#111}
-  header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#202020;color:#fff}
-  header h1{margin:0;font-size:1.2rem}
-  header .controls{display:flex;gap:8px;align-items:center}
-  button{cursor:pointer}
-  .btn{padding:8px 12px;border-radius:8px;border:none;font-weight:700}
-  .btn-primary{background:var(--primary);color:#000}
-  .btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.08)}
-  .container{max-width:980px;margin:20px auto;padding:0 16px;display:flex;flex-direction:column;gap:18px}
-  .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-  h2{margin:0 0 8px 0}
-  .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
-  .date-link,.lieu-link{color:var(--primary);text-decoration:underline;cursor:pointer}
-  .actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-  .present{background:var(--primary);color:#fff;border-radius:8px;padding:8px 10px}
-  .absent{background:var(--danger);color:#fff;border-radius:8px;padding:8px 10px}
-  .remove-pres{background:#777;color:#fff;border-radius:8px;padding:8px 10px}
-  .participants{margin-top:10px;font-size:0.95rem;color:var(--muted)}
-  .comments{margin-top:12px}
-  .comment-row{display:flex;justify-content:space-between;gap:8px;padding:8px;border-radius:8px;background:#f1f5f8;margin-bottom:8px}
-  .comment-left{font-size:0.95rem}
-  .comment-right button{background:transparent;border:0;cursor:pointer;color:#c00;font-weight:700}
-  .comment-form{display:flex;gap:8px;margin-top:8px}
-  .comment-form input{flex:1;padding:8px;border-radius:8px;border:1px solid #ddd}
-  .concert-img{max-width:100%;border-radius:8px;margin-top:10px}
-  footer{max-width:980px;margin:10px auto;padding:0 16px;color:var(--muted);font-size:0.9rem}
-  @media (max-width:520px){ .meta{flex-direction:column;align-items:flex-start} .comment-row{flex-direction:column;align-items:flex-start} }
+body{font-family:'Segoe UI',sans-serif;margin:0;background:#121212;color:#fff}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px;background:#000}
+header h1{margin:0}
+header button{padding:6px 12px;border:none;border-radius:6px;font-weight:bold;cursor:pointer}
+header button#btnLibrary{background:#00ccff;color:#000}
+header button#btnLogout{background:#ff5555;color:#fff}
+.container{max-width:800px;margin:24px auto;padding:0 16px;display:flex;flex-direction:column;gap:24px}
+.card{background:#1e1e1e;padding:16px;border-radius:12px}
+input,textarea,button{width:100%;margin:6px 0;padding:8px;border-radius:6px;border:none}
+input[type="file"]{padding:3px}
+button.save{background:#00ccff;color:#000;font-weight:bold}
+button.delete{background:#ff5555;color:#fff}
+.concert-item{background:#2a2a2a;padding:12px;border-radius:8px;margin-bottom:12px}
+img.concert-img{max-width:100%;border-radius:8px;margin-top:6px}
 </style>
 </head>
 <body>
 <header>
-  <h1>Concerts à venir</h1>
-  <div class="controls">
-    <button id="changePseudo" class="btn btn-ghost">Changer de pseudo</button>
-    <button id="btnLogin" class="btn btn-primary">Admin</button>
-  </div>
+  <button id="btnLibrary">Bibliothèque</button>
+  <h1>Admin Concerts</h1>
+  <button id="btnLogout">Déconnexion</button>
 </header>
 
-<main class="container" id="concertList">
-  <div class="card">Chargement des concerts...</div>
-</main>
+<div class="container">
+  <div class="card">
+    <h2>Ajouter / Modifier un concert</h2>
+    <form id="form">
+      <input type="hidden" id="concertId">
+      <input id="title" placeholder="Titre" required>
+      <input type="date" id="date">
+      <input type="time" id="time">
+      <input id="lieu" placeholder="Lieu">
+      <textarea id="description" placeholder="Description"></textarea>
+      <input type="file" id="image" accept="image/*">
+      <button type="submit" class="save">Publier</button>
+    </form>
+  </div>
 
-<footer>Astuce: ton pseudo est stocké localement sur cet appareil. Seul ce pseudo pourra supprimer ses propres commentaires/présences.</footer>
+  <h2>Liste des concerts</h2>
+  <div id="concertList">Chargement...</div>
+</div>
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-/* ======= Pseudo local ======= */
-let username = localStorage.getItem("concert_username");
-function askPseudo(){
-  const p = prompt("Choisis un pseudo (sera sauvegardé localement) :", username || "");
-  if(p && p.trim()){
-    username = p.trim();
-    localStorage.setItem("concert_username", username);
-  }
-}
-if(!username){
-  username = prompt("Entre ton pseudo pour cette session :") || "Anonyme";
-  username = username.trim() || "Anonyme";
-  localStorage.setItem("concert_username", username);
-}
-document.getElementById("changePseudo").onclick = () => { askPseudo(); location.reload(); };
-document.getElementById("btnLogin").onclick = () => { window.location.href = "login.html"; };
+document.getElementById("btnLibrary").onclick = ()=>window.location.href="musiques.html";
+document.getElementById("btnLogout").onclick = ()=>window.location.href="index.html";
 
-/* ======= Helpers calendar ======= */
-function fmtICSDate(d){
-  const y = d.getUTCFullYear();
-  const M = String(d.getUTCMonth()+1).padStart(2,"0");
-  const D = String(d.getUTCDate()).padStart(2,"0");
-  const h = String(d.getUTCHours()).padStart(2,"0");
-  const m = String(d.getUTCMinutes()).padStart(2,"0");
-  const s = String(d.getUTCSeconds()).padStart(2,"0");
-  return `${y}${M}${D}T${h}${m}${s}Z`;
-}
-function createICSBlob(concert){
-  const time = concert.time || "19:00";
-  const localStart = new Date(`${concert.date}T${time}`);
-  const localEnd = new Date(localStart.getTime() + 2*60*60*1000);
-  const dtStart = fmtICSDate(localStart);
-  const dtEnd = fmtICSDate(localEnd);
-  const uid = `${Date.now()}@concerts.local`;
-  const lines = [
-    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Concerts//FR","BEGIN:VEVENT",
-    `UID:${uid}`,
-    `DTSTAMP:${fmtICSDate(new Date())}`,
-    `DTSTART:${dtStart}`,
-    `DTEND:${dtEnd}`,
-    `SUMMARY:${concert.title || ''}`,
-    `DESCRIPTION:${(concert.desc||'').replace(/\r\n/g,'\\n')}`,
-    `LOCATION:${concert.lieu || ''}`,
-    "END:VEVENT","END:VCALENDAR"
-  ].join("\r\n");
-  return URL.createObjectURL(new Blob([lines],{type:"text/calendar;charset=utf-8"}));
-}
-function googleCalendarUrl(concert){
-  const time = concert.time || "19:00";
-  const start = new Date(`${concert.date}T${time}`);
-  const end = new Date(start.getTime() + 2*60*60*1000);
-  const fmt = d=>d.toISOString().replace(/[-:]|\.\d{3}/g,"");
-  const params = new URLSearchParams({
-    action:"TEMPLATE",
-    text: concert.title || "",
-    details: concert.desc || "",
-    location: concert.lieu || "",
-    dates: `${fmt(start)}/${fmt(end)}`
-  });
-  return "https://calendar.google.com/calendar/render?" + params.toString();
-}
+const form=document.getElementById("form");
+const list=document.getElementById("concertList");
 
-/* ======= Firestore → Supabase ======= */
+form.addEventListener("submit", async e=>{
+  e.preventDefault();
+  const concertId=document.getElementById("concertId").value;
+  const title=document.getElementById("title").value;
+  const date=document.getElementById("date").value;
+  const time=document.getElementById("time").value;
+  const lieu=document.getElementById("lieu").value;
+  const description=document.getElementById("description").value;
+  const file=document.getElementById("image").files[0];
 
-/* Helpers participants */
-async function addParticipant(concertId, name, status){
-  if(!name) return;
-  await supabase.from("participants").upsert([{concert_id: concertId, username: name, status, created_at: new Date()}]);
-}
-async function removeParticipant(concertId, name){
-  if(!name) return;
-  await supabase.from("participants").delete().eq("concert_id",concertId).eq("username",name);
-}
-
-/* Helpers commentaires */
-async function addComment(concertId, name, text){
-  if(!name || !text) return;
-  await supabase.from("comments").insert([{concert_id: concertId, username: name, text, created_at: new Date()}]);
-}
-async function deleteComment(commentId){
-  if(!commentId) return;
-  await supabase.from("comments").delete().eq("id",commentId);
-}
-
-/* Render concerts */
-const container = document.getElementById("concertList");
-async function loadConcerts(){
-  const { data: concerts, error } = await supabase.from("concerts").select("*").order("date",{ascending:true});
-  container.innerHTML="";
-  if(error){ container.innerHTML=`<div class="card">Erreur: ${error.message}</div>`; return; }
-  if(!concerts.length){ container.innerHTML=`<div class="card">Aucun concert programmé.</div>`; return; }
-
-  for(const c of concerts){
-    const concertId = c.id;
-    const card = document.createElement("div"); card.className="card";
-
-    if(c.image_url){
-      const img = document.createElement("img"); img.src=c.image_url; img.alt=c.title||""; img.className="concert-img";
-      card.appendChild(img);
+  try{
+    let image_url = null;
+    if(file){
+      const { data, error } = await supabase.storage.from('concertImages').upload(`images/${Date.now()}_${file.name}`, file, { upsert: true });
+      if(error) throw error;
+      const { publicURL } = supabase.storage.from('concertImages').getPublicUrl(data.path);
+      image_url = publicURL;
     }
 
-    const title = document.createElement("h2"); title.innerText = c.title||"Événement"; card.appendChild(title);
+    const obj = { title, date, time, lieu, description };
+    if(image_url) obj.image_url = image_url;
 
-    const meta = document.createElement("div"); meta.className="meta";
-    const dateSpan = document.createElement("span"); dateSpan.className="date-link";
-    dateSpan.innerText = `📅 ${c.date || ""} ${c.time || ""}`;
-    dateSpan.title = "Ajouter au calendrier";
-    dateSpan.onclick = ()=> {
-      const choice = confirm("Ouvrir Google Calendar ? (OK) / Télécharger .ics pour Apple/Outlook (Annuler)");
-      if(choice) window.open(googleCalendarUrl(c),"_blank");
-      else {
-        const a = document.createElement("a"); a.href=createICSBlob(c); a.download=`${(c.title||"evenement").replace(/\s+/g,"_")}.ics`;
-        document.body.appendChild(a); a.click(); a.remove();
-      }
+    if(concertId){
+      await supabase.from('concerts').update(obj).eq('id', concertId);
+    }else{
+      await supabase.from('concerts').insert([obj]);
+    }
+
+    form.reset(); document.getElementById("concertId").value="";
+    alert("✅ Concert publié !");
+    loadConcerts();
+  }catch(err){ console.error(err); alert("❌ Erreur: "+err.message); }
+});
+
+async function loadConcerts(){
+  const { data, error } = await supabase.from('concerts').select('*').order('id',{ascending:true});
+  if(error){ list.innerHTML="Erreur: "+error.message; return; }
+  list.innerHTML="";
+  data.forEach(c=>{
+    const div=document.createElement("div"); div.className="concert-item";
+
+    if(c.image_url){
+      const img=document.createElement("img"); img.src=c.image_url; img.className="concert-img"; div.appendChild(img);
+    }
+
+    div.innerHTML += `<strong>${c.title}</strong> - ${c.date || ''} ${c.time || ''}<br><em>${c.lieu || ''}</em><br>${c.description || ''}<br>`;
+
+    const btnEdit=document.createElement("button"); btnEdit.innerText="Modifier"; btnEdit.className="save";
+    btnEdit.onclick=()=>{ 
+      document.getElementById("concertId").value=c.id;
+      document.getElementById("title").value=c.title;
+      document.getElementById("date").value=c.date;
+      document.getElementById("time").value=c.time;
+      document.getElementById("lieu").value=c.lieu;
+      document.getElementById("description").value=c.description;
     };
-    meta.appendChild(dateSpan);
+    div.appendChild(btnEdit);
 
-    const lieuSpan = document.createElement("span"); lieuSpan.className="lieu-link"; lieuSpan.innerText=`📍 ${c.lieu||""}`;
-    lieuSpan.onclick=()=>{ window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.lieu||"")}`,"_blank"); };
-    meta.appendChild(lieuSpan);
-    card.appendChild(meta);
+    const btnDelete=document.createElement("button"); btnDelete.innerText="Supprimer"; btnDelete.className="delete";
+    btnDelete.onclick=async()=>{ await supabase.from('concerts').delete().eq('id',c.id); loadConcerts(); };
+    div.appendChild(btnDelete);
 
-    const p = document.createElement("p"); p.innerText=c.desc||""; card.appendChild(p);
-
-    // Actions participants
-    const actions = document.createElement("div"); actions.className="actions";
-    const btnPresent=document.createElement("button"); btnPresent.className="present"; btnPresent.innerText="✅ Je viens";
-    btnPresent.onclick=()=>addParticipant(concertId, username, "present");
-    const btnAbsent=document.createElement("button"); btnAbsent.className="absent"; btnAbsent.innerText="❌ Je ne viens pas";
-    btnAbsent.onclick=()=>addParticipant(concertId, username, "absent");
-    const btnRemove=document.createElement("button"); btnRemove.className="remove-pres"; btnRemove.innerText="🗑️ Retirer ma présence";
-    btnRemove.onclick=()=>removeParticipant(concertId, username);
-    actions.appendChild(btnPresent); actions.appendChild(btnAbsent); actions.appendChild(btnRemove);
-    card.appendChild(actions);
-
-    // Participants realtime
-    const participantsDiv=document.createElement("div"); participantsDiv.className="participants"; participantsDiv.innerHTML="Chargement participants...";
-    card.appendChild(participantsDiv);
-    supabase.from(`participants:concert_id=eq.${concertId}`).on('INSERT',loadConcerts).on('UPDATE',loadConcerts).on('DELETE',loadConcerts).subscribe();
-
-    // Comments realtime
-    const commentsDiv=document.createElement("div"); commentsDiv.className="comments"; commentsDiv.innerHTML="<strong>Commentaires</strong>";
-    card.appendChild(commentsDiv);
-    supabase.from(`comments:concert_id=eq.${concertId}`).on('INSERT',loadConcerts).on('UPDATE',loadConcerts).on('DELETE',loadConcerts).subscribe();
-
-    // Add comment form
-    const formDiv=document.createElement("div"); formDiv.className="comment-form";
-    const input=document.createElement("input"); input.placeholder="Ton commentaire...";
-    const btnAdd=document.createElement("button"); btnAdd.className="small"; btnAdd.innerText="Ajouter";
-    btnAdd.onclick=()=>{ const t=input.value.trim(); if(!t) return alert("Écris un commentaire."); addComment(concertId,username,t); input.value=""; };
-    formDiv.appendChild(input); formDiv.appendChild(btnAdd);
-    card.appendChild(formDiv);
-
-    container.appendChild(card);
-  }
+    list.appendChild(div);
+  });
 }
+
 loadConcerts();
 </script>
 </body>
