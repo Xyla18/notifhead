@@ -12,11 +12,10 @@ header button{padding:6px 12px;border:none;border-radius:6px;font-weight:bold;cu
 header button#btnHome{background:#00ccff;color:#000}
 header button#btnLogin{background:#ff5555;color:#fff}
 .container{max-width:900px;margin:24px auto;padding:0 16px;display:flex;flex-direction:column;gap:16px}
-.music-card{background:#1e1e1e;padding:12px;border-radius:12px;display:flex;align-items:center;gap:12px}
-.cover{width:60px;height:60px;border-radius:4px;object-fit:cover}
-.audio-info{flex:1;display:flex;flex-direction:column;gap:4px}
+.music-card{background:#1e1e1e;padding:12px;border-radius:12px;display:flex;gap:12px;align-items:center}
+.music-card img{width:80px;height:80px;object-fit:cover;border-radius:6px}
+.flex-col{display:flex;flex-direction:column;gap:4px;flex:1}
 audio{width:100%}
-.music-title{cursor:pointer;color:#00ccff;font-weight:bold;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -30,35 +29,29 @@ audio{width:100%}
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-const supabaseUrl="https://hcjgggdnfznoitebphvs.supabase.co";
-const supabaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
-const supabase=createClient(supabaseUrl,supabaseKey);
 
-document.getElementById("btnHome").onclick=()=>window.location.href="index.html";
-document.getElementById("btnLogin").onclick=()=>window.location.href="admin2.html";
+const SUPABASE_URL = "https://hcjgggdnfznoitebphvs.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
+
+const supabase = createClient(SUPABASE_URL,SUPABASE_KEY);
+
+document.getElementById("btnHome").onclick = ()=>window.location.href="index.html";
+document.getElementById("btnLogin").onclick = ()=>window.location.href="admin2.html";
 
 async function loadMusics(){
   const { data, error } = await supabase.from('musics').select('*').order('id',{ascending:true});
-  const list=document.getElementById("musicList");
+  const list = document.getElementById("musicList");
   if(error){ list.innerHTML="Erreur: "+error.message; return; }
   list.innerHTML="";
   data.forEach(m=>{
-    const div=document.createElement("div"); div.className="music-card";
-    const cover=document.createElement("img"); cover.src=m.cover_url||""; cover.className="cover";
-    const info=document.createElement("div"); info.className="audio-info";
-    const title=document.createElement("div"); title.className="music-title"; title.innerText=`${m.title} - ${m.artist||""}`;
-    title.onclick=()=>{
-      const site=prompt("Sur quel site rechercher ? (spotify/deezer/apple/shazam)").toLowerCase();
-      const query=encodeURIComponent(m.title+" "+(m.artist||"")); let url="";
-      if(site==="spotify") url=`https://open.spotify.com/search/${query}`;
-      else if(site==="deezer") url=`https://www.deezer.com/search/${query}`;
-      else if(site==="apple") url=`https://music.apple.com/search?term=${query}`;
-      else if(site==="shazam") url=`https://www.shazam.com/fr/search?q=${query}`;
-      if(url) window.open(url,"_blank"); else alert("Site non reconnu");
-    };
-    const audio=document.createElement("audio"); audio.controls=true; audio.src=m.audio_url;
-    info.appendChild(title); info.appendChild(audio);
-    div.appendChild(cover); div.appendChild(info);
+    const div = document.createElement("div"); div.className="music-card";
+    div.innerHTML = `
+      <img src="${m.cover_url || 'https://via.placeholder.com/80'}">
+      <div class="flex-col">
+        <strong>${m.title}</strong> - ${m.artist || ""}
+        <audio controls src="${m.audio_url}"></audio>
+      </div>
+    `;
     list.appendChild(div);
   });
 }
