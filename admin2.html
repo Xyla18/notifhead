@@ -80,19 +80,27 @@ form.addEventListener("submit", async (e) => {
     const { data: audioData, error: audioError } = await supabase.storage.from("musiques").upload(audioPath, audioFile);
     if (audioError) throw audioError;
 
-    progressBar.style.width = "100%";
+    progressBar.style.width = "50%";
 
     const audioURL = supabase.storage.from("musiques").getPublicUrl(audioData.path).data.publicUrl;
 
-    const { error: insertError } = await supabase.from("musiques").insert([{ titre, artiste, audio_url: audioURL }]);
+    const { error: insertError } = await supabase.from("musiques").insert([{
+      titre,
+      artiste,
+      audio_url: audioURL,
+      jacket_url: '',           // valeur vide car pas de jaquette
+      created_at: new Date()    // timestamp actuel
+    }]);
+
     if (insertError) throw insertError;
 
+    progressBar.style.width = "100%";
     message.textContent = "✅ Publication réussie !";
     form.reset();
     setTimeout(() => message.textContent = "", 3000);
 
   } catch (err) {
-    console.error(err);
+    console.error("Erreur finale:", err);
     message.textContent = "❌ Erreur lors du téléversement.";
   }
 });
