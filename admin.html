@@ -52,7 +52,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // ===== Supabase Config =====
 const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s"; // service_role key
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Navigation
@@ -76,9 +76,10 @@ form.addEventListener("submit", async e=>{
   try {
     let image_url = null;
     if(file){
-      const { data, error } = await supabase.storage.from('concert-images').upload(`images/${Date.now()}_${file.name}`, file);
+      // upload dans le bucket "concerts"
+      const { data, error } = await supabase.storage.from('concerts').upload(`images/${Date.now()}_${file.name}`, file);
       if(error) throw error;
-      const { publicURL } = supabase.storage.from('concert-images').getPublicUrl(data.path);
+      const { publicURL } = supabase.storage.from('concerts').getPublicUrl(data.path);
       image_url = publicURL;
     }
 
