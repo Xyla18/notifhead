@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NoTifHead - Admin</title>
+<title>NoTifHead - Admin Audio</title>
 <script type="module" src="https://esm.sh/@supabase/supabase-js@2"></script>
 <style>
-body { font-family: 'Poppins', sans-serif; background:#0f0f0f; color:#fff; margin:0; padding:0; }
+body { font-family:'Poppins',sans-serif; background:#0f0f0f; color:#fff; margin:0; padding:0; }
 header { display:flex; justify-content:space-between; align-items:center; padding:20px; background:#181818; border-bottom:1px solid #222; }
 header h1 { margin:0; font-size:1.5em; color:#1db954; }
 header nav button { background:none; border:1px solid #1db954; color:#1db954; border-radius:20px; padding:8px 16px; margin-left:10px; cursor:pointer; transition:0.3s; }
@@ -44,9 +44,6 @@ button[type="submit"]:hover { background:#17a44a; }
 <label for="fileAudio">Fichier audio :</label>
 <input type="file" id="fileAudio" accept="audio/*" required>
 
-<label for="fileJacket">Pochette :</label>
-<input type="file" id="fileJacket" accept="image/*" required>
-
 <button type="submit">📤 Publier</button>
 <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
 <p class="msg" id="message"></p>
@@ -69,9 +66,8 @@ form.addEventListener("submit", async (e) => {
   const titre = document.getElementById("titre").value.trim();
   const artiste = document.getElementById("artiste").value.trim();
   const audioFile = document.getElementById("fileAudio").files[0];
-  const jacketFile = document.getElementById("fileJacket").files[0];
 
-  if (!titre || !artiste || !audioFile || !jacketFile) {
+  if (!titre || !artiste || !audioFile) {
     message.textContent = "⚠️ Remplis tous les champs !";
     return;
   }
@@ -80,29 +76,17 @@ form.addEventListener("submit", async (e) => {
   progressBar.style.width = "0%";
 
   try {
-    // Upload audio
     const audioPath = `audios/${Date.now()}_${audioFile.name}`;
     const { data: audioData, error: audioError } = await supabase.storage.from("musiques").upload(audioPath, audioFile);
     if (audioError) throw audioError;
-    progressBar.style.width = "50%";
-
-    // Upload jacket
-    const jacketPath = `JACKETS/${Date.now()}_${jacketFile.name}`;
-    const { data: jacketData, error: jacketError } = await supabase.storage.from("JACKETS").upload(jacketPath, jacketFile);
-    if (jacketError) {
-      console.error("Erreur jaquette :", jacketError);
-      throw jacketError;
-    }
-
-    progressBar.style.width = "80%";
-
-    const audioURL = supabase.storage.from("musiques").getPublicUrl(audioData.path).data.publicUrl;
-    const jacketURL = supabase.storage.from("JACKETS").getPublicUrl(jacketData.path).data.publicUrl;
-
-    const { error: insertError } = await supabase.from("musiques").insert([{ titre, artiste, audio_url: audioURL, jacket_url: jacketURL }]);
-    if (insertError) throw insertError;
 
     progressBar.style.width = "100%";
+
+    const audioURL = supabase.storage.from("musiques").getPublicUrl(audioData.path).data.publicUrl;
+
+    const { error: insertError } = await supabase.from("musiques").insert([{ titre, artiste, audio_url: audioURL }]);
+    if (insertError) throw insertError;
+
     message.textContent = "✅ Publication réussie !";
     form.reset();
     setTimeout(() => message.textContent = "", 3000);
