@@ -3,151 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin – Ajouter une musique</title>
+<title>Admin Sons</title>
 <style>
-  body {
-    font-family: 'Arial', sans-serif;
-    background-color: #121212;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-  }
-  header {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-  }
-  header button {
-    padding: 8px 14px;
-    background-color: #1db954;
-    border: none;
-    border-radius: 20px;
-    color: #fff;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  header button:hover {
-    background-color: #17a44a;
-  }
-  form {
-    background-color: #1e1e1e;
-    padding: 20px;
-    border-radius: 10px;
-    width: 320px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  input[type="text"], input[type="file"] {
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    background-color: #2c2c2c;
-    color: #fff;
-  }
-  button.submit-btn {
-    padding: 10px;
-    border: none;
-    border-radius: 20px;
-    background-color: #1db954;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  button.submit-btn:hover {
-    background-color: #17a44a;
-  }
-  .status {
-    font-size: 14px;
-    color: #b3b3b3;
-  }
+body { font-family:'Segoe UI', sans-serif; margin:0; background:#121212; color:#fff; }
+header { display:flex; justify-content:space-between; align-items:center; padding:16px; background:#000; }
+header h1 { margin:0; }
+header button { padding:6px 12px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
+header button#btnBack { background:#00ccff; color:#000; }
+header button#btnLogout { background:#ff5555; color:#fff; }
+.container { max-width:800px; margin:24px auto; padding:0 16px; display:flex; flex-direction:column; gap:24px; }
+.card { background:#1e1e1e; padding:16px; border-radius:12px; }
+input,button { width:100%; margin:6px 0; padding:8px; border-radius:6px; border:none; }
+input[type="file"] { padding:3px; }
+button.save { background:#00ccff; color:#000; font-weight:bold; }
+button.delete { background:#ff5555; color:#fff; }
+.sound-item { background:#2a2a2a; padding:12px; border-radius:8px; margin-bottom:12px; display:flex; justify-content: space-between; align-items:center; }
+.sound-item audio { width:60%; }
 </style>
 </head>
 <body>
 
 <header>
-  <button onclick="window.location.href='musique.html'">Retour bibliothèque</button>
-  <button onclick="window.location.href='index.html'">Accueil</button>
+  <button id="btnBack">← Retour bibliothèque</button>
+  <h1>Admin Sons</h1>
+  <button id="btnLogout">Déconnexion</button>
 </header>
 
-<form id="form-music">
-  <h2>Ajouter une musique</h2>
-  <input type="text" id="title" placeholder="Titre" required>
-  <input type="text" id="artist" placeholder="Artiste" required>
-  <input type="file" id="audio-file" accept="audio/*" required>
-  <input type="file" id="cover-file" accept="image/*">
-  <button type="submit" class="submit-btn">Ajouter</button>
-  <p class="status" id="status"></p>
-</form>
+<div class="container">
+  <div class="card">
+    <h2>Ajouter / Modifier un son</h2>
+    <form id="form">
+      <input type="hidden" id="soundId">
+      <input id="title" placeholder="Nom du son" required>
+      <input type="file" id="audio-file" accept="audio/*" required>
+      <button type="submit" class="save">Enregistrer</button>
+    </form>
+  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-<script>
-  const supabaseUrl = 'https://hcjgggdnfznoitebphvs.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s';
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+  <h2>Liste des sons</h2>
+  <div id="soundList">Chargement...</div>
+</div>
 
-  const form = document.getElementById('form-music');
-  const status = document.getElementById('status');
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    status.textContent = "Téléversement en cours...";
+const SUPABASE_URL = "https://hcjgggdnfznoitebphvs.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const title = document.getElementById('title').value;
-    const artist = document.getElementById('artist').value;
-    const audioFile = document.getElementById('audio-file').files[0];
-    const coverFile = document.getElementById('cover-file').files[0];
+// Navigation
+document.getElementById("btnBack").onclick = () => { window.location.href = "musique.html"; };
+document.getElementById("btnLogout").onclick = () => { window.location.href = "login.html"; };
 
-    if (!audioFile) {
-      alert("Vous devez choisir un fichier audio !");
-      return;
+// Nettoyage nom fichier
+function sanitizeFileName(filename) {
+  return filename.replace(/\s+/g,"_").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_.-]/g,"");
+}
+
+// URL publique
+function getPublicAudioUrl(filename) {
+  return `${SUPABASE_URL}/storage/v1/object/public/sounds/${filename}`;
+}
+
+// Formulaire ajout/modif
+const form = document.getElementById("form");
+const list = document.getElementById("soundList");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const soundId = document.getElementById("soundId").value;
+  const title = document.getElementById("title").value;
+  const file = document.getElementById("audio-file").files[0];
+  if (!file) return alert("Veuillez choisir un fichier audio.");
+
+  try {
+    const safeName = `${Date.now()}_${sanitizeFileName(file.name)}`;
+    const { error } = await supabase.storage.from('sounds').upload(`audios/${safeName}`, file, { upsert:true });
+    if (error) throw error;
+    const audio_url = getPublicAudioUrl(`audios/${safeName}`);
+
+    const dataObj = { title, url: audio_url };
+    if (soundId) {
+      const { error } = await supabase.from('sounds').update(dataObj).eq('id', soundId);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.from('sounds').insert([dataObj]);
+      if (error) throw error;
     }
 
-    // Upload audio
-    const audioPath = `audios/${Date.now()}_${audioFile.name}`;
-    const { data: audioData, error: audioError } = await supabase.storage
-      .from('music-files')
-      .upload(audioPath, audioFile);
-
-    if (audioError) {
-      alert("Erreur upload audio : " + audioError.message);
-      return;
-    }
-
-    const audioUrl = supabase.storage.from('music-files').getPublicUrl(audioPath).data.publicUrl;
-
-    // Upload cover si existante
-    let coverUrl = null;
-    if (coverFile) {
-      const coverPath = `covers/${Date.now()}_${coverFile.name}`;
-      const { data: coverData, error: coverError } = await supabase.storage
-        .from('music-files')
-        .upload(coverPath, coverFile);
-
-      if (coverError) {
-        alert("Erreur upload jaquette : " + coverError.message);
-        return;
-      }
-      coverUrl = supabase.storage.from('music-files').getPublicUrl(coverPath).data.publicUrl;
-    }
-
-    // Insert dans la table musics
-    const { data, error } = await supabase
-      .from('musics')
-      .insert([{ title, artist, url: audioUrl, cover_url: coverUrl }]);
-
-    if (error) {
-      alert("Erreur ajout musique : " + error.message);
-      return;
-    }
-
-    status.textContent = "Musique ajoutée avec succès !";
     form.reset();
-  });
-</script>
+    document.getElementById("soundId").value = "";
+    alert("✅ Son enregistré !");
+    loadSounds();
+  } catch(err) {
+    console.error(err);
+    alert("❌ Erreur: "+err.message);
+  }
+});
 
+// Charger sons
+async function loadSounds() {
+  const { data, error } = await supabase.from('sounds').select('*').order('id', {ascending:true});
+  if (error) { list.innerHTML="Erreur: "+error.message; return; }
+
+  list.innerHTML = "";
+  if (!data || data.length===0) { list.innerHTML="<div class='card'>Aucun son disponible.</div>"; return; }
+
+  data.forEach(s => {
+    const div = document.createElement("div");
+    div.className="sound-item";
+    div.innerHTML = `
+      <span>${s.title}</span>
+      <audio controls src="${s.url}"></audio>
+      <div>
+        <button class="edit" data-id="${s.id}">Modifier</button>
+        <button class="delete" data-id="${s.id}">Supprimer</button>
+      </div>
+    `;
+    list.appendChild(div);
+
+    div.querySelector(".edit").onclick = () => {
+      document.getElementById("soundId").value = s.id;
+      document.getElementById("title").value = s.title;
+    };
+    div.querySelector(".delete").onclick = async () => {
+      if(!confirm("Supprimer ce son ?")) return;
+      const { error } = await supabase.from('sounds').delete().eq('id', s.id);
+      if (error) return alert("Erreur: "+error.message);
+      loadSounds();
+    };
+  });
+}
+
+loadSounds();
+</script>
 </body>
 </html>
