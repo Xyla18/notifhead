@@ -3,47 +3,112 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Liste des musiques</title>
+<title>Bibliothèque musicale</title>
 <style>
   body {
-    font-family: Arial, sans-serif;
-    background: #f0f2f5;
-    padding: 20px;
-  }
-  h1 {
-    text-align: center;
-    color: #333;
-  }
-  ul {
-    list-style: none;
+    font-family: 'Arial', sans-serif;
+    background-color: #121212;
+    color: #fff;
+    margin: 0;
     padding: 0;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1e1e1e;
+    padding: 15px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  }
+  header button {
+    padding: 8px 14px;
+    background-color: #1db954;
+    border: none;
+    border-radius: 20px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  header button:hover {
+    background-color: #17a44a;
+  }
+  .search-bar {
     max-width: 600px;
     margin: 20px auto;
+    display: flex;
   }
-  li {
-    background: #fff;
-    margin-bottom: 15px;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  .search-bar input {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: none;
+    font-size: 16px;
   }
-  audio {
-    display: block;
-    margin-top: 10px;
+  .music-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 0 20px 40px;
+  }
+  .music-card {
+    background-color: #1e1e1e;
+    width: 180px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    text-align: center;
+    padding-bottom: 10px;
+  }
+  .music-card img {
     width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+  .music-card h3 {
+    font-size: 16px;
+    margin: 8px 0 0 0;
+  }
+  .music-card p {
+    font-size: 14px;
+    color: #b3b3b3;
+    margin: 4px 0;
+  }
+  .music-card audio {
+    width: 90%;
+    margin-top: 5px;
+  }
+  .external-links a {
+    font-size: 12px;
+    color: #1db954;
+    text-decoration: none;
+    margin: 0 3px;
+  }
+  .external-links a:hover {
+    text-decoration: underline;
   }
 </style>
 </head>
 <body>
 
-<h1>Ma playlist</h1>
-<ul id="liste-musiques"></ul>
+<header>
+  <button onclick="window.location.href='index.html'">Retour</button>
+  <button onclick="window.location.href='login2.html'">Admin</button>
+</header>
+
+<div class="search-bar">
+  <input type="text" id="search" placeholder="Rechercher une musique...">
+</div>
+
+<div class="music-list" id="music-list"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 <script>
   const supabaseUrl = 'https://hcjgggdnfznoitebphvs.supabase.co';
-  const supabaseKey = 'CLE_SECRETE_A_METTRE_EN_PLACE_DANS_ENV'; // ⚠️ ne jamais exposer la vraie clé admin
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s';
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  let musics = [];
 
   async function loadMusiques() {
     const { data, error } = await supabase
@@ -55,13 +120,37 @@
       return;
     }
 
-    const ul = document.getElementById('liste-musiques');
+    musics = data;
+    displayMusiques(data);
+  }
+
+  function displayMusiques(data) {
+    const container = document.getElementById('music-list');
+    container.innerHTML = '';
     data.forEach(m => {
-      const li = document.createElement('li');
-      li.innerHTML = `<strong>${m.title}</strong> par ${m.artist} <audio controls src="${m.url}"></audio>`;
-      ul.appendChild(li);
+      const card = document.createElement('div');
+      card.className = 'music-card';
+      card.innerHTML = `
+        <img src="${m.cover_url || 'https://via.placeholder.com/180'}" alt="Jaquette">
+        <h3>${m.title}</h3>
+        <p>${m.artist}</p>
+        <audio controls src="${m.url}"></audio>
+        <div class="external-links">
+          <a href="https://music.apple.com/search?term=${encodeURIComponent(m.title + ' ' + m.artist)}" target="_blank">Apple Music</a>
+          <a href="https://www.deezer.com/search/${encodeURIComponent(m.title + ' ' + m.artist)}" target="_blank">Deezer</a>
+          <a href="https://open.spotify.com/search/${encodeURIComponent(m.title + ' ' + m.artist)}" target="_blank">Spotify</a>
+          <a href="https://www.shazam.com/track-search?query=${encodeURIComponent(m.title + ' ' + m.artist)}" target="_blank">Shazam</a>
+        </div>
+      `;
+      container.appendChild(card);
     });
   }
+
+  document.getElementById('search').addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    const filtered = musics.filter(m => m.title.toLowerCase().includes(term) || m.artist.toLowerCase().includes(term));
+    displayMusiques(filtered);
+  });
 
   loadMusiques();
 </script>
