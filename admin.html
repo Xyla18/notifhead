@@ -32,7 +32,7 @@ img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
   <div class="card">
     <h2>Ajouter / Modifier un concert</h2>
     <form id="form">
-      <input type="hidden" id="docId">
+      <input type="hidden" id="concertId">
       <input id="title" placeholder="Titre" required>
       <input type="date" id="date">
       <input type="time" id="time">
@@ -48,38 +48,24 @@ img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } 
-  from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } 
-  from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// ===== Firebase Config =====
-const firebaseConfig = {
-  apiKey: "AIzaSyBdVemkxmbUdYG4scag95yh5PWSszTcJpc",
-  authDomain: "notifhead.firebaseapp.com",
-  projectId: "notifhead",
-  storageBucket: "notifhead.appspot.com", // ✅ Important : garder .appspot.com pour le stockage
-  messagingSenderId: "190210184035",
-  appId: "1:190210184035:web:fdc67599bfc79f2bf1f956",
-  measurementId: "G-HWW5Z08H60"
-};
+// ===== Supabase Config =====
+const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
+// Navigation
+document.getElementById("btnBack").onclick = ()=>{ window.location.href="concerts.html"; }
+document.getElementById("btnLogout").onclick = ()=>{ window.location.href="login.html"; }
 
 const form = document.getElementById("form");
 const list = document.getElementById("concertList");
 
-// Navigation
-document.getElementById("btnBack").onclick = ()=>{ window.location.href="concerts.html"; }
-document.getElementById("btnLogout").onclick = ()=>{ alert("Déconnexion"); window.location.href="login.html"; }
-
 // Ajouter / Modifier concert
 form.addEventListener("submit", async e=>{
   e.preventDefault();
-  const docId = document.getElementById("docId").value;
+  const concertId = document.getElementById("concertId").value;
   const title = document.getElementById("title").value;
   const date = document.getElementById("date").value;
   const time = document.getElementById("time").value;
@@ -88,67 +74,67 @@ form.addEventListener("submit", async e=>{
   const file = document.getElementById("image").files[0];
 
   try {
-    let imagePath = null;
-    if (file) {
-      const storageRef = ref(storage, `concertImages/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      imagePath = await getDownloadURL(storageRef);
+    let image_url = null;
+    if(file){
+      const { data, error } = await supabase.storage.from('concert-images').upload(`images/${Date.now()}_${file.name}`, file);
+      if(error) throw error;
+      const { publicURL } = supabase.storage.from('concert-images').getPublicUrl(data.path);
+      image_url = publicURL;
     }
 
-    const data = { title, date, time, lieu, desc };
-    if (imagePath) data.imagePath = imagePath;
+    const dataObj = { title, date, time, lieu, desc };
+    if(image_url) dataObj.image_url = image_url;
 
-    if (docId) {
-      await updateDoc(doc(db, "concerts", docId), data);
+    if(concertId){
+      await supabase.from('concerts').update(dataObj).eq('id', concertId);
     } else {
-      await addDoc(collection(db, "concerts"), data);
+      await supabase.from('concerts').insert([dataObj]);
     }
 
     form.reset();
-    document.getElementById("docId").value = "";
-    alert("✅ Concert enregistré avec succès !");
-  } catch (err) {
+    document.getElementById("concertId").value="";
+    alert("✅ Concert enregistré !");
+    loadConcerts();
+  } catch(err){
     console.error(err);
-    alert("❌ Erreur lors de l'enregistrement : " + err.message);
+    alert("❌ Erreur: " + err.message);
   }
 });
 
-// Liste concerts avec images
-const concertsRef = collection(db,"concerts");
-onSnapshot(concertsRef, snapshot=>{
+// Liste des concerts
+async function loadConcerts(){
+  const { data, error } = await supabase.from('concerts').select('*').order('date',{ascending:true});
+  if(error){ list.innerHTML="Erreur: "+error.message; return; }
   list.innerHTML="";
-  snapshot.forEach(docSnap=>{
-    const c = docSnap.data();
-    const concertId = docSnap.id;
+  data.forEach(c=>{
     const div = document.createElement("div");
     div.className="concert-item";
-
-    const imgTag = c.imagePath ? `<img src="${c.imagePath}" class="concert-img">` : '';
-
-    div.innerHTML = `
-      ${imgTag}
+    div.innerHTML=`
+      ${c.image_url ? `<img src="${c.image_url}" class="concert-img">` : ''}
       <strong>${c.title}</strong> - ${c.date} ${c.time || ''}<br>
       <em>${c.lieu}</em><br>
       ${c.desc || ''}<br>
-      <button class="edit" data-id="${concertId}">Modifier</button>
-      <button class="delete" data-id="${concertId}">Supprimer</button>
+      <button class="edit" data-id="${c.id}">Modifier</button>
+      <button class="delete" data-id="${c.id}">Supprimer</button>
     `;
     list.appendChild(div);
 
-    // Boutons
-    div.querySelector(".delete").onclick = async ()=>{
-      await deleteDoc(doc(db,"concerts",concertId));
-    };
     div.querySelector(".edit").onclick = ()=>{
-      document.getElementById("docId").value = concertId;
+      document.getElementById("concertId").value = c.id;
       document.getElementById("title").value = c.title;
       document.getElementById("date").value = c.date;
       document.getElementById("time").value = c.time;
       document.getElementById("lieu").value = c.lieu;
       document.getElementById("desc").value = c.desc;
     };
+    div.querySelector(".delete").onclick = async ()=>{
+      await supabase.from('concerts').delete().eq('id',c.id);
+      loadConcerts();
+    };
   });
-});
+}
+
+loadConcerts();
 </script>
 </body>
 </html>
