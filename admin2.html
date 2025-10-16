@@ -5,25 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Musiques</title>
 <style>
-body{font-family:'Segoe UI',sans-serif;margin:0;background:#121212;color:#fff}
-header{display:flex;justify-content:space-between;align-items:center;padding:16px;background:#000}
-header h1{margin:0}
-header button{padding:6px 12px;border:none;border-radius:6px;font-weight:bold;cursor:pointer}
-header button#btnLibrary{background:#00ccff;color:#000}
-header button#btnLogout{background:#ff5555;color:#fff}
-.container{max-width:800px;margin:24px auto;padding:0 16px;display:flex;flex-direction:column;gap:24px}
-.card{background:#1e1e1e;padding:16px;border-radius:12px}
-input,textarea,button{width:100%;margin:6px 0;padding:8px;border-radius:6px;border:none}
-input[type="file"]{padding:3px}
-button.save{background:#00ccff;color:#000;font-weight:bold}
-button.delete{background:#ff5555;color:#fff}
-.music-item{background:#2a2a2a;padding:12px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
-img.cover{width:80px;height:80px;object-fit:cover;border-radius:8px;margin-right:12px}
-.flex-row{display:flex;align-items:center;gap:12px}
+body { font-family:'Segoe UI',sans-serif;margin:0;background:#121212;color:#fff; }
+header { display:flex; justify-content:space-between; align-items:center; padding:16px; background:#000; }
+header h1 { margin:0; }
+header button { padding:6px 12px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
+header button#btnLibrary { background:#00ccff; color:#000; }
+header button#btnLogout { background:#ff5555; color:#fff; }
+.container { max-width:800px; margin:24px auto; padding:0 16px; display:flex; flex-direction:column; gap:24px; }
+.card { background:#1e1e1e; padding:16px; border-radius:12px; }
+input,textarea,button { width:100%; margin:6px 0; padding:8px; border-radius:6px; border:none; }
+input[type="file"] { padding:3px; }
+button.save { background:#00ccff; color:#000; font-weight:bold; }
+button.delete { background:#ff5555; color:#fff; }
+.music-item { background:#2a2a2a; padding:12px; border-radius:8px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+audio { width:150px; border-radius:8px; }
+.cover-preview { width:50px; height:50px; object-fit:cover; margin-right:10px; border-radius:6px; }
 </style>
 </head>
 <body>
-
 <header>
   <button id="btnLibrary">Bibliothèque</button>
   <h1>Admin Musiques</h1>
@@ -37,9 +36,9 @@ img.cover{width:80px;height:80px;object-fit:cover;border-radius:8px;margin-right
       <input type="hidden" id="musicId">
       <input id="title" placeholder="Titre" required>
       <input id="artist" placeholder="Artiste">
-      <input type="file" id="audio" accept="audio/*" required>
+      <input type="file" id="audio" accept="audio/*">
       <input type="file" id="cover" accept="image/*">
-      <button type="submit" class="save">Publier</button>
+      <button type="submit" class="save">Enregistrer</button>
     </form>
   </div>
 
@@ -49,93 +48,5 @@ img.cover{width:80px;height:80px;object-fit:cover;border-radius:8px;margin-right
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-document.getElementById("btnLibrary").onclick = ()=>window.location.href="musique.html";
-document.getElementById("btnLogout").onclick = ()=>window.location.href="index.html";
-
-const form=document.getElementById("form");
-const list=document.getElementById("musicList");
-
-function sanitizeFileName(filename){
-  return filename.replace(/\s+/g,"_").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_.-]/g,"");
-}
-
-form.addEventListener("submit", async e=>{
-  e.preventDefault();
-  const musicId = document.getElementById("musicId").value;
-  const title = document.getElementById("title").value;
-  const artist = document.getElementById("artist").value;
-  const audioFile = document.getElementById("audio").files[0];
-  const coverFile = document.getElementById("cover").files[0];
-
-  if(!audioFile) return alert("Sélectionne un fichier audio");
-
-  try{
-    // Upload audio
-    const audioName = `${Date.now()}_${sanitizeFileName(audioFile.name)}`;
-    const { data: audioData, error: audioError } = await supabase.storage.from('musics').upload(`audios/${audioName}`, audioFile, {upsert:true});
-    if(audioError) throw audioError;
-    const { publicURL: audioURL } = supabase.storage.from('musics').getPublicUrl(audioData.path);
-
-    let coverURL = null;
-    if(coverFile){
-      const coverName = `${Date.now()}_${sanitizeFileName(coverFile.name)}`;
-      const { data: coverData, error: coverError } = await supabase.storage.from('musics').upload(`covers/${coverName}`, coverFile, {upsert:true});
-      if(coverError) throw coverError;
-      const { publicURL } = supabase.storage.from('musics').getPublicUrl(coverData.path);
-      coverURL = publicURL;
-    }
-
-    const obj = { title, artist, audio_url: audioURL, cover_url: coverURL };
-
-    if(musicId){
-      const { error } = await supabase.from('musics').update(obj).eq('id', musicId);
-      if(error) throw error;
-    }else{
-      const { error } = await supabase.from('musics').insert([obj]);
-      if(error) throw error;
-    }
-
-    form.reset();
-    document.getElementById("musicId").value="";
-    loadMusics();
-  }catch(err){ console.error(err); alert("❌ Erreur: "+err.message);}
-});
-
-async function loadMusics(){
-  const { data, error } = await supabase.from('musics').select('*').order('id',{ascending:true});
-  if(error){ list.innerHTML="Erreur: "+error.message; return;}
-  list.innerHTML="";
-  data.forEach(m=>{
-    const div = document.createElement("div"); div.className="music-item";
-    const left = document.createElement("div"); left.className="flex-row";
-
-    const img = document.createElement("img"); img.className="cover";
-    img.src = m.cover_url || "https://via.placeholder.com/80";
-    left.appendChild(img);
-
-    const info = document.createElement("div");
-    info.innerHTML=`${m.title} - ${m.artist || ""}`;
-    left.appendChild(info);
-
-    div.appendChild(left);
-
-    const btnEdit = document.createElement("button"); btnEdit.className="save"; btnEdit.innerText="Modifier";
-    btnEdit.onclick = ()=>{ document.getElementById("musicId").value=m.id; document.getElementById("title").value=m.title; document.getElementById("artist").value=m.artist; };
-    const btnDelete = document.createElement("button"); btnDelete.className="delete"; btnDelete.innerText="Supprimer";
-    btnDelete.onclick = async()=>{ await supabase.from('musics').delete().eq('id',m.id); loadMusics(); };
-
-    div.appendChild(btnEdit); div.appendChild(btnDelete);
-    list.appendChild(div);
-  });
-}
-
-loadMusics();
-</script>
-</body>
-</html>
+const SUPABASE_URL = "https://hcjgggdnfznoitebphvs.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI
