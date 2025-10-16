@@ -17,7 +17,6 @@ input,textarea,button { width:100%; margin:6px 0; padding:8px; border-radius:6px
 input[type="file"] { padding:3px; }
 button.save { background:#00ccff; color:#000; font-weight:bold; }
 button.delete { background:#ff5555; color:#fff; }
-button.edit { background:#ffaa00; color:#000; }
 .concert-item { background:#2a2a2a; padding:12px; border-radius:8px; margin-bottom:12px; }
 img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; object-fit:cover; }
 </style>
@@ -56,25 +55,18 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Navigation
-document.getElementById("btnBack").onclick = () => { window.location.href = "concert.html"; };
-document.getElementById("btnLogout").onclick = () => { window.location.href = "login.html"; };
+document.getElementById("btnBack").onclick = () => window.location.href = "index.html";
+document.getElementById("btnLogout").onclick = () => window.location.href = "login.html";
 
 const form = document.getElementById("form");
 const list = document.getElementById("concertList");
-
-// Nettoyage du nom de fichier
-function sanitizeFileName(filename) {
-  return filename
-    .replace(/\s+/g, "_")
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9_.-]/g, "");
-}
-
-// Image fallback
 const fallbackImage = "https://via.placeholder.com/400x200?text=Image+non+disponible";
 
-// Ajouter / Modifier concert
-form.addEventListener("submit", async (e) => {
+function sanitizeFileName(filename){
+  return filename.replace(/\s+/g,"_").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_.-]/g,"");
+}
+
+form.addEventListener("submit", async e => {
   e.preventDefault();
   const concertId = document.getElementById("concertId").value;
   const title = document.getElementById("title").value;
@@ -86,86 +78,69 @@ form.addEventListener("submit", async (e) => {
 
   try {
     let image_url = null;
-    if (file) {
+    if(file){
       const safeName = `${Date.now()}_${sanitizeFileName(file.name)}`;
-      const { data, error } = await supabase.storage.from('concerts').upload(`images/${safeName}`, file, { upsert: true });
-      if (error) throw error;
+      const { data, error } = await supabase.storage.from('concerts').upload(`images/${safeName}`, file, {upsert:true});
+      if(error) throw error;
       const { publicURL } = supabase.storage.from('concerts').getPublicUrl(data.path);
       image_url = publicURL;
     }
 
     const dataObj = { title, date, time, lieu, desc };
-    if (image_url) dataObj.image_url = image_url;
+    if(image_url) dataObj.image_url = image_url;
 
-    if (concertId) {
-      const { error } = await supabase.from('concerts').update(dataObj).eq('id', concertId);
-      if (error) throw error;
-      alert("✅ Concert modifié !");
-    } else {
+    if(concertId){
+      const { error } = await supabase.from('concerts').update(dataObj).eq('id',concertId);
+      if(error) throw error;
+    }else{
       const { error } = await supabase.from('concerts').insert([dataObj]);
-      if (error) throw error;
-      alert("✅ Concert ajouté !");
+      if(error) throw error;
     }
 
     form.reset();
-    document.getElementById("concertId").value = "";
+    document.getElementById("concertId").value="";
+    alert("✅ Concert enregistré !");
     loadConcerts();
-  } catch (err) {
+  }catch(err){
     console.error(err);
-    alert("❌ Erreur: " + err.message);
+    alert("❌ Erreur: "+err.message);
   }
 });
 
-// Charger les concerts
-async function loadConcerts() {
-  const { data, error } = await supabase.from('concerts').select('*').order('date', { ascending: true });
-  if (error) { list.innerHTML = "Erreur: " + error.message; console.error(error); return; }
+async function loadConcerts(){
+  const { data, error } = await supabase.from('concerts').select('*').order('date',{ascending:true});
+  if(error){ list.innerHTML="Erreur: "+error.message; console.error(error); return; }
 
-  list.innerHTML = "";
-  if (!data || data.length === 0) {
-    list.innerHTML = "<div class='card'>Aucun concert programmé.</div>";
-    return;
-  }
+  list.innerHTML="";
+  if(!data || data.length===0){ list.innerHTML="<div class='card'>Aucun concert programmé.</div>"; return; }
 
-  data.forEach(c => {
+  data.forEach(c=>{
     const div = document.createElement("div");
-    div.className = "concert-item";
-    div.innerHTML = `
-      ${c.image_url ? `<img src="${c.image_url}" class="concert-img" onerror="this.src='${fallbackImage}'">` : `<img src='${fallbackImage}' class='concert-img'>`}
+    div.className="concert-item";
+    div.innerHTML=`
+      <img src='${c.image_url||fallbackImage}' class='concert-img' onerror="this.src='${fallbackImage}'">
       <strong>${c.title}</strong> - ${c.date || ''} ${c.time || ''}<br>
       <em>${c.lieu || ''}</em><br>
       ${c.desc || ''}<br>
-      <button class="edit" data-id="${c.id}">Modifier</button>
-      <button class="delete" data-id="${c.id}">Supprimer</button>
+      <button class='edit' data-id='${c.id}'>Modifier</button>
+      <button class='delete' data-id='${c.id}'>Supprimer</button>
     `;
     list.appendChild(div);
 
-    // Modifier
-    div.querySelector(".edit").onclick = () => {
-      document.getElementById("concertId").value = c.id;
-      document.getElementById("title").value = c.title;
-      document.getElementById("date").value = c.date;
-      document.getElementById("time").value = c.time;
-      document.getElementById("lieu").value = c.lieu;
-      document.getElementById("desc").value = c.desc;
+    div.querySelector('.edit').onclick = ()=>{
+      document.getElementById('concertId').value = c.id;
+      document.getElementById('title').value = c.title;
+      document.getElementById('date').value = c.date;
+      document.getElementById('time').value = c.time;
+      document.getElementById('lieu').value = c.lieu;
+      document.getElementById('desc').value = c.desc;
     };
 
-    // Supprimer
-    div.querySelector(".delete").onclick = async () => {
-      if (!confirm(`Supprimer le concert "${c.title}" ?`)) return;
-      try {
-        // Supprimer image
-        if (c.image_url) {
-          const path = c.image_url.split("/storage/v1/object/public/concerts/")[1];
-          if (path) await supabase.storage.from('concerts').remove([path]);
-        }
-        // Supprimer le concert
-        const { error } = await supabase.from('concerts').delete().eq('id', c.id);
-        if (error) throw error;
+    div.querySelector('.delete').onclick = async ()=>{
+      if(confirm('Confirmer la suppression ?')){
+        const { error } = await supabase.from('concerts').delete().eq('id',c.id);
+        if(error) return alert('Erreur: '+error.message);
         loadConcerts();
-      } catch (err) {
-        console.error(err);
-        alert("Erreur suppression: " + err.message);
       }
     };
   });
