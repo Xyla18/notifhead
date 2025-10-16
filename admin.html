@@ -37,7 +37,7 @@ img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
       <input type="date" id="date">
       <input type="time" id="time">
       <input id="lieu" placeholder="Lieu">
-      <input type="file" id="image" accept="image/*">
+      <input type="file" id="image_url" accept="image/*">
       <textarea id="desc" placeholder="Description"></textarea>
       <button type="submit" class="save">Enregistrer</button>
     </form>
@@ -71,7 +71,7 @@ form.addEventListener("submit", async e=>{
   const time = document.getElementById("time").value;
   const lieu = document.getElementById("lieu").value;
   const desc = document.getElementById("desc").value;
-  const file = document.getElementById("image").files[0];
+  const file = document.getElementById("image_url").files[0];
 
   try {
     let image_url = null;
