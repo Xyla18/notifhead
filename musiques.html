@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nos Musiques</title>
+<title>Bibliothèque Musiques</title>
 <style>
 body{font-family:'Segoe UI',sans-serif;margin:0;background:#121212;color:#fff}
 header{display:flex;justify-content:space-between;align-items:center;padding:16px;background:#000}
@@ -11,17 +11,17 @@ header h1{margin:0}
 header button{padding:6px 12px;border:none;border-radius:6px;font-weight:bold;cursor:pointer}
 header button#btnHome{background:#00ccff;color:#000}
 header button#btnLogin{background:#ff5555;color:#fff}
-.container{max-width:800px;margin:24px auto;padding:0 16px;display:flex;flex-direction:column;gap:24px}
-.music-item{background:#2a2a2a;padding:12px;border-radius:8px;margin-bottom:12px}
-audio{width:100%;margin-top:6px;display:block}
-.title-link{color:#00ccff;cursor:pointer;text-decoration:underline}
+.container{max-width:900px;margin:24px auto;padding:0 16px;display:flex;flex-direction:column;gap:16px}
+.music-card{background:#1e1e1e;padding:12px;border-radius:12px;display:flex;flex-direction:column;gap:6px}
+.music-title{cursor:pointer;color:#00ccff;font-weight:bold;text-decoration:underline}
+audio{width:100%}
 </style>
 </head>
 <body>
 <header>
   <button id="btnHome">Accueil</button>
-  <h1>Nos Musiques</h1>
-  <button id="btnLogin">Connexion Admin</button>
+  <h1>Bibliothèque Musiques</h1>
+  <button id="btnLogin">Admin</button>
 </header>
 
 <div class="container" id="musicList">Chargement...</div>
@@ -31,39 +31,39 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
-const supabase = createClient(supabaseUrl, supabaseKey);
 
-document.getElementById("btnHome").onclick=()=>window.location.href="index.html";
-document.getElementById("btnLogin").onclick=()=>window.location.href="admin2.html";
+const supabase = createClient(supabaseUrl,supabaseKey);
 
-const list=document.getElementById("musicList");
+document.getElementById("btnHome").onclick = ()=>window.location.href="index.html";
+document.getElementById("btnLogin").onclick = ()=>window.location.href="admin2.html";
 
 async function loadMusics(){
   const { data, error } = await supabase.from('musics').select('*').order('id',{ascending:true});
+  const list = document.getElementById("musicList");
   if(error){ list.innerHTML="Erreur: "+error.message; return; }
   list.innerHTML="";
   data.forEach(m=>{
-    const div=document.createElement("div"); div.className="music-item";
-    const titleLink = document.createElement("span");
-    titleLink.className="title-link"; titleLink.innerText = m.title;
+    const div = document.createElement("div"); div.className="music-card";
+
+    // Titre cliquable
+    const titleLink = document.createElement("div"); titleLink.className="music-title"; 
+    titleLink.innerText = m.title + " - " + (m.artist||"");
     titleLink.onclick = ()=>{
-      const choice = prompt(`Ouvre sur : 1=Deezer, 2=Spotify, 3=Apple Music, 4=Shazam (numéro)`,"1");
-      if(!choice) return;
-      const q=encodeURIComponent(m.title+" "+(m.artist||""));
+      const site = prompt("Sur quel site rechercher ? (spotify/deezer/apple/shazam)").toLowerCase();
       let url="";
-      switch(choice){
-        case "1": url=`https://www.deezer.com/search/${q}`; break;
-        case "2": url=`https://open.spotify.com/search/${q}`; break;
-        case "3": url=`https://music.apple.com/search?term=${q}`; break;
-        case "4": url=`https://www.shazam.com/track-search?query=${q}`; break;
-        default: return;
-      }
-      window.open(url,"_blank");
+      const query = encodeURIComponent(m.title + " " + (m.artist||""));
+      if(site==="spotify") url=`https://open.spotify.com/search/${query}`;
+      else if(site==="deezer") url=`https://www.deezer.com/search/${query}`;
+      else if(site==="apple") url=`https://music.apple.com/search?term=${query}`;
+      else if(site==="shazam") url=`https://www.shazam.com/fr/search?q=${query}`;
+      if(url) window.open(url,"_blank");
+      else alert("Site non reconnu");
     };
     div.appendChild(titleLink);
 
-    const p=document.createElement("p"); p.innerText = m.artist||""; div.appendChild(p);
-    const audio=document.createElement("audio"); audio.controls=true; audio.src=m.audio_url; div.appendChild(audio);
+    // Lecteur audio
+    const audio = document.createElement("audio"); audio.controls=true; audio.src=m.audio_url;
+    div.appendChild(audio);
 
     list.appendChild(div);
   });
@@ -73,4 +73,3 @@ loadMusics();
 </script>
 </body>
 </html>
-
