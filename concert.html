@@ -1,76 +1,175 @@
-// Présence
-window.togglePresence = async (concertId) => {
-  const { data } = await supabase
-    .from('presences')
-    .select('*')
-    .eq('concert_id', concertId)
-    .eq('pseudo', pseudo);
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concerts à venir</title>
+<style>
+:root {
+  --bg:#f9f9f9;--card:#fff;--muted:#666;--primary:#00ccff;--danger:#ff5555;
+}
+body { font-family:'Segoe UI', sans-serif; margin:0; background:var(--bg); color:#111; }
+header { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:#202020; color:#fff; }
+header h1 { margin:0; font-size:1.2rem; }
+.btn { padding:8px 12px; border-radius:8px; border:none; font-weight:700; cursor:pointer; }
+.btn-primary { background:var(--primary); color:#000; }
+.container { max-width:980px; margin:20px auto; padding:0 16px; display:flex; flex-direction:column; gap:18px; }
+.card { background:var(--card); padding:16px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+.comment { margin-top:8px; border-top:1px solid #eee; padding-top:6px; }
+.comment strong { color:#00ccff; }
+.comment-input { margin-top:8px; display:flex; gap:6px; }
+.comment-input input { flex:1; padding:6px; border-radius:6px; border:1px solid #ccc; }
+.comment-input button { background:#00ccff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; }
+.presence { margin-top:8px; }
+.presence button { background:#00ccff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; }
+img.concert-img { max-width:100%; border-radius:8px; margin-top:10px; }
+</style>
+</head>
+<body>
 
+<header>
+  <h1>🎵 Concerts à venir</h1>
+  <button class="btn btn-primary" onclick="window.location.href='login.html'">Admin</button>
+</header>
+
+<main class="container" id="concertList">
+  <div class="card">Chargement des concerts...</div>
+</main>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+// 🌍 Configuration Supabase
+const SUPABASE_URL = "https://hcjgggdnfznoitebphvs.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 👤 Gestion du pseudo local
+let pseudo = localStorage.getItem("pseudo");
+if (!pseudo) {
+  pseudo = prompt("Choisis ton pseudo 👋 :");
+  if (pseudo) localStorage.setItem("pseudo", pseudo);
+}
+if (!pseudo) pseudo = "Anonyme";
+
+// 🎵 Récupération des concerts
+const container = document.getElementById("concertList");
+
+async function loadConcerts() {
+  const { data, error } = await supabase.from('concerts').select('*').order('date', { ascending: true });
+  container.innerHTML = "";
+
+  if (error) {
+    container.innerHTML = `<div class="card">❌ Erreur : ${error.message}</div>`;
+    console.error(error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `<div class="card">Aucun concert programmé.</div>`;
+    return;
+  }
+
+  for (const c of data) {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    // Image
+    const imgUrl = c.image_url || "https://via.placeholder.com/600x300?text=Pas+d'image";
+    card.innerHTML = `
+      <h2>${c.title}</h2>
+      <p>${c.date} ${c.time || ""} - <span class="lieu" style="color:var(--primary);cursor:pointer;" onclick="openMap('${c.lieu}')">${c.lieu}</span></p>
+      <p>${c.desc || ""}</p>
+      <img src="${imgUrl}" class="concert-img">
+      <div class="presence" id="presence-${c.id}">
+        <button onclick="togglePresence(${c.id})">✅ Je serai présent</button>
+      </div>
+      <div class="comments" id="comments-${c.id}"></div>
+      <div class="comment-input">
+        <input type="text" id="input-${c.id}" placeholder="Écris un commentaire...">
+        <button onclick="addComment(${c.id})">Envoyer</button>
+      </div>
+      <div style="margin-top:6px;">
+        <button onclick="addToCalendar(${c.id}, '${c.title}', '${c.desc}', '${c.lieu}', '${c.date}', '${c.time}')">📅 Ajouter au calendrier</button>
+      </div>
+    `;
+    container.appendChild(card);
+
+    loadComments(c.id);
+    loadPresenceCount(c.id);
+  }
+}
+
+loadConcerts();
+
+// 💬 Commentaires
+async function loadComments(concertId) {
+  const { data } = await supabase.from('commentaires').select('*').eq('concert_id', concertId).order('created_at', { ascending: true });
+  const box = document.getElementById("comments-" + concertId);
+  box.innerHTML = "";
+  data.forEach(c => {
+    const div = document.createElement("div");
+    div.className = "comment";
+    div.innerHTML = `<strong>${c.pseudo}</strong> : ${c.texte} 
+      ${c.pseudo === pseudo ? `<button onclick="deleteComment(${c.id},${concertId})" style="float:right;color:red;">x</button>` : ""}`;
+    box.appendChild(div);
+  });
+}
+
+window.addComment = async (concertId) => {
+  const input = document.getElementById("input-" + concertId);
+  const texte = input.value.trim();
+  if (!texte) return;
+  await supabase.from('commentaires').insert([{ concert_id: concertId, pseudo, texte }]);
+  input.value = "";
+  loadComments(concertId);
+};
+
+window.deleteComment = async (id, concertId) => {
+  await supabase.from('commentaires').delete().eq('id', id).eq('pseudo', pseudo);
+  loadComments(concertId);
+};
+
+// ✅ Présence
+window.togglePresence = async (concertId) => {
+  const { data } = await supabase.from('presences').select('*').eq('concert_id', concertId).eq('pseudo', pseudo);
   if (data && data.length > 0) {
-    await supabase
-      .from('presences')
-      .delete()
-      .eq('concert_id', concertId)
-      .eq('pseudo', pseudo);
+    await supabase.from('presences').delete().eq('concert_id', concertId).eq('pseudo', pseudo);
     alert("Tu n’es plus marqué présent ❌");
   } else {
-    await supabase
-      .from('presences')
-      .insert([{ concert_id: concertId, pseudo }]);
+    await supabase.from('presences').insert([{ concert_id: concertId, pseudo }]);
     alert("Ta présence a été enregistrée ✅");
   }
   loadPresenceCount(concertId);
 };
 
-// Charger le nombre de présences
 async function loadPresenceCount(concertId) {
-  const { data } = await supabase
-    .from('presences')
-    .select('*', { count: 'exact' })
-    .eq('concert_id', concertId);
-
+  const { data } = await supabase.from('presences').select('*').eq('concert_id', concertId);
   const btn = document.querySelector(`#presence-${concertId} button`);
   btn.innerText = `✅ Je serai présent (${data.length})`;
 }
 
-// Ajouter un commentaire
-window.addComment = async (concertId) => {
-  const input = document.getElementById("input-" + concertId);
-  const texte = input.value.trim();
-  if (!texte) return;
-  await supabase
-    .from('commentaires')
-    .insert([{ concert_id: concertId, pseudo, texte }]);
-  input.value = "";
-  loadComments(concertId);
+// 📍 Google Maps
+window.openMap = (lieu) => {
+  if (!lieu) return;
+  window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lieu)}`, "_blank");
 };
 
-// Supprimer son commentaire
-window.deleteComment = async (id, concertId) => {
-  await supabase
-    .from('commentaires')
-    .delete()
-    .eq('id', id)
-    .eq('pseudo', pseudo);
-  loadComments(concertId);
-};
-
-// Charger les commentaires
-async function loadComments(concertId) {
-  const { data } = await supabase
-    .from('commentaires')
-    .select('*')
-    .eq('concert_id', concertId)
-    .order('created_at', { ascending: true });
-
-  const box = document.getElementById("comments-" + concertId);
-  box.innerHTML = "";
-
-  data.forEach(c => {
-    const div = document.createElement("div");
-    div.className = "comment";
-    div.innerHTML = `<strong>${c.pseudo}</strong> : ${c.texte}
-      ${c.pseudo === pseudo ? `<button onclick="deleteComment(${c.id}, ${concertId})" style="float:right;color:red;">x</button>` : ""}`;
-    box.appendChild(div);
+// 📅 Ajouter au calendrier
+window.addToCalendar = (id, title, desc, lieu, date, time) => {
+  const start = new Date(`${date}T${time || "19:00"}`);
+  const end = new Date(start.getTime() + 2*60*60*1000);
+  const fmt = d => d.toISOString().replace(/[-:]|\.\d{3}/g,"");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    details: desc || "",
+    location: lieu || "",
+    dates: `${fmt(start)}/${fmt(end)}`
   });
-}
+  window.open("https://calendar.google.com/calendar/render?" + params.toString(), "_blank");
+};
+
+</script>
+</body>
+</html>
