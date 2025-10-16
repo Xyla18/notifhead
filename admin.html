@@ -50,13 +50,13 @@ img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; }
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// ===== Supabase Config =====
 const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s"; // service_role key
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Navigation
-document.getElementById("btnBack").onclick = ()=>{ window.location.href="concerts.html"; }
+document.getElementById("btnBack").onclick = ()=>{ window.location.href="concert.html"; }
 document.getElementById("btnLogout").onclick = ()=>{ window.location.href="login.html"; }
 
 const form = document.getElementById("form");
@@ -76,8 +76,9 @@ form.addEventListener("submit", async e=>{
   try {
     let image_url = null;
     if(file){
-      // upload dans le bucket "concerts"
-      const { data, error } = await supabase.storage.from('concerts').upload(`images/${Date.now()}_${file.name}`, file);
+      const { data, error } = await supabase.storage.from('concerts').upload(
+        `images/${Date.now()}_${file.name}`, file, {upsert:true}
+      );
       if(error) throw error;
       const { publicURL } = supabase.storage.from('concerts').getPublicUrl(data.path);
       image_url = publicURL;
@@ -87,9 +88,11 @@ form.addEventListener("submit", async e=>{
     if(image_url) dataObj.image_url = image_url;
 
     if(concertId){
-      await supabase.from('concerts').update(dataObj).eq('id', concertId);
+      const { error } = await supabase.from('concerts').update(dataObj).eq('id', concertId);
+      if(error) throw error;
     } else {
-      await supabase.from('concerts').insert([dataObj]);
+      const { error } = await supabase.from('concerts').insert([dataObj]);
+      if(error) throw error;
     }
 
     form.reset();
@@ -105,8 +108,14 @@ form.addEventListener("submit", async e=>{
 // Liste des concerts
 async function loadConcerts(){
   const { data, error } = await supabase.from('concerts').select('*').order('date',{ascending:true});
-  if(error){ list.innerHTML="Erreur: "+error.message; return; }
+  if(error){ list.innerHTML="Erreur: "+error.message; console.error(error); return; }
+
   list.innerHTML="";
+  if(!data || data.length===0){
+    list.innerHTML="<div class='card'>Aucun concert programmé.</div>";
+    return;
+  }
+
   data.forEach(c=>{
     const div = document.createElement("div");
     div.className="concert-item";
@@ -129,7 +138,8 @@ async function loadConcerts(){
       document.getElementById("desc").value = c.desc;
     };
     div.querySelector(".delete").onclick = async ()=>{
-      await supabase.from('concerts').delete().eq('id',c.id);
+      const { error } = await supabase.from('concerts').delete().eq('id',c.id);
+      if(error) return alert("Erreur: "+error.message);
       loadConcerts();
     };
   });
@@ -139,4 +149,3 @@ loadConcerts();
 </script>
 </body>
 </html>
-
