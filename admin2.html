@@ -18,7 +18,7 @@ input[type="file"]{padding:3px}
 button.save{background:#00ccff;color:#000;font-weight:bold}
 button.delete{background:#ff5555;color:#fff}
 .music-item{background:#2a2a2a;padding:12px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
-.music-preview{width:50px;height:50px;border-radius:6px;object-fit:cover;margin-right:12px}
+img.cover{max-width:60px;max-height:60px;border-radius:4px;margin-right:10px}
 </style>
 </head>
 <body>
@@ -47,77 +47,75 @@ button.delete{background:#ff5555;color:#fff}
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-const supabaseUrl="https://hcjgggdnfznoitebphvs.supabase.co";
-const supabaseKey="YOUR_PUBLIC_ANON_KEY";
-const supabase=createClient(supabaseUrl,supabaseKey);
+const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
+const supabase = createClient(supabaseUrl,supabaseKey);
 
-document.getElementById("btnLibrary").onclick=()=>window.location.href="musiques.html";
-document.getElementById("btnLogout").onclick=()=>window.location.href="index.html";
+document.getElementById("btnLibrary").onclick = ()=>window.location.href="musiques.html";
+document.getElementById("btnLogout").onclick = ()=>window.location.href="index.html";
 
 const form=document.getElementById("form");
 const list=document.getElementById("musicList");
 
-// Nettoyage nom fichier
-function sanitizeFileName(name){return name.replace(/\s+/g,"_").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_.-]/g,"");}
+function sanitizeFileName(filename){
+  return filename.replace(/\s+/g,"_").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_.-]/g,"");
+}
 
-form.addEventListener("submit",async e=>{
+form.addEventListener("submit", async e=>{
   e.preventDefault();
-  const id=document.getElementById("musicId").value;
+  const musicId=document.getElementById("musicId").value;
   const title=document.getElementById("title").value;
   const artist=document.getElementById("artist").value;
   const audioFile=document.getElementById("audio").files[0];
   const coverFile=document.getElementById("cover").files[0];
+
   if(!audioFile) return alert("Sélectionne un fichier audio");
 
   try{
-    let audio_url=null, cover_url=null;
+    // Upload audio
+    const safeAudio = `${Date.now()}_${sanitizeFileName(audioFile.name)}`;
+    const { data: audioData, error: audioErr } = await supabase.storage.from('musics').upload(`audios/${safeAudio}`, audioFile, {upsert:true});
+    if(audioErr) throw audioErr;
+    const { publicURL: audio_url } = supabase.storage.from('musics').getPublicUrl(audioData.path);
 
-    if(audioFile){
-      const {data,error}=await supabase.storage.from('musics').upload(`audios/${Date.now()}_${sanitizeFileName(audioFile.name)}`,audioFile,{upsert:true});
-      if(error) throw error;
-      audio_url=supabase.storage.from('musics').getPublicUrl(data.path).publicURL;
-    }
-
+    let cover_url = null;
     if(coverFile){
-      const {data,error}=await supabase.storage.from('musics').upload(`covers/${Date.now()}_${sanitizeFileName(coverFile.name)}`,coverFile,{upsert:true});
-      if(error) throw error;
-      cover_url=supabase.storage.from('musics').getPublicUrl(data.path).publicURL;
+      const safeCover = `${Date.now()}_${sanitizeFileName(coverFile.name)}`;
+      const { data: coverData, error: coverErr } = await supabase.storage.from('musics').upload(`covers/${safeCover}`, coverFile, {upsert:true});
+      if(coverErr) throw coverErr;
+      cover_url = supabase.storage.from('musics').getPublicUrl(coverData.path).publicURL;
     }
 
-    const obj={title,artist};
-    if(audio_url)obj.audio_url=audio_url;
-    if(cover_url)obj.cover_url=cover_url;
+    const obj={title, artist, audio_url};
+    if(cover_url) obj.cover_url = cover_url;
 
-    if(id){ await supabase.from('musics').update(obj).eq('id',id); }
-    else{ await supabase.from('musics').insert([obj]); }
+    if(musicId){
+      await supabase.from('musics').update(obj).eq('id',musicId);
+    }else{
+      await supabase.from('musics').insert([obj]);
+    }
 
     form.reset(); document.getElementById("musicId").value="";
-    loadMusics();
     alert("✅ Musique publiée !");
-  }catch(err){console.error(err); alert("❌ Erreur: "+err.message);}
+    loadMusics();
+  }catch(err){ console.error(err); alert("❌ Erreur: "+err.message); }
 });
 
 async function loadMusics(){
-  const {data,error}=await supabase.from('musics').select('*').order('id',{ascending:true});
-  if(error){list.innerHTML="Erreur: "+error.message; return;}
+  const { data, error } = await supabase.from('musics').select('*').order('id',{ascending:true});
+  if(error){ list.innerHTML="Erreur: "+error.message; return; }
   list.innerHTML="";
-  if(!data || data.length===0){list.innerHTML="Aucune musique."; return;}
-
   data.forEach(m=>{
     const div=document.createElement("div"); div.className="music-item";
-    const coverUrl=m.cover_url||'https://via.placeholder.com/50';
-    div.innerHTML=`<img src="${coverUrl}" class="music-preview"><span>${m.title} - ${m.artist||''}</span>`;
-    const btnEdit=document.createElement("button"); btnEdit.className="save"; btnEdit.innerText="Modifier";
-    btnEdit.onclick=()=>{
-      document.getElementById("musicId").value=m.id;
-      document.getElementById("title").value=m.title;
-      document.getElementById("artist").value=m.artist;
-    };
-    const btnDelete=document.createElement("button"); btnDelete.className="delete"; btnDelete.innerText="Supprimer";
-    btnDelete.onclick=async()=>{
-      await supabase.from('musics').delete().eq('id',m.id);
-      loadMusics();
-    };
+    const coverImg = document.createElement("img"); coverImg.src = m.cover_url||""; coverImg.className="cover";
+    const info = document.createElement("div"); info.innerText = `${m.title} - ${m.artist||""}`;
+    div.appendChild(coverImg); div.appendChild(info);
+
+    const btnEdit=document.createElement("button"); btnEdit.innerText="Modifier"; btnEdit.className="save";
+    btnEdit.onclick=()=>{ document.getElementById("musicId").value=m.id; document.getElementById("title").value=m.title; document.getElementById("artist").value=m.artist; };
+    const btnDelete=document.createElement("button"); btnDelete.innerText="Supprimer"; btnDelete.className="delete";
+    btnDelete.onclick=async()=>{ await supabase.from('musics').delete().eq('id',m.id); loadMusics(); };
+
     div.appendChild(btnEdit); div.appendChild(btnDelete);
     list.appendChild(div);
   });
