@@ -1,56 +1,56 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NoTifHead - Admin</title>
-  <script type="module" src="https://esm.sh/@supabase/supabase-js@2"></script>
-  <style>
-    body { font-family: 'Poppins', sans-serif; background:#0f0f0f; color:#fff; margin:0; padding:0; }
-    header { display:flex; justify-content:space-between; align-items:center; padding:20px; background:#181818; border-bottom:1px solid #222; }
-    header h1 { margin:0; font-size:1.5em; color:#1db954; }
-    header nav button { background:none; border:1px solid #1db954; color:#1db954; border-radius:20px; padding:8px 16px; margin-left:10px; cursor:pointer; transition:0.3s; }
-    header nav button:hover { background:#1db954; color:#fff; }
-    main { max-width:600px; margin:60px auto; background:#1a1a1a; padding:30px; border-radius:15px; box-shadow:0 0 20px rgba(0,0,0,0.3); }
-    h2 { color:#1db954; text-align:center; margin-bottom:20px; }
-    label { display:block; margin:10px 0 5px; }
-    input[type="text"], input[type="file"] { width:100%; padding:10px; border:none; border-radius:10px; background:#2a2a2a; color:white; outline:none; }
-    button[type="submit"] { width:100%; margin-top:20px; padding:12px; background:#1db954; border:none; border-radius:25px; color:white; font-size:1em; cursor:pointer; transition:0.3s; }
-    button[type="submit"]:hover { background:#17a44a; }
-    .progress { margin-top:15px; height:10px; background:#333; border-radius:10px; overflow:hidden; }
-    .progress-bar { height:100%; width:0; background:#1db954; transition:width 0.3s ease; }
-    .msg { text-align:center; margin-top:15px; color:#1db954; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NoTifHead - Admin</title>
+<script type="module" src="https://esm.sh/@supabase/supabase-js@2"></script>
+<style>
+body { font-family: 'Poppins', sans-serif; background:#0f0f0f; color:#fff; margin:0; padding:0; }
+header { display:flex; justify-content:space-between; align-items:center; padding:20px; background:#181818; border-bottom:1px solid #222; }
+header h1 { margin:0; font-size:1.5em; color:#1db954; }
+header nav button { background:none; border:1px solid #1db954; color:#1db954; border-radius:20px; padding:8px 16px; margin-left:10px; cursor:pointer; transition:0.3s; }
+header nav button:hover { background:#1db954; color:#fff; }
+main { max-width:600px; margin:60px auto; background:#1a1a1a; padding:30px; border-radius:15px; box-shadow:0 0 20px rgba(0,0,0,0.3); }
+h2 { color:#1db954; text-align:center; margin-bottom:20px; }
+label { display:block; margin:10px 0 5px; }
+input[type="text"], input[type="file"] { width:100%; padding:10px; border:none; border-radius:10px; background:#2a2a2a; color:white; outline:none; }
+button[type="submit"] { width:100%; margin-top:20px; padding:12px; background:#1db954; border:none; border-radius:25px; color:white; font-size:1em; cursor:pointer; transition:0.3s; }
+button[type="submit"]:hover { background:#17a44a; }
+.progress { margin-top:15px; height:10px; background:#333; border-radius:10px; overflow:hidden; }
+.progress-bar { height:100%; width:0; background:#1db954; transition:width 0.3s ease; }
+.msg { text-align:center; margin-top:15px; color:#1db954; }
+</style>
 </head>
 <body>
 
 <header>
-  <h1>NoTifHead Admin</h1>
-  <nav>
-    <button onclick="window.location.href='musiques.html'">🎵 Bibliothèque</button>
-    <button onclick="window.location.href='index.html'">🚪 Déconnexion</button>
-  </nav>
+<h1>NoTifHead Admin</h1>
+<nav>
+<button onclick="window.location.href='musiques.html'">🎵 Bibliothèque</button>
+<button onclick="window.location.href='index.html'">🚪 Déconnexion</button>
+</nav>
 </header>
 
 <main>
-  <h2>Publier une musique</h2>
-  <form id="uploadForm">
-    <label for="titre">Titre :</label>
-    <input type="text" id="titre" placeholder="Nom du morceau" required>
+<h2>Publier une musique</h2>
+<form id="uploadForm">
+<label for="titre">Titre :</label>
+<input type="text" id="titre" placeholder="Nom du morceau" required>
 
-    <label for="artiste">Artiste :</label>
-    <input type="text" id="artiste" placeholder="Nom de l’artiste" required>
+<label for="artiste">Artiste :</label>
+<input type="text" id="artiste" placeholder="Nom de l’artiste" required>
 
-    <label for="fileAudio">Fichier audio :</label>
-    <input type="file" id="fileAudio" accept="audio/*" required>
+<label for="fileAudio">Fichier audio :</label>
+<input type="file" id="fileAudio" accept="audio/*" required>
 
-    <label for="fileJacket">Pochette :</label>
-    <input type="file" id="fileJacket" accept="image/*" required>
+<label for="fileJacket">Pochette :</label>
+<input type="file" id="fileJacket" accept="image/*" required>
 
-    <button type="submit">📤 Publier</button>
-    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-    <p class="msg" id="message"></p>
-  </form>
+<button type="submit">📤 Publier</button>
+<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+<p class="msg" id="message"></p>
+</form>
 </main>
 
 <script type="module">
@@ -87,8 +87,8 @@ form.addEventListener("submit", async (e) => {
     progressBar.style.width = "50%";
 
     // Upload jacket
-    const jacketPath = `jackets/${Date.now()}_${jacketFile.name}`;
-    const { data: jacketData, error: jacketError } = await supabase.storage.from("jackets").upload(jacketPath, jacketFile);
+    const jacketPath = `JACKETS/${Date.now()}_${jacketFile.name}`;
+    const { data: jacketData, error: jacketError } = await supabase.storage.from("JACKETS").upload(jacketPath, jacketFile);
     if (jacketError) {
       console.error("Erreur jaquette :", jacketError);
       throw jacketError;
@@ -97,7 +97,7 @@ form.addEventListener("submit", async (e) => {
     progressBar.style.width = "80%";
 
     const audioURL = supabase.storage.from("musiques").getPublicUrl(audioData.path).data.publicUrl;
-    const jacketURL = supabase.storage.from("jackets").getPublicUrl(jacketData.path).data.publicUrl;
+    const jacketURL = supabase.storage.from("JACKETS").getPublicUrl(jacketData.path).data.publicUrl;
 
     const { error: insertError } = await supabase.from("musiques").insert([{ titre, artiste, audio_url: audioURL, jacket_url: jacketURL }]);
     if (insertError) throw insertError;
