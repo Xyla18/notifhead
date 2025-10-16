@@ -3,24 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Concerts</title>
+<title>Concerts à venir</title>
 <style>
-:root{--bg:#f9f9f9;--card:#fff;--muted:#666;--primary:#00ccff;--danger:#ff5555}
-body{font-family:Segoe UI, Roboto, sans-serif;margin:0;background:var(--bg);color:#111}
-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#202020;color:#fff}
-header h1{margin:0;font-size:1.2rem}
-header .controls{display:flex;gap:8px;align-items:center}
-button{cursor:pointer}
-.btn{padding:8px 12px;border-radius:8px;border:none;font-weight:700}
-.btn-primary{background:var(--primary);color:#000}
-.container{max-width:980px;margin:20px auto;padding:0 16px;display:flex;flex-direction:column;gap:18px}
-.card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-h2{margin:0 0 8px 0}
-.concert-img{max-width:100%;border-radius:8px;margin-top:10px}
-.action-btn{cursor:pointer;color:var(--primary);text-decoration:underline;margin-right:10px;font-size:0.95rem}
+  :root {--bg:#f9f9f9;--card:#fff;--muted:#666;--primary:#00ccff;--danger:#ff5555;}
+  body { font-family:'Segoe UI', sans-serif; margin:0; background:var(--bg); color:#111; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:#202020; color:#fff; }
+  header h1 { margin:0; font-size:1.2rem; }
+  .controls { display:flex; gap:8px; }
+  .btn { padding:8px 12px; border-radius:8px; border:none; font-weight:700; cursor:pointer; }
+  .btn-primary { background:var(--primary); color:#000; }
+  .container { max-width:980px; margin:20px auto; padding:0 16px; display:flex; flex-direction:column; gap:18px; }
+  .card { background:var(--card); padding:16px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+  h2 { margin:0 0 8px 0; }
+  .meta { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+  .date-link, .lieu-link { color:var(--primary); text-decoration:underline; cursor:pointer; }
+  .concert-img { max-width:100%; border-radius:8px; margin-top:10px; }
+  footer { max-width:980px; margin:10px auto; padding:0 16px; color:var(--muted); font-size:0.9rem; }
 </style>
 </head>
 <body>
+
 <header>
   <h1>Concerts à venir</h1>
   <div class="controls">
@@ -32,118 +34,92 @@ h2{margin:0 0 8px 0}
   <div class="card">Chargement des concerts...</div>
 </main>
 
+<footer>Astuce: clique sur la date pour ajouter au calendrier, sur le lieu pour ouvrir Google Maps.</footer>
+
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// ===== Supabase Config =====
 const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s"; 
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const concertList = document.getElementById("concertList");
-document.getElementById("btnLogin").onclick = () => { window.location.href="admin_concerts.html"; };
+document.getElementById("btnLogin").onclick = () => window.location.href = "admin_concerts.html";
 
-// Format date pour ICS
-function fmtICSDate(d){
-  const y = d.getUTCFullYear();
-  const M = String(d.getUTCMonth()+1).padStart(2,"0");
-  const D = String(d.getUTCDate()).padStart(2,"0");
-  const h = String(d.getUTCHours()).padStart(2,"0");
-  const m = String(d.getUTCMinutes()).padStart(2,"0");
-  const s = String(d.getUTCSeconds()).padStart(2,"0");
-  return `${y}${M}${D}T${h}${m}${s}Z`;
-}
+const container = document.getElementById("concertList");
 
-// Créer un fichier .ics pour Apple/Outlook
-function createICSBlob(concert){
-  const time = concert.time || "19:00";
-  const localStart = new Date(`${concert.date}T${time}`);
-  const localEnd = new Date(localStart.getTime() + 2*60*60*1000); 
-  const dtStart = fmtICSDate(localStart);
-  const dtEnd = fmtICSDate(localEnd);
-  const uid = `${Date.now()}@concerts.local`;
-  const lines = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Concerts//FR",
-    "BEGIN:VEVENT",
-    `UID:${uid}`,
-    `DTSTAMP:${fmtICSDate(new Date())}`,
-    `DTSTART:${dtStart}`,
-    `DTEND:${dtEnd}`,
-    `SUMMARY:${concert.title || ''}`,
-    `DESCRIPTION:${concert.desc || ''}`,
-    `LOCATION:${concert.lieu || ''}`,
-    "END:VEVENT",
-    "END:VCALENDAR"
-  ].join("\r\n");
-  const blob = new Blob([lines], { type: "text/calendar;charset=utf-8" });
-  return URL.createObjectURL(blob);
-}
+async function loadConcerts() {
+  const { data, error } = await supabase
+    .from('concerts')
+    .select('*')
+    .order('date', { ascending: true });
 
-function googleCalendarUrl(concert){
-  const time = concert.time || "19:00";
-  const start = new Date(`${concert.date}T${time}`);
-  const end = new Date(start.getTime() + 2*60*60*1000);
-  const fmt = d => d.toISOString().replace(/[-:]|\.\d{3}/g,"");
-  const params = new URLSearchParams({
-    action: "TEMPLATE",
-    text: concert.title || "",
-    details: concert.desc || "",
-    location: concert.lieu || "",
-    dates: `${fmt(start)}/${fmt(end)}`
-  });
-  return "https://calendar.google.com/calendar/render?" + params.toString();
-}
+  console.log("Concerts récupérés :", data, error);
 
-// Charger les concerts
-async function loadConcerts(){
-  const { data, error } = await supabase.from('concerts').select('*').order('date',{ascending:true});
-  if(error){ concertList.innerHTML=`<div class="card">Erreur: ${error.message}</div>`; return; }
-  if(!data.length){ concertList.innerHTML=`<div class="card">Aucun concert programmé.</div>`; return; }
+  container.innerHTML = "";
 
-  concertList.innerHTML = "";
-  data.forEach(c=>{
-    const div = document.createElement("div");
-    div.className = "card";
-    const imgTag = c.image_url ? `<img src="${c.image_url}" class="concert-img">` : '';
-    
-    const calendarBtn = document.createElement("span");
-    calendarBtn.className="action-btn";
-    calendarBtn.innerText="📅 Ajouter au calendrier";
-    calendarBtn.onclick = () => {
-      if(confirm("Ouvrir Google Calendar ? (OK) / Télécharger .ics pour Apple/Outlook (Annuler)")){
-        window.open(googleCalendarUrl(c),"_blank");
-      } else {
-        const icsUrl = createICSBlob(c);
-        const a = document.createElement("a");
-        a.href = icsUrl;
-        a.download = `${(c.title||"evenement").replace(/\s+/g,"_")}.ics`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(()=>URL.revokeObjectURL(icsUrl),2000);
-      }
+  if(error) {
+    container.innerHTML = `<div class="card">❌ Erreur: ${error.message}</div>`;
+    return;
+  }
+  if(!data || data.length===0){
+    container.innerHTML = `<div class="card">Aucun concert programmé.</div>`;
+    return;
+  }
+
+  data.forEach(c => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    if(c.image_url){
+      const img = document.createElement("img");
+      img.src = c.image_url;
+      img.alt = c.title || "";
+      img.className = "concert-img";
+      card.appendChild(img);
+    }
+
+    const title = document.createElement("h2");
+    title.innerText = c.title || "Événement";
+    card.appendChild(title);
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "date-link";
+    dateSpan.innerText = `📅 ${c.date || ""} ${c.time || ""}`;
+    dateSpan.onclick = () => {
+      const start = new Date(`${c.date}T${c.time || "19:00"}`);
+      const end = new Date(start.getTime() + 2*60*60*1000);
+      const fmt = d => d.toISOString().replace(/[-:]|\.\d{3}/g,"");
+      const params = new URLSearchParams({
+        action: "TEMPLATE",
+        text: c.title,
+        details: c.desc || "",
+        location: c.lieu || "",
+        dates: `${fmt(start)}/${fmt(end)}`
+      });
+      window.open("https://calendar.google.com/calendar/render?"+params.toString(), "_blank");
     };
+    meta.appendChild(dateSpan);
 
-    const mapBtn = document.createElement("span");
-    mapBtn.className="action-btn";
-    mapBtn.innerText="📍 Ouvrir sur Google Maps";
-    mapBtn.onclick = () => {
-      const q = encodeURIComponent(c.lieu || "");
-      window.open(`https://www.google.com/maps/search/?api=1&query=${q}`,"_blank");
+    const lieuSpan = document.createElement("span");
+    lieuSpan.className = "lieu-link";
+    lieuSpan.innerText = `📍 ${c.lieu || ""}`;
+    lieuSpan.onclick = () => {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.lieu||"")}`, "_blank");
     };
+    meta.appendChild(lieuSpan);
 
-    div.innerHTML = `
-      ${imgTag}
-      <h2>${c.title}</h2>
-      <p>${c.date} ${c.time || ''}</p>
-      <p>${c.desc || ''}</p>
-    `;
-    div.appendChild(calendarBtn);
-    div.appendChild(mapBtn);
+    card.appendChild(meta);
 
-    concertList.appendChild(div);
+    if(c.desc){
+      const p = document.createElement("p");
+      p.innerText = c.desc;
+      card.appendChild(p);
+    }
+
+    container.appendChild(card);
   });
 }
 
