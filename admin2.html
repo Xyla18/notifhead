@@ -77,19 +77,25 @@ form.addEventListener("submit", async (e) => {
 
   try {
     const audioPath = `audios/${Date.now()}_${audioFile.name}`;
-    const { data: audioData, error: audioError } = await supabase.storage.from("musiques").upload(audioPath, audioFile);
+
+    // Upload chunked pour gros fichiers
+    const { data: audioData, error: audioError } = await supabase.storage
+      .from("musiques")
+      .upload(audioPath, audioFile, { upsert: true, chunkSize: 5 * 1024 * 1024 });
+
     if (audioError) throw audioError;
 
     progressBar.style.width = "50%";
 
     const audioURL = supabase.storage.from("musiques").getPublicUrl(audioData.path).data.publicUrl;
 
+    // Insert dans la table
     const { error: insertError } = await supabase.from("musiques").insert([{
       titre,
       artiste,
       audio_url: audioURL,
       jacket_url: '',           // valeur vide car pas de jaquette
-      created_at: new Date()    // timestamp actuel
+      created_at: new Date()
     }]);
 
     if (insertError) throw insertError;
@@ -101,7 +107,7 @@ form.addEventListener("submit", async (e) => {
 
   } catch (err) {
     console.error("Erreur finale:", err);
-    message.textContent = "❌ Erreur lors du téléversement.";
+    message.textContent = "❌ Erreur lors du téléversement. Vérifie la console.";
   }
 });
 </script>
