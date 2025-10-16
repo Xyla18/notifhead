@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Sons</title>
+<title>Admin Sons – Jaquettes</title>
 <style>
 body { font-family:'Segoe UI', sans-serif; margin:0; background:#121212; color:#fff; display:flex; flex-direction:column; align-items:center; padding:20px; }
 header { width:100%; display:flex; justify-content:space-between; margin-bottom:30px; }
@@ -14,8 +14,10 @@ input, button { width:100%; padding:10px; border-radius:8px; border:none; }
 input[type="file"] { padding:3px; }
 button.submit-btn { background-color:#1db954; font-weight:bold; cursor:pointer; }
 button.submit-btn:hover { background-color:#17a44a; }
-.sound-item { background:#2a2a2a; padding:12px; border-radius:8px; margin-bottom:12px; display:flex; justify-content: space-between; align-items:center; }
-.sound-item audio { width:60%; }
+.sound-item { background:#2a2a2a; padding:12px; border-radius:8px; margin-bottom:12px; display:flex; align-items:center; gap:12px; justify-content: space-between; }
+.sound-item img { width:60px; height:60px; border-radius:8px; object-fit:cover; background:#2a2a2a; }
+.sound-item .info { flex:1; display:flex; flex-direction:column; }
+.sound-item .buttons { display:flex; gap:6px; }
 .container { max-width:800px; width:100%; display:flex; flex-direction:column; gap:16px; }
 </style>
 </head>
@@ -49,6 +51,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 function sanitizeFileName(filename) {
   return filename.replace(/\s+/g,"_").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_.-]/g,"");
 }
+
 function getPublicUrl(filename) {
   return `${SUPABASE_URL}/storage/v1/object/public/musics/${filename}`;
 }
@@ -103,9 +106,12 @@ async function loadSounds(){
     const div = document.createElement("div");
     div.className="sound-item";
     div.innerHTML=`
-      <span>${s.title}</span>
-      <audio controls src="${s.url}"></audio>
-      <div>
+      <img src="${s.cover_url || 'https://via.placeholder.com/60?text=?'}" alt="Jaquette">
+      <div class="info">
+        <strong>${s.title}</strong>
+        <audio controls src="${s.url}"></audio>
+      </div>
+      <div class="buttons">
         <button class="edit" data-id="${s.id}">Modifier</button>
         <button class="delete" data-id="${s.id}">Supprimer</button>
       </div>
