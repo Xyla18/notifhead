@@ -5,73 +5,147 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Concerts à venir</title>
 <style>
-  :root {--bg:#f9f9f9;--card:#fff;--muted:#666;--primary:#00ccff;--danger:#ff5555;}
-  body { font-family:'Segoe UI', sans-serif; margin:0; background:var(--bg); color:#111; }
-  header { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:#202020; color:#fff; }
-  header h1 { margin:0; font-size:1.2rem; }
-  .controls { display:flex; gap:8px; }
-  .btn { padding:8px 12px; border-radius:8px; border:none; font-weight:700; cursor:pointer; }
-  .btn-primary { background:var(--primary); color:#000; }
-  .container { max-width:980px; margin:20px auto; padding:0 16px; display:flex; flex-direction:column; gap:18px; }
-  .card { background:var(--card); padding:16px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
-  h2 { margin:0 0 8px 0; }
-  .meta { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
-  .date-link, .lieu-link { color:var(--primary); text-decoration:underline; cursor:pointer; }
-  .concert-img { max-width:100%; border-radius:8px; margin-top:10px; }
-  footer { max-width:980px; margin:10px auto; padding:0 16px; color:var(--muted); font-size:0.9rem; }
+:root {--bg:#f9f9f9;--card:#fff;--muted:#666;--primary:#00ccff;--danger:#ff5555;}
+body { font-family:'Segoe UI', sans-serif; margin:0; background:var(--bg); color:#111; }
+header { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:#202020; color:#fff; }
+header h1 { margin:0; font-size:1.2rem; }
+.btn { padding:8px 12px; border-radius:8px; border:none; font-weight:700; cursor:pointer; }
+.btn-primary { background:var(--primary); color:#000; }
+.container { max-width:980px; margin:20px auto; padding:0 16px; display:flex; flex-direction:column; gap:18px; }
+.card { background:var(--card); padding:16px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+.comment { margin-top:8px; border-top:1px solid #eee; padding-top:6px; }
+.comment strong { color:#00ccff; }
+.comment-input { margin-top:8px; display:flex; gap:6px; }
+.comment-input input { flex:1; padding:6px; border-radius:6px; border:1px solid #ccc; }
+.comment-input button { background:#00ccff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; }
+.presence { margin-top:8px; }
+.presence button { background:#00ccff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Concerts à venir</h1>
-  <div class="controls">
-    <button id="btnLogin" class="btn btn-primary">Admin</button>
-  </div>
+  <h1>🎵 Concerts à venir</h1>
+  <button class="btn btn-primary" onclick="window.location.href='login.html'">Admin</button>
 </header>
 
 <main class="container" id="concertList">
   <div class="card">Chargement des concerts...</div>
 </main>
 
-<footer>Astuce : clique sur la date pour ajouter au calendrier, sur le lieu pour ouvrir Google Maps.</footer>
-
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-const supabase = createClient(
-  "https://hcjgggdnfznoitebphvs.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-);
 
-document.getElementById("btnLogin").onclick = () => window.location.href = "login.html";
+// 🌍 Configuration Supabase
+const SUPABASE_URL = "https://hcjgggdnfznoitebphvs.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// 👤 Gestion du pseudo local
+let pseudo = localStorage.getItem("pseudo");
+if (!pseudo) {
+  pseudo = prompt("Choisis ton pseudo 👋 :");
+  if (pseudo) localStorage.setItem("pseudo", pseudo);
+}
+if (!pseudo) pseudo = "Anonyme";
+
+// 🎵 Récupération des concerts
 const container = document.getElementById("concertList");
 
 async function loadConcerts() {
   const { data, error } = await supabase.from('concerts').select('*').order('date', { ascending: true });
   container.innerHTML = "";
-  if(error) return container.innerHTML = `<div class="card">❌ ${error.message}</div>`;
-  if(!data || data.length===0) return container.innerHTML = `<div class="card">Aucun concert programmé.</div>`;
 
-  data.forEach(c => {
+  if (error) {
+    container.innerHTML = `<div class="card">❌ Erreur : ${error.message}</div>`;
+    console.error(error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `<div class="card">Aucun concert programmé.</div>`;
+    return;
+  }
+
+  for (const c of data) {
     const card = document.createElement("div");
     card.className = "card";
-    if(c.image_url){
-      const img = document.createElement("img");
-      img.src = c.image_url;
-      img.className = "concert-img";
-      card.appendChild(img);
-    }
-    card.innerHTML += `
+    card.innerHTML = `
       <h2>${c.title}</h2>
-      <div class="meta">
-        <span class="date-link">📅 ${c.date} ${c.time||''}</span>
-        <span class="lieu-link">📍 ${c.lieu}</span>
+      <p>${c.date} ${c.time || ""} - ${c.lieu}</p>
+      <p>${c.desc || ""}</p>
+      ${c.image_url ? `<img src="${c.image_url}" style="max-width:100%;border-radius:8px;">` : ""}
+      <div class="presence" id="presence-${c.id}">
+        <button onclick="togglePresence(${c.id})">✅ Je serai présent</button>
       </div>
-      <p>${c.desc||''}</p>`;
+      <div class="comments" id="comments-${c.id}"></div>
+      <div class="comment-input">
+        <input type="text" id="input-${c.id}" placeholder="Écris un commentaire...">
+        <button onclick="addComment(${c.id})">Envoyer</button>
+      </div>
+    `;
     container.appendChild(card);
+    loadComments(c.id);
+  }
+}
+
+// 💬 Charger les commentaires
+async function loadComments(concertId) {
+  const { data, error } = await supabase
+    .from('commentaires')
+    .select('*')
+    .eq('concert_id', concertId)
+    .order('created_at', { ascending: true });
+
+  const box = document.getElementById("comments-" + concertId);
+  box.innerHTML = "";
+
+  if (error) {
+    box.innerHTML = `<p style="color:red">Erreur de chargement des commentaires</p>`;
+    return;
+  }
+
+  data.forEach(c => {
+    const div = document.createElement("div");
+    div.className = "comment";
+    div.innerHTML = `<strong>${c.pseudo}</strong> : ${c.texte}
+      ${c.pseudo === pseudo ? `<button onclick="deleteComment(${c.id}, ${concertId})" style="float:right;color:red;">x</button>` : ""}`;
+    box.appendChild(div);
   });
 }
+
+// ➕ Ajouter un commentaire
+window.addComment = async (concertId) => {
+  const input = document.getElementById("input-" + concertId);
+  const texte = input.value.trim();
+  if (!texte) return;
+  const { error } = await supabase.from('commentaires').insert([{ concert_id: concertId, pseudo, texte }]);
+  if (!error) {
+    input.value = "";
+    loadComments(concertId);
+  } else {
+    alert("Erreur ajout commentaire : " + error.message);
+  }
+};
+
+// ❌ Supprimer un commentaire
+window.deleteComment = async (id, concertId) => {
+  await supabase.from('commentaires').delete().eq('id', id).eq('pseudo', pseudo);
+  loadComments(concertId);
+};
+
+// ✅ Présence
+window.togglePresence = async (concertId) => {
+  const { data } = await supabase.from('presences').select('*').eq('concert_id', concertId).eq('pseudo', pseudo);
+  if (data && data.length > 0) {
+    await supabase.from('presences').delete().eq('concert_id', concertId).eq('pseudo', pseudo);
+    alert("Tu n’es plus marqué présent ❌");
+  } else {
+    await supabase.from('presences').insert([{ concert_id: concertId, pseudo }]);
+    alert("Ta présence a été enregistrée ✅");
+  }
+};
+
 loadConcerts();
 </script>
 </body>
