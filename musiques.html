@@ -11,13 +11,12 @@ header h1{margin:0}
 header button{padding:6px 12px;border:none;border-radius:6px;font-weight:bold;cursor:pointer}
 header button#btnHome{background:#00ccff;color:#000}
 header button#btnLogin{background:#ff5555;color:#fff}
-.container{max-width:1000px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
-.music-card{background:#1e1e1e;padding:12px;border-radius:12px;display:flex;flex-direction:column;align-items:center;transition:transform .2s}
-.music-card:hover{transform:scale(1.03)}
-.cover{width:100%;height:230px;border-radius:8px;object-fit:cover;margin-bottom:10px}
-.title{font-weight:bold;color:#00ccff;margin:4px 0;text-align:center}
-.artist{color:#aaa;font-size:.9em;text-align:center;margin-bottom:10px}
-audio{width:100%;outline:none}
+.container{max-width:900px;margin:24px auto;padding:0 16px;display:flex;flex-direction:column;gap:16px}
+.music-card{background:#1e1e1e;padding:12px;border-radius:12px;display:flex;flex-direction:row;gap:12px;align-items:center}
+.music-card img{width:80px;height:80px;border-radius:8px;object-fit:cover}
+.music-info{flex:1;display:flex;flex-direction:column;gap:4px}
+.music-title{cursor:pointer;color:#00ccff;font-weight:bold;text-decoration:underline}
+audio{width:100%}
 </style>
 </head>
 <body>
@@ -34,32 +33,46 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
-const supabase = createClient(supabaseUrl, supabaseKey);
+
+const supabase = createClient(supabaseUrl,supabaseKey);
 
 document.getElementById("btnHome").onclick = ()=>window.location.href="index.html";
 document.getElementById("btnLogin").onclick = ()=>window.location.href="login2.html";
 
 async function loadMusics(){
-  const { data, error } = await supabase.from('musics').select('*').order('id',{ascending:false});
+  const { data, error } = await supabase.from('musics').select('*').order('id',{ascending:true});
   const list = document.getElementById("musicList");
   if(error){ list.innerHTML="Erreur: "+error.message; return; }
-
   list.innerHTML="";
-  if(!data || data.length===0){
-    list.innerHTML="<p style='grid-column:1/-1;text-align:center'>Aucune musique disponible.</p>";
-    return;
-  }
+  if(!data || data.length===0){ list.innerHTML="Aucune musique disponible."; return; }
 
   data.forEach(m=>{
-    const div=document.createElement("div");
-    div.className="music-card";
-    div.innerHTML=`
-      <img src="${m.cover_url || 'https://via.placeholder.com/300x300?text=Jaquette'}" class="cover">
-      <div class="title">${m.title}</div>
-      <div class="artist">${m.artist || ''}</div>
-      <audio controls src="${m.audio_url}"></audio>
+    const card = document.createElement("div");
+    card.className="music-card";
+
+    const coverUrl = m.cover_url || 'https://via.placeholder.com/80x80?text=No+Cover';
+
+    card.innerHTML = `
+      <img src="${coverUrl}" alt="Cover">
+      <div class="music-info">
+        <div class="music-title">${m.title} - ${m.artist || ''}</div>
+        <audio controls src="${m.audio_url}"></audio>
+      </div>
     `;
-    list.appendChild(div);
+
+    // Recherche sur Spotify/Deezer/Apple/Shazam
+    card.querySelector(".music-title").onclick = ()=>{
+      const site = prompt("Sur quel site rechercher ? (spotify/deezer/apple/shazam)").toLowerCase();
+      let url="";
+      const query = encodeURIComponent(m.title + " " + (m.artist||""));
+      if(site==="spotify") url=`https://open.spotify.com/search/${query}`;
+      else if(site==="deezer") url=`https://www.deezer.com/search/${query}`;
+      else if(site==="apple") url=`https://music.apple.com/search?term=${query}`;
+      else if(site==="shazam") url=`https://www.shazam.com/fr/search?q=${query}`;
+      if(url) window.open(url,"_blank"); else alert("Site non reconnu");
+    };
+
+    list.appendChild(card);
   });
 }
 
