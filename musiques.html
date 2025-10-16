@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ma Bibliothèque Musicale</title>
+<title>🎶 Ma Musique</title>
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
   margin: 0;
-  background: #121212;
+  background: linear-gradient(180deg, #121212, #1a1a1a);
   color: #fff;
 }
 header {
@@ -27,6 +27,7 @@ header button {
   border-radius: 8px;
   padding: 6px 12px;
   cursor: pointer;
+  transition: 0.3s;
 }
 header button:hover { background: #00a3cc; }
 
@@ -43,20 +44,54 @@ header button:hover { background: #00a3cc; }
   background: #181818;
   border-radius: 16px;
   overflow: hidden;
-  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.cover { width: 100%; height: 200px; object-fit: cover; background: #222; }
-.music-info { padding: 12px; text-align: center; }
-.music-info h3 { margin: 0; color: #00ccff; }
-.music-info p { margin: 4px 0 0; color: #bbb; font-size: 0.9rem; }
-audio { width: 100%; margin-top: 8px; border-radius: 0 0 16px 16px; }
+.music-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.6);
+}
+
+.cover {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  background: #222;
+}
+
+.music-info {
+  padding: 12px;
+  text-align: center;
+}
+
+.music-info h3 { margin: 0; font-size: 1rem; color: #00ccff; }
+.music-info p { margin: 4px 0 8px; color: #bbb; font-size: 0.9rem; }
+
+.search-btn {
+  background: #00ccff;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+audio {
+  width: 100%;
+  outline: none;
+  border-radius: 0 0 16px 16px;
+}
 </style>
 </head>
 <body>
 
 <header>
   <button id="btnHome">🏠 Accueil</button>
-  <h1>Ma Bibliothèque</h1>
+  <h1>🎧 Ma Bibliothèque</h1>
   <button id="btnAdmin">Admin</button>
 </header>
 
@@ -69,13 +104,14 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const SUPABASE_URL = "https://hcjgggdnfznoitebphvs.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 document.getElementById("btnHome").onclick = () => window.location.href = "index.html";
 document.getElementById("btnAdmin").onclick = () => window.location.href = "login2.html";
 
 const container = document.getElementById("musicList");
-const defaultCover = "https://cdn-icons-png.flaticon.com/512/727/727240.png";
+const defaultCover = "https://cdn-icons-png.flaticon.com/512/727/727240.png"; // image par défaut
 
 async function loadMusics() {
   const { data, error } = await supabase.from("musics").select("*").order("id", { ascending: true });
@@ -95,14 +131,30 @@ async function loadMusics() {
   for (const m of data) {
     const card = document.createElement("div");
     card.className = "music-card";
+
     card.innerHTML = `
       <img src="${m.cover_url || defaultCover}" alt="cover" class="cover">
       <div class="music-info">
         <h3>${m.title}</h3>
         <p>${m.artist || "Artiste inconnu"}</p>
+        <button class="search-btn">Rechercher sur Deezer/Spotify</button>
       </div>
       ${m.audio_url ? `<audio controls src="${m.audio_url}"></audio>` : ""}
     `;
+
+    // Bouton recherche
+    const btn = card.querySelector(".search-btn");
+    btn.onclick = () => {
+      const query = encodeURIComponent(`${m.title} ${m.artist || ""}`);
+      const choice = prompt("Sur quel site écouter ? (deezer / spotify / apple / shazam)").toLowerCase();
+      let url = "";
+      if (choice === "deezer") url = `https://www.deezer.com/search/${query}`;
+      else if (choice === "spotify") url = `https://open.spotify.com/search/${query}`;
+      else if (choice === "apple") url = `https://music.apple.com/search?term=${query}`;
+      else if (choice === "shazam") url = `https://www.shazam.com/fr/search?q=${query}`;
+      if(url) window.open(url, "_blank");
+    };
+
     container.appendChild(card);
   }
 }
