@@ -17,6 +17,7 @@ input,textarea,button { width:100%; margin:6px 0; padding:8px; border-radius:6px
 input[type="file"] { padding:3px; }
 button.save { background:#00ccff; color:#000; font-weight:bold; }
 button.delete { background:#ff5555; color:#fff; }
+button.edit { background:#ffaa00; color:#000; }
 .concert-item { background:#2a2a2a; padding:12px; border-radius:8px; margin-bottom:12px; }
 img.concert-img { max-width:100%; border-radius:8px; margin-top:6px; object-fit:cover; }
 </style>
@@ -52,7 +53,6 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
-
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Navigation
@@ -62,15 +62,15 @@ document.getElementById("btnLogout").onclick = () => { window.location.href = "l
 const form = document.getElementById("form");
 const list = document.getElementById("concertList");
 
-// Nettoyage du nom de fichier (évite erreurs de clé invalide)
+// Nettoyage du nom de fichier
 function sanitizeFileName(filename) {
   return filename
     .replace(/\s+/g, "_")
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // retire accents
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9_.-]/g, "");
 }
 
-// Image de secours
+// Image fallback
 const fallbackImage = "https://via.placeholder.com/400x200?text=Image+non+disponible";
 
 // Ajouter / Modifier concert
@@ -90,7 +90,6 @@ form.addEventListener("submit", async (e) => {
       const safeName = `${Date.now()}_${sanitizeFileName(file.name)}`;
       const { data, error } = await supabase.storage.from('concerts').upload(`images/${safeName}`, file, { upsert: true });
       if (error) throw error;
-
       const { publicURL } = supabase.storage.from('concerts').getPublicUrl(data.path);
       image_url = publicURL;
     }
@@ -101,14 +100,15 @@ form.addEventListener("submit", async (e) => {
     if (concertId) {
       const { error } = await supabase.from('concerts').update(dataObj).eq('id', concertId);
       if (error) throw error;
+      alert("✅ Concert modifié !");
     } else {
       const { error } = await supabase.from('concerts').insert([dataObj]);
       if (error) throw error;
+      alert("✅ Concert ajouté !");
     }
 
     form.reset();
     document.getElementById("concertId").value = "";
-    alert("✅ Concert enregistré !");
     loadConcerts();
   } catch (err) {
     console.error(err);
@@ -116,14 +116,10 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// Charger la liste des concerts
+// Charger les concerts
 async function loadConcerts() {
   const { data, error } = await supabase.from('concerts').select('*').order('date', { ascending: true });
-  if (error) {
-    list.innerHTML = "Erreur: " + error.message;
-    console.error(error);
-    return;
-  }
+  if (error) { list.innerHTML = "Erreur: " + error.message; console.error(error); return; }
 
   list.innerHTML = "";
   if (!data || data.length === 0) {
@@ -144,6 +140,7 @@ async function loadConcerts() {
     `;
     list.appendChild(div);
 
+    // Modifier
     div.querySelector(".edit").onclick = () => {
       document.getElementById("concertId").value = c.id;
       document.getElementById("title").value = c.title;
@@ -153,10 +150,23 @@ async function loadConcerts() {
       document.getElementById("desc").value = c.desc;
     };
 
+    // Supprimer
     div.querySelector(".delete").onclick = async () => {
-      const { error } = await supabase.from('concerts').delete().eq('id', c.id);
-      if (error) return alert("Erreur: " + error.message);
-      loadConcerts();
+      if (!confirm(`Supprimer le concert "${c.title}" ?`)) return;
+      try {
+        // Supprimer image
+        if (c.image_url) {
+          const path = c.image_url.split("/storage/v1/object/public/concerts/")[1];
+          if (path) await supabase.storage.from('concerts').remove([path]);
+        }
+        // Supprimer le concert
+        const { error } = await supabase.from('concerts').delete().eq('id', c.id);
+        if (error) throw error;
+        loadConcerts();
+      } catch (err) {
+        console.error(err);
+        alert("Erreur suppression: " + err.message);
+      }
     };
   });
 }
