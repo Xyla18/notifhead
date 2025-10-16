@@ -34,95 +34,44 @@
   <div class="card">Chargement des concerts...</div>
 </main>
 
-<footer>Astuce: clique sur la date pour ajouter au calendrier, sur le lieu pour ouvrir Google Maps.</footer>
+<footer>Astuce : clique sur la date pour ajouter au calendrier, sur le lieu pour ouvrir Google Maps.</footer>
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+const supabase = createClient(
+  "https://hcjgggdnfznoitebphvs.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+);
 
-const supabaseUrl = "https://hcjgggdnfznoitebphvs.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-document.getElementById("btnLogin").onclick = () => window.location.href = "admin_concerts.html";
+document.getElementById("btnLogin").onclick = () => window.location.href = "login.html";
 
 const container = document.getElementById("concertList");
 
 async function loadConcerts() {
-  const { data, error } = await supabase
-    .from('concerts')
-    .select('*')
-    .order('date', { ascending: true });
-
-  console.log("Concerts récupérés :", data, error);
-
+  const { data, error } = await supabase.from('concerts').select('*').order('date', { ascending: true });
   container.innerHTML = "";
-
-  if(error) {
-    container.innerHTML = `<div class="card">❌ Erreur: ${error.message}</div>`;
-    return;
-  }
-  if(!data || data.length===0){
-    container.innerHTML = `<div class="card">Aucun concert programmé.</div>`;
-    return;
-  }
+  if(error) return container.innerHTML = `<div class="card">❌ ${error.message}</div>`;
+  if(!data || data.length===0) return container.innerHTML = `<div class="card">Aucun concert programmé.</div>`;
 
   data.forEach(c => {
     const card = document.createElement("div");
     card.className = "card";
-
     if(c.image_url){
       const img = document.createElement("img");
       img.src = c.image_url;
-      img.alt = c.title || "";
       img.className = "concert-img";
       card.appendChild(img);
     }
-
-    const title = document.createElement("h2");
-    title.innerText = c.title || "Événement";
-    card.appendChild(title);
-
-    const meta = document.createElement("div");
-    meta.className = "meta";
-
-    const dateSpan = document.createElement("span");
-    dateSpan.className = "date-link";
-    dateSpan.innerText = `📅 ${c.date || ""} ${c.time || ""}`;
-    dateSpan.onclick = () => {
-      const start = new Date(`${c.date}T${c.time || "19:00"}`);
-      const end = new Date(start.getTime() + 2*60*60*1000);
-      const fmt = d => d.toISOString().replace(/[-:]|\.\d{3}/g,"");
-      const params = new URLSearchParams({
-        action: "TEMPLATE",
-        text: c.title,
-        details: c.desc || "",
-        location: c.lieu || "",
-        dates: `${fmt(start)}/${fmt(end)}`
-      });
-      window.open("https://calendar.google.com/calendar/render?"+params.toString(), "_blank");
-    };
-    meta.appendChild(dateSpan);
-
-    const lieuSpan = document.createElement("span");
-    lieuSpan.className = "lieu-link";
-    lieuSpan.innerText = `📍 ${c.lieu || ""}`;
-    lieuSpan.onclick = () => {
-      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.lieu||"")}`, "_blank");
-    };
-    meta.appendChild(lieuSpan);
-
-    card.appendChild(meta);
-
-    if(c.desc){
-      const p = document.createElement("p");
-      p.innerText = c.desc;
-      card.appendChild(p);
-    }
-
+    card.innerHTML += `
+      <h2>${c.title}</h2>
+      <div class="meta">
+        <span class="date-link">📅 ${c.date} ${c.time||''}</span>
+        <span class="lieu-link">📍 ${c.lieu}</span>
+      </div>
+      <p>${c.desc||''}</p>`;
     container.appendChild(card);
   });
 }
-
 loadConcerts();
 </script>
 </body>
