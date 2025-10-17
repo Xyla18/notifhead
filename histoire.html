@@ -1,71 +1,134 @@
-<!-- FILE: concerts.html -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Concerts — Public</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>No'Tif Head — L'histoire</title>
+  <meta name="description" content="Biographie de No'Tif Head — groupe de reprises pop-rock basé près de Reims." />
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 20px auto; padding: 0 16px; }
-    header { display: flex; justify-content: space-between; align-items: center; }
-    .concert { border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-top: 12px; }
-    .concert img { max-width: 100%; border-radius: 6px; margin-top: 6px; }
-    .meta { color: #555; font-size: 0.9rem; }
-    button { padding: 8px 12px; border-radius: 8px; border: 1px solid #333; background: transparent; cursor: pointer; }
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#7dd3fc;--glass: rgba(255,255,255,0.03)}
+    html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: linear-gradient(180deg,#071021 0%, #0f1724 60%);color:#e6eef6}
+    a{color:var(--accent);text-decoration:none}
+
+    /* Header */
+    header{position:sticky;top:0;backdrop-filter: blur(6px);background:linear-gradient(180deg, rgba(8,12,20,0.6), rgba(8,12,20,0.25));border-bottom:1px solid rgba(255,255,255,0.03);z-index:40}
+    .container{max-width:980px;margin:0 auto;padding:28px 20px}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:14px}
+    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#0ea5a4,#7dd3fc);display:flex;align-items:center;justify-content:center;font-weight:700;color:#022;box-shadow:0 6px 20px rgba(0,0,0,0.6)}
+    .home-btn{padding:8px 14px;border-radius:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.04);cursor:pointer}
+
+    /* Hero */
+    .hero{display:grid;grid-template-columns:1fr;align-items:center;padding:64px 20px 36px}
+    .eyebrow{color:var(--muted);letter-spacing:1px;font-size:13px}
+    h1{font-size:46px;line-height:1.02;margin:8px 0 6px}
+    p.lead{max-width:760px;color:#cfe6ff;font-size:18px}
+
+    /* Card sections */
+    main{max-width:980px;margin:0 auto;padding:36px 20px 120px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:28px;margin:28px 0;box-shadow:0 10px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    .card h2{margin:0 0 12px;font-size:22px}
+    .card p{color:var(--muted);line-height:1.7}
+
+    /* Reveal animation */
+    .reveal{opacity:0;transform:translateX(-60px);transition:transform 700ms cubic-bezier(.2,.9,.2,1),opacity 600ms ease}
+    .reveal.revealed{opacity:1;transform:translateX(0)}
+
+    /* small devices tweaks */
+    @media (max-width:640px){h1{font-size:32px}.hero{padding:36px 16px}.card{padding:18px}}
+
+    /* footer */
+    footer{max-width:980px;margin:20px auto 60px;padding:0 20px;color:var(--muted);font-size:14px}
+
+    /* subtle decorative line */
+    .divider{height:1px;background:linear-gradient(90deg,transparent,#17374a,transparent);margin:16px 0;border-radius:2px}
   </style>
 </head>
 <body>
   <header>
-    <h1>Concerts</h1>
-    <div>
-      <a href="index.html">← Retour</a>
+    <div class="container nav">
+      <div class="brand">
+        <div class="logo" aria-hidden>NH</div>
+        <div>
+          <div style="font-weight:600">No'Tif Head</div>
+          <div style="font-size:12px;color:var(--muted)">Groupe de reprises · Nord de Reims</div>
+        </div>
+      </div>
+      <div>
+        <a class="home-btn" href="/index.html" title="Retour à l'accueil">Accueil</a>
+      </div>
     </div>
   </header>
 
-  <div id="concertList"></div>
+  <section class="hero">
+    <div class="container">
+      <div class="eyebrow reveal" data-delay="0">Biographie officielle</div>
+      <h1 class="reveal" data-delay="120">No'Tif Head — L'histoire</h1>
+      <p class="lead reveal" data-delay="240">Nous sommes No'Tif Head, un collectif de musiciens passionnés qui revisitent la pop et le rock avec énergie et sincérité. Basés dans le nord de Reims, nous partageons la musique comme on partage une soirée entre amis : simplement, fort et vrai.</p>
+    </div>
+  </section>
+
+  <main>
+    <article class="card reveal" data-delay="340">
+      <h2>Qui nous sommes</h2>
+      <p>Nous sommes <strong>No'Tif Head</strong>, un groupe de reprises pop‑rock né du plaisir simple et sincère de jouer ensemble, de partager la scène et de faire vibrer le public sur des classiques et des morceaux plus modernes. Notre formation a évolué naturellement : autour de <strong>Carlita Notifhead</strong> (voix) se sont succédés et ajoutés des musiciens tels que <strong>Loïc</strong> à la guitare, et des guests ponctuels comme <strong>Adrien Savart</strong>. Chaque membre apporte sa touche, ce qui forge notre identité sonore.</p>
+    </article>
+
+    <article class="card reveal" data-delay="420">
+      <h2>Nos débuts</h2>
+      <p>Tout a commencé dans des salles de répétition locales, entre amplis, cafés et bonnes vibes. Un projet entre amis s'est peu à peu transformé en une proposition musicale solide, avec des répétitions régulières, des petites scènes, et le désir de proposer des sets travaillés mais pleins d'énergie.</p>
+    </article>
+
+    <article class="card reveal" data-delay="500">
+      <h2>Notre univers musical</h2>
+      <p>Notre répertoire se compose majoritairement de reprises pop et rock — un voyage à travers les décennies où l'on mélange la fougue des années 80 aux sons contemporains. On cherche à revisiter les morceaux avec respect tout en y apportant notre propre énergie : de belles harmonies vocales, des parties de guitare punchy et une rythmique qui pousse le public à chanter et à bouger.</p>
+    </article>
+
+    <article class="card reveal" data-delay="580">
+      <h2>Notre esprit</h2>
+      <p>Sans prétention, beaucoup d'humour et une bonne dose d'énergie : voilà notre ligne de conduite. No'Tif Head, c'est avant tout une famille ouverte où le plaisir de jouer prime sur tout. On privilégie la connexion humaine — chaque concert est une rencontre, chaque reprise une occasion de partager un moment.</p>
+    </article>
+
+    <article class="card reveal" data-delay="660">
+      <h2>Indépendants et engagés</h2>
+      <p>Nous restons 100 % indépendants : gestion des répétitions, communication et recherche de scènes se font en direct par nous. Notre page Facebook reste le cœur de notre présence en ligne, où l'on publie photos, annonces et moments de vie du groupe. Nous accueillons régulièrement de nouveaux musiciens — No'Tif Head est un projet vivant qui se renouvelle.</p>
+    </article>
+
+    <article class="card reveal" data-delay="740">
+      <h2>Venez nous voir</h2>
+      <p>Si vous êtes amateur·rice de rock, de pop et de concerts chaleureux, suivez-nous sur Facebook et venez découvrir nos prochaines dates. Que ce soit dans un bar, sur une petite scène locale ou lors d'un événement privé, on aime quand le public chante avec nous. Et si vous voulez faire partie de l'aventure, contactez‑nous — la famille No'Tif Head est toujours prête à s'agrandir.</p>
+    </article>
+
+    <div class="divider"></div>
+
+    <article class="card reveal" data-delay="820">
+      <h2>Texte source</h2>
+      <p style="color:var(--muted);font-size:13px">Biographie rédigée à partir des publications publiques de la page Facebook du groupe et reformulée pour une présentation officielle. Page principale : No'Tif Head / The No'Tif'Head.</p>
+    </article>
+  </main>
+
+  <footer>
+    <div class="container">© No'Tif Head — Page biographique. <a href="/index.html">Retour à l'accueil</a></div>
+  </footer>
 
   <script>
-    // Fonction pour échapper le HTML
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-    }
-
-    // Charger les concerts depuis localStorage
-    function loadConcerts() {
-      let concerts = [];
-      try {
-        concerts = JSON.parse(localStorage.getItem('concerts') || '[]');
-      } catch(e) { concerts = []; }
-
-      const container = document.getElementById('concertList');
-      container.innerHTML = '';
-
-      if (concerts.length === 0) {
-        container.innerHTML = '<p>Aucun concert disponible pour le moment.</p>';
-        return;
-      }
-
-      concerts.forEach(c => {
-        const div = document.createElement('div');
-        div.className = 'concert';
-        div.innerHTML = `
-          <h2>${escapeHtml(c.title)}</h2>
-          <div class="meta">${escapeHtml(c.date)} ${escapeHtml(c.time || '')} — ${escapeHtml(c.lieu || '')}</div>
-          ${c.image ? `<img src="${escapeHtml(c.image)}" alt="${escapeHtml(c.title)}">` : ''}
-          <p>${escapeHtml(c.desc)}</p>
-        `;
-        container.appendChild(div);
+    // Intersection-based reveal with stagger (Apple-like slide from left)
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          const el = entry.target; const delay = Number(el.dataset.delay) || 0;
+          setTimeout(()=> el.classList.add('revealed'), delay);
+          observer.unobserve(el);
+        }
       });
-    }
+    }, {threshold: 0.12});
+    reveals.forEach(r=>observer.observe(r));
 
-    // Appel au chargement
-    loadConcerts();
+    // Friendly keyboard shortcut to go home (H)
+    document.addEventListener('keydown', e=>{
+      if(e.key.toLowerCase()==='h') window.location.href = '/index.html';
+    });
   </script>
 </body>
 </html>
-
