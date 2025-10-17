@@ -1,3 +1,9 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bibliothèque de Sons</title>
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
@@ -15,69 +21,82 @@ header {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
-header h1 {
-  margin: 0;
-  font-weight: 600;
-  font-size: 1.5rem;
-  letter-spacing: 1px;
-}
-header button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 25px;
-  background: #1db954;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.3s;
-}
-header button:hover { background: #17a44a; }
+header h1 { margin:0; font-weight:600; font-size:1.5rem; letter-spacing:1px; }
+header button { padding:8px 16px; border:none; border-radius:25px; background:#1db954; color:#fff; font-weight:600; cursor:pointer; transition:0.3s; }
+header button:hover { background:#17a44a; }
 
-.container {
-  max-width: 900px;
-  margin: 30px auto;
-  padding: 0 20px;
-}
-.search-bar input {
-  width: 100%;
-  padding: 12px 20px;
-  border-radius: 30px;
-  border: none;
-  background: #2c2f38;
-  color: #fff;
-  font-size: 1rem;
-  outline: none;
-}
+.container { max-width:900px; margin:30px auto; padding:0 20px; }
+.search-bar input { width:100%; padding:12px 20px; border-radius:30px; border:none; background:#2c2f38; color:#fff; font-size:1rem; outline:none; }
+
 .sound-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
-  background: #1f2128;
-  border-radius: 15px;
-  margin-bottom: 14px;
-  transition: 0.3s;
+  display:flex; align-items:center; gap:16px;
+  padding:12px 16px; background:#1f2128; border-radius:15px; margin-bottom:14px; transition:0.3s;
 }
-.sound-item:hover { background: #2c2f38; }
-.sound-item img {
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-.sound-item .info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-.sound-item .info strong {
-  font-size: 1.05rem;
-  margin-bottom: 6px;
-}
-.sound-item audio {
-  width: 100%;
-  border-radius: 10px;
-  outline: none;
-}
+.sound-item:hover { background:#2c2f38; }
+.sound-item img { width:60px; height:60px; border-radius:10px; object-fit:cover; flex-shrink:0; }
+.sound-item .info { flex:1; display:flex; flex-direction:column; }
+.sound-item .info strong { font-size:1.05rem; margin-bottom:6px; }
+.sound-item audio { width:100%; border-radius:10px; outline:none; }
 </style>
+</head>
+<body>
+
+<header>
+  <button onclick="window.location.href='index.html'">← Retour</button>
+  <h1>Bibliothèque de Sons</h1>
+  <button onclick="window.location.href='admin2.html'">Admin</button>
+</header>
+
+<div class="container">
+  <div class="search-bar">
+    <input type="text" id="search" placeholder="Rechercher un son...">
+  </div>
+  <div id="soundList">Chargement...</div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const SUPABASE_URL = "https://hcjgggdnfznoitebphvs.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjamdnZ2RuZnpub2l0ZWJwaHZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MjA1MDEsImV4cCI6MjA3NjA5NjUwMX0.evgN1B1dp8H0007N4qskRxXiAICJPajBAbgYFsPyX3s";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let sounds = [];
+const list = document.getElementById("soundList");
+
+async function loadSounds() {
+  const { data, error } = await supabase.from('musics').select('*').order('id',{ascending:true});
+  if(error) { list.innerHTML="Erreur: "+error.message; return; }
+  sounds = data;
+  displaySounds(data);
+}
+
+function displaySounds(data) {
+  list.innerHTML = "";
+  if(!data || data.length===0) { list.innerHTML="<div>Aucun son disponible.</div>"; return; }
+
+  data.forEach(s => {
+    const div = document.createElement("div");
+    div.className="sound-item";
+    div.innerHTML = `
+      <img src="${s.cover_url || 'https://via.placeholder.com/60?text=?'}" alt="Jaquette">
+      <div class="info">
+        <strong>${s.title}</strong>
+        <audio controls src="${s.url}"></audio>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+document.getElementById("search").addEventListener("input", (e) => {
+  const term = e.target.value.toLowerCase();
+  const filtered = sounds.filter(s => s.title.toLowerCase().includes(term));
+  displaySounds(filtered);
+});
+
+loadSounds();
+</script>
+
+</body>
+</html>
